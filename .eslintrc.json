@@ -1,0 +1,43 @@
+{
+    "root": true,
+    "env": {
+        "browser": true,
+        "es2020": true,
+        "node": true
+    },
+    "extends": [
+        "@apify/eslint-config-ts"
+    ],
+    "parserOptions": {
+        "project": "./tsconfig.eslint.json",
+        "ecmaVersion": 2020
+    },
+    "plugins": [
+        "@typescript-eslint"
+    ],
+    "ignorePatterns": [
+        "node_modules",
+        "dist",
+        "coverage",
+        "**/*.js",
+        "**/*.d.ts"
+    ],
+    "rules": {
+        "no-void": 0,
+        "no-underscore-dangle": 0,
+        "max-classes-per-file": 0,
+        "no-console": "error",
+        "@typescript-eslint/array-type": "error",
+        "@typescript-eslint/no-floating-promises": "error",
+        "@typescript-eslint/ban-ts-comment": 0,
+        "@typescript-eslint/no-unused-vars": "off",
+        "@typescript-eslint/no-empty-interface": "off",
+        "@typescript-eslint/no-explicit-any": "off",
+        "@typescript-eslint/no-empty-function": "off",
+        "import/no-extraneous-dependencies": "off",
+        "@typescript-eslint/member-delimiter-style": ["error", {
+            "multiline": { "delimiter": "semi", "requireLast": true },
+            "singleline": { "delimiter": "semi", "requireLast": false }
+        }]
+    }
+}

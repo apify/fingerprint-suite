@@ -1,0 +1,45 @@
+{
+  "name": "header-generator",
+  "version": "2.0.0",
+  "description": "NodeJs package for generating browser-like headers.",
+  "author": {
+    "name": "Apify",
+    "email": "support@apify.com",
+    "url": "https://apify.com"
+  },
+  "homepage": "https://github.com/apify/header-generator#readme",
+  "license": "Apache-2.0",
+  "engines": {
+    "node": ">=15.10.0"
+  },
+  "files": [
+    "dist"
+  ],
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
+  },
+  "dependencies": {
+    "browserslist": "^4.19.1",
+    "generative-bayesian-network": "0.1.0-beta.1",
+    "ow": "^0.23.0",
+    "tslib": "^2.3.1"
+  },
+  "scripts": {
+    "build": "npm run clean && npm run compile",
+    "clean": "rimraf ./dist",
+    "compile": "tsc -p tsconfig.build.json && gen-esm-wrapper ./dist/index.js ./dist/index.mjs"
+  },
+  "bugs": {
+    "url": "https://github.com/apify/header-generator/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/apify/header-generator.git"
+  }
+}

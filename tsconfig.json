@@ -1,0 +1,11 @@
+{
+    "extends": "./tsconfig.build.json",
+    "compilerOptions": {
+        "baseUrl": ".",
+        "paths": {
+            "header-generator": ["packages/header-generator/src"],
+            "fingerprint-generator": ["packages/fingerprint-generator/src"],
+            "fingerprint-injector": ["packages/fingerprint-injector/src"],
+        }
+    }
+}

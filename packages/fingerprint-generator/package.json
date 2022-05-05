@@ -1,0 +1,42 @@
+{
+  "name": "fingerprint-generator",
+  "version": "2.0.0",
+  "description": "NodeJs package for generating realistic browser fingerprints.",
+  "homepage": "https://github.com/apify/fingerprint-generator#readme",
+  "engines": {
+    "node": ">=15.10.0"
+  },
+  "files": [
+    "dist"
+  ],
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "npm run clean && npm run compile",
+    "clean": "rimraf ./dist",
+    "compile": "tsc -p tsconfig.build.json && gen-esm-wrapper ./dist/index.js ./dist/index.mjs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/apify/fingerprint-generator.git"
+  },
+  "author": "Apify",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/apify/fingerprint-generator/issues"
+  },
+  "dependencies": {
+    "csv-parse": "^4.15.3",
+    "generative-bayesian-network": "0.1.0-beta.1",
+    "header-generator": "^2.0.0-beta.9",
+    "ow": "^0.24.1",
+    "tslib": "^2.3.1"
+  }
+}
