@@ -38,7 +38,7 @@ describe('FingerprintInjector', () => {
         let response: any;
 
         beforeEach(async () => {
-            browser = await playwright.firefox.launch({ headless: false });
+            browser = await playwright.firefox.launch({ headless: true });
 
             const context = await browser.newContext();
             await fpInjector.attachFingerprintToPlaywright(context, fingerprintWithHeaders);
@@ -140,7 +140,7 @@ describe('FingerprintInjector', () => {
         let response: any;
 
         beforeEach(async () => {
-            browser = await puppeteer.launch({ headless: false });
+            browser = await puppeteer.launch({ headless: true });
 
             page = await browser.newPage();
             await fpInjector.attachFingerprintToPuppeteer(page, fingerprintWithHeaders);

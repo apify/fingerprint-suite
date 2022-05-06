@@ -35,7 +35,7 @@
   "dependencies": {
     "csv-parse": "^4.15.3",
     "generative-bayesian-network": "0.1.0-beta.1",
-    "header-generator": "^2.0.0-beta.9",
+    "header-generator": "file:../header-generator",
     "ow": "^0.24.1",
     "tslib": "^2.3.1"
   }

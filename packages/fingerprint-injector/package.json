@@ -20,13 +20,14 @@
 	"dependencies": {
 		"@apify/log": "^1.0.5",
 		"tslib": "^2.3.1",
-		"useragent": "^2.3.0"
+		"useragent": "^2.3.0",
+		"fingerprint-generator": "file:../fingerprint-generator"
 	},
-  "scripts": {
-    "build": "npm run clean && npm run compile",
-    "clean": "rimraf ./dist",
-    "compile": "tsc -p tsconfig.build.json && gen-esm-wrapper ./dist/index.js ./dist/index.mjs"
-  },
+	"scripts": {
+		"build": "npm run clean && npm run compile",
+		"clean": "rimraf ./dist",
+		"compile": "tsc -p tsconfig.build.json && gen-esm-wrapper ./dist/index.js ./dist/index.mjs"
+	},
 	"author": {
 		"name": "Apify",
 		"email": "support@apify.com",

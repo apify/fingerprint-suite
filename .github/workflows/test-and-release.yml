@@ -1,12 +1,12 @@
-name: Check & Release
+name: Run tests
 
 on:
     # Push to master will deploy a dev version
     push:
-        branches: [ master, renovate/** ]
+        branches: [ main, renovate/** ]
     # PR to master branch will skip deployment
     pull_request:
-        branches: [ master ]
+        branches: [ main ]
     # A release via GitHub releases will deploy the latest version
     release:
         types: [ published ]
@@ -23,17 +23,12 @@ jobs:
             fail-fast: false
             matrix:
                 os: [ ubuntu-latest ]
-                node-version: [ 18 ]
+                node-version: [ 16, 18 ]
 
         steps:
-            -   name: Cancel Workflow Action
-                uses: styfle/cancel-workflow-action@0.9.1
-                with:
-                    access_token: ${{ github.token }}
-
             -   name: Checkout repository
                 uses: actions/checkout@v3
-
+    
             -   name: Use Node.js ${{ matrix.node-version }}
                 uses: actions/setup-node@v3
                 with:
