@@ -83,10 +83,10 @@ export class FingerprintInjector {
     async attachFingerprintToPuppeteer(page: Page, browserFingerprintWithHeaders: BrowserFingerprintWithHeaders): Promise<void> {
         const { fingerprint, headers } = browserFingerprintWithHeaders;
         const enhancedFingerprint = this._enhanceFingerprint(fingerprint);
-        const { screen, userAgent } = enhancedFingerprint;
+        const { screen } = enhancedFingerprint;
 
         this.log.debug(`Using fingerprint`, { fingerprint: enhancedFingerprint });
-        await page.setUserAgent(userAgent);
+        await page.setUserAgent(enhancedFingerprint.navigator.userAgent);
 
         await page.setViewport({
             width: screen.width,
@@ -109,7 +109,7 @@ export class FingerprintInjector {
     private _getInjectableFingerprintFunction(fingerprint: EnhancedFingerprint): string {
         function inject() {
             // @ts-expect-error Internal browser code for injection
-            const { batteryInfo, navigator: newNav, screen: newScreen, webGl, historyLength, audioCodecs, videoCodecs } = fp;
+            const { batteryInfo, navigator: newNav, screen: newScreen, videoCard: webGl, historyLength, audioCodecs, videoCodecs } = fp;
 
             // override navigator
             overrideInstancePrototype(window.navigator, newNav);
@@ -121,18 +121,12 @@ export class FingerprintInjector {
             // override webGl
             // @TODO: Find another way out of this.
             // This feels like a dirty hack, but without this it throws while running tests.
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore Internal browser code for injection
             overrideWebGl(webGl);
 
             // override codecs
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore Internal browser code for injection
             overrideCodecs(audioCodecs, videoCodecs);
 
             // override batteryInfo
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore Internal browser code for injection
             overrideBattery(batteryInfo);
         }
 

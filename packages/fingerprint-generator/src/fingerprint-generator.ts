@@ -9,20 +9,23 @@ import { MISSING_VALUE_DATASET_TOKEN, STRINGIFIED_PREFIX } from './constants';
 export type ScreenFingerprint = {
     availHeight: number;
     availWidth: number;
-    pixelDepth: number;
-    height: number;
-    width: number;
     availTop: number;
     availLeft: number;
     colorDepth: number;
+    height: number;
+    pixelDepth: number;
+    width: number;
+}
+
+export type WindowFingerprint = {
+    devicePixelRatio: number;
+    pageXOffset: number;
+    pageYOffset: number;
     innerHeight: number;
     outerHeight: number;
     outerWidth: number;
     innerWidth: number;
     screenX: number;
-    pageXOffset: number;
-    pageYOffset: number;
-    devicePixelRatio: number;
     clientWidth: number;
     clientHeight: number;
     hasHDR: boolean;
@@ -57,6 +60,7 @@ export type VideoCard = {
 
 export type Fingerprint = {
     screen: ScreenFingerprint;
+    window: WindowFingerprint;
     navigator: NavigatorFingerprint;
     videoCodecs: Record<string, string>;
     audioCodecs: Record<string, string>;
@@ -216,8 +220,30 @@ export class FingerprintGenerator extends HeaderGenerator {
             webdriver,
         };
 
+        const {
+            availHeight,
+            availWidth,
+            availTop,
+            availLeft,
+            colorDepth,
+            height,
+            pixelDepth,
+            width,
+        } = screen;
+
+        const screenData = {
+            availHeight,
+            availWidth,
+            availTop,
+            availLeft,
+            colorDepth,
+            height,
+            pixelDepth,
+            width,
+        };
+
         return {
-            screen,
+            screen: screenData,
             navigator,
             audioCodecs,
             videoCodecs,

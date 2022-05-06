@@ -91,7 +91,7 @@ describe('FingerprintInjector', () => {
         });
 
         test('should override webGl', async () => {
-            const { webGl: { vendor, renderer } } = fingerprint;
+            const { videoCard: { vendor, renderer } } = fingerprint;
             const [browserVendor, browserRenderer] = await page.evaluate(() => {
                 const canvas = document.createElement('canvas');
                 const webGl = canvas.getContext('webgl');
@@ -162,7 +162,7 @@ describe('FingerprintInjector', () => {
             const userAgent = await page.evaluate(() => {
                 return navigator.userAgent;
             });
-            expect(userAgent).toBe(fingerprint.userAgent);
+            expect(userAgent).toBe(fingerprint.navigator.userAgent);
         });
 
         test('should override locales', async () => {

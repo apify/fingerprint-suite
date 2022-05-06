@@ -1,7 +1,7 @@
 import { inspect } from 'util';
 import { HeaderGenerator, HeaderGeneratorOptions } from 'header-generator';
-import headersOrder from 'header-generator/dist/data_files/headers-order.json';
-import { getUserAgent, getBrowser } from 'header-generator/dist/utils';
+import headersOrder from 'header-generator/src/data_files/headers-order.json';
+import { getUserAgent, getBrowser } from 'header-generator/src/utils';
 
 function extractLocalesFromAcceptLanguageHeader(acceptLanguageHeader: string): string[] {
     const extractedLocales = [];

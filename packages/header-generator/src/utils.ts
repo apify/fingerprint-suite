@@ -13,7 +13,7 @@ export const getUserAgent = (headers: Record<string, string>): string | undefine
 
 export const getBrowser = (userAgent?: string): BrowserName | undefined => {
     if (!userAgent) {
-        return;
+        return undefined;
     }
 
     let browser;
