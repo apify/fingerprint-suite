@@ -2,7 +2,7 @@ import playwright from 'playwright';
 import puppeteer from 'puppeteer';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore bypass unnecessary module declaration for tests
-import { BrowserFingerprintWithHeaders, Fingerprint, FingerprintGenerator } from 'fingerprint-generator';
+import { BrowserFingerprintWithHeaders, Fingerprint } from 'fingerprint-generator';
 
 // USe fingerprint injector from dist to test if the published version works.
 // Historically injection was not working from build files, but all tests passed.
@@ -10,19 +10,90 @@ import { FingerprintInjector } from 'fingerprint-injector';
 
 describe('FingerprintInjector', () => {
     let fpInjector: FingerprintInjector;
-    let fingerprintGenerator: FingerprintGenerator;
     let fingerprintWithHeaders: BrowserFingerprintWithHeaders;
     let fingerprint: Fingerprint;
 
     beforeEach(() => {
-        fingerprintGenerator = new FingerprintGenerator({
-            devices: ['desktop'],
-            operatingSystems: ['linux'],
-            browsers: [{ name: 'firefox', minVersion: 86 }],
-            locales: ['cs-CZ'],
-        });
-
-        fingerprintWithHeaders = fingerprintGenerator.getFingerprint();
+        fingerprintWithHeaders = {
+            fingerprint: {
+                screen: {
+                    availHeight: 1440,
+                    availWidth: 2560,
+                    availTop: 0,
+                    availLeft: 3840,
+                    colorDepth: 24,
+                    height: 1440,
+                    pixelDepth: 24,
+                    width: 2560,
+                },
+                navigator: {
+                    userAgent: 'Mozilla/5.0 (X11; Linux x86_64; rv:96.0) Gecko/20100101 Firefox/96.0',
+                    userAgentData: null,
+                    language: 'cs-CZ',
+                    languages: [
+                        'cs-CZ',
+                    ],
+                    platform: 'Linux x86_64',
+                    deviceMemory: null,
+                    hardwareConcurrency: 4,
+                    maxTouchPoints: 0,
+                    product: 'Gecko',
+                    productSub: '20030107',
+                    vendor: null,
+                    vendorSub: null,
+                    doNotTrack: '1',
+                    appCodeName: 'Mozilla',
+                    appName: 'Netscape',
+                    appVersion: '5',
+                    oscpu: 'Linux x86_64',
+                    extraProperties: {
+                        vendorFlavors: [],
+                        isBluetoothSupported: false,
+                        globalPrivacyControl: null,
+                        pdfViewerEnabled: null,
+                        installedApps: [],
+                    },
+                    webdriver: false,
+                },
+                audioCodecs: {
+                    ogg: 'probably',
+                    mp3: 'maybe',
+                    wav: 'probably',
+                    m4a: 'maybe',
+                    aac: 'maybe',
+                },
+                videoCodecs: {
+                    ogg: 'probably',
+                    h264: 'probably',
+                    webm: 'probably',
+                },
+                pluginsData: {},
+                battery: null,
+                videoCard: {
+                    vendor: 'AMD',
+                    renderer: 'Radeon R9 200 Series',
+                },
+                multimediaDevices: {
+                    speakers: [],
+                    micros: [],
+                    webcams: [],
+                },
+                fonts: [],
+            },
+            headers: {
+                'user-agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:96.0) Gecko/20100101 Firefox/96.0',
+                accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+                'accept-language': 'cs-CZ',
+                'accept-encoding': 'gzip, deflate, br',
+                dnt: '1',
+                'upgrade-insecure-requests': '1',
+                te: 'trailers',
+                'sec-fetch-site': 'same-site',
+                'sec-fetch-mode': 'navigate',
+                'sec-fetch-user': '?1',
+                'sec-fetch-dest': 'document',
+            },
+        } as any;
         fingerprint = fingerprintWithHeaders.fingerprint;
 
         fpInjector = new FingerprintInjector();
@@ -38,7 +109,7 @@ describe('FingerprintInjector', () => {
         let response: any;
 
         beforeEach(async () => {
-            browser = await playwright.firefox.launch({ headless: true });
+            browser = await playwright.firefox.launch({ headless: false });
 
             const context = await browser.newContext();
             await fpInjector.attachFingerprintToPlaywright(context, fingerprintWithHeaders);
@@ -140,7 +211,7 @@ describe('FingerprintInjector', () => {
         let response: any;
 
         beforeEach(async () => {
-            browser = await puppeteer.launch({ headless: true });
+            browser = await puppeteer.launch({ headless: false });
 
             page = await browser.newPage();
             await fpInjector.attachFingerprintToPuppeteer(page, fingerprintWithHeaders);

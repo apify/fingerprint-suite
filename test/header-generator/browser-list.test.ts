@@ -1,6 +1,6 @@
 import browsersList from 'browserslist';
 
-import { getBrowsersFromQuery } from 'header-generator/dist/utils';
+import { getBrowsersFromQuery } from 'header-generator/src/utils';
 
 describe('browserList generation', () => {
     test('Should work with simple query', () => {

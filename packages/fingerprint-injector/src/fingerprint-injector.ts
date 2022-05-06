@@ -22,7 +22,6 @@ type addInitScriptOptions = {
 type BrowserContext = {
     addInitScript: (options: addInitScriptOptions)=> Promise<void>;
     setExtraHTTPHeaders: (headers: Headers) => Promise<void>;
-
 }
 
 type Viewport = {
@@ -108,25 +107,31 @@ export class FingerprintInjector {
      */
     private _getInjectableFingerprintFunction(fingerprint: EnhancedFingerprint): string {
         function inject() {
-            // @ts-expect-error Internal browser code for injection
+            // @ts-ignore
             const { batteryInfo, navigator: newNav, screen: newScreen, videoCard: webGl, historyLength, audioCodecs, videoCodecs } = fp;
 
             // override navigator
+            // @ts-ignore
             overrideInstancePrototype(window.navigator, newNav);
 
             // override screen
+            // @ts-ignore
             overrideInstancePrototype(window.screen, newScreen);
+            // @ts-ignore
             overrideInstancePrototype(window.history, { length: historyLength });
 
             // override webGl
             // @TODO: Find another way out of this.
             // This feels like a dirty hack, but without this it throws while running tests.
+            // @ts-ignore
             overrideWebGl(webGl);
 
             // override codecs
+            // @ts-ignore
             overrideCodecs(audioCodecs, videoCodecs);
 
             // override batteryInfo
+            // @ts-ignore
             overrideBattery(batteryInfo);
         }
 
