@@ -10,6 +10,7 @@ on:
     # A release via GitHub releases will deploy the latest version
     release:
         types: [ published ]
+    workflow_dispatch:
 
 jobs:
     # NPM install is done in a separate job and cached to speed up the following jobs.
