@@ -13,9 +13,33 @@ on:
     workflow_dispatch:
 
 jobs:
+    lint:
+        name: Lint
+        # if: ${{ !contains(github.event.head_commit.message, '[skip ci]') }}
+        runs-on: ubuntu-latest
+
+        steps:
+            - uses: actions/checkout@v2
+            - name: Use Node.js 16 
+              uses: actions/setup-node@v1 
+              with:
+                node-version: 16
+
+            - name: Install Dependencies
+              run: npm ci
+
+            - name: Load Cache
+              uses: actions/cache@v2
+              with:
+                path: |
+                  node_modules
+                key: cache-${{ github.run_id }}
+
+            - run: npm run lint
+
     build_and_test:
         name: Build & Test
-        if: ${{ !contains(github.event.head_commit.message, '[skip ci]') }}
+        needs: [lint]
         runs-on: ${{ matrix.os }}
 
         strategy:
@@ -24,58 +48,42 @@ jobs:
                 node-version: [ 15, 16 ]
 
         steps:
-            -
-                uses: actions/checkout@v2
-            -
-                name: Use Node.js ${{ matrix.node-version }}
-                uses: actions/setup-node@v1
-                with:
-                    node-version: ${{ matrix.node-version }}
-            -
-                name: Install playwright deps
-                run : npx playwright install-deps
-            -
-                name: Install Dependencies
-                run: npm ci
-            -
-                name: Cache Node Modules
-                if: ${{ matrix.node-version == 16 }}
-                uses: actions/cache@v2
-                with:
-                    path: |
-                        node_modules
-                    key: cache-${{ github.run_id }}-v16
-            -
-                name: Run Windows or MacOs tests
-                run: npm test
-                if: ${{ matrix.os == 'windows-latest' || matrix.os == 'macos-latest' }}
-            -
-                name: Run Linux tests
-                run: xvfb-run --auto-servernum -- npm test
-                if: ${{ matrix.os == 'ubuntu-latest'}}
+            - uses: actions/checkout@v2
+            - name: Use Node.js ${{ matrix.node-version }}
+              uses: actions/setup-node@v1
+              with:
+                node-version: ${{ matrix.node-version }}
 
-    lint:
-        name: Lint
-        needs: [build_and_test]
-        runs-on: ubuntu-latest
+            - name: Cache Node Modules
+              uses: actions/cache@v2
+              with:
+                  path: |
+                      node_modules
+                  key: cache-${{ github.run_id }}
+            
+            - name: Install playwright deps
+              run : npx playwright install --with-deps 
 
-        steps:
-            -
-                uses: actions/checkout@v2
-            -
-                name: Use Node.js 16
-                uses: actions/setup-node@v1
-                with:
-                    node-version: 16
-            -
-                name: Load Cache
-                uses: actions/cache@v2
-                with:
-                    path: |
-                        node_modules
-                    key: cache-${{ github.run_id }}-v16
-            -
-                run: npm run lint
+            - name: Turbo cache
+              id: turbo-cache
+              uses: actions/cache@v2
+              with:
+                path: .turbo
+                key: turbo-${{ github.job }}-${{ github.ref_name }}-${{ github.sha }}
+                restore-keys: |
+                    turbo-${{ github.job }}-${{ github.ref_name }}-
+            
+            - name: Build
+              run: npm run ci:build
+
+            - name: Run Windows or MacOs tests
+              run: npm test
+              if: ${{ matrix.os == 'windows-latest' || matrix.os == 'macos-latest' }}
+
+            - name: Run Linux tests
+              run: xvfb-run --auto-servernum -- npm test
+              if: ${{ matrix.os == 'ubuntu-latest'}}
+
 
     # publish:
     #     name: Publish
