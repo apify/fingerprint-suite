@@ -30,7 +30,7 @@ function overridePropertyWithProxy(masterObject, propertyName, proxyHandler) {
  */
 function overrideGetterWithProxy(masterObject, propertyName, proxyHandler) {
     const fn = Object.getOwnPropertyDescriptor(masterObject, propertyName).get;
-    const fnStr = fn.toString(); // special getter function string
+    const fnStr = fn.toString; // special getter function string
     const proxyObj = new Proxy(fn, stripProxyFromErrors(proxyHandler));
 
     redefineProperty(masterObject, propertyName, { get: proxyObj });
@@ -44,14 +44,16 @@ function overrideGetterWithProxy(masterObject, propertyName, proxyHandler) {
 // eslint-disable-next-line no-unused-vars
 function overrideInstancePrototype(instance, overrideObj) {
     Object.keys(overrideObj).forEach((key) => {
-        try {
-            overrideGetterWithProxy(
-                Object.getPrototypeOf(instance),
-                key,
-                makeHandler().getterValue(overrideObj[key]),
-            );
-        } catch (e) {
-            console.error(`Could not override property: ${key} on ${instance}. Reason: ${e.message} `);
+        if (!(overrideObj[key] === null)) {
+            try {
+                overrideGetterWithProxy(
+                    Object.getPrototypeOf(instance),
+                    key,
+                    makeHandler().getterValue(overrideObj[key]),
+                );
+            } catch (e) {
+                console.error(`Could not override property: ${key} on ${instance}. Reason: ${e.message} `);
+            }
         }
     });
 }
@@ -238,21 +240,20 @@ function overrideWebGl(webGl) {
 // eslint-disable-next-line no-unused-vars
 const overrideCodecs = (audioCodecs, videoCodecs) => {
     const codecs = {
-        ...audioCodecs,
-        ...videoCodecs,
+        ...Object.fromEntries(Object.entries(audioCodecs).map(([key, value]) => [`audio/${key}`, value])),
+        ...Object.fromEntries(Object.entries(videoCodecs).map(([key, value]) => [`video/${key}`, value])),
     };
     const findCodec = (codecString) => {
-        for (const [name, state] of Object.entries(codecs)) {
-            const codec = { name, state };
-            if (codecString.includes(codec.name)) {
-                return codec;
-            }
+        const codec = Object.entries(codecs).find(([key]) => key === codecString);
+        if(codec) {
+            return {name: codec[0], state: codec[1]};
         }
+        throw new Error(`Codec ${codecString} not found in ${JSON.stringify(codecs)}`);
     };
 
     const canPlayType = {
         // eslint-disable-next-line
-        apply: function(target, ctx, args) {
+        apply: function (target, ctx, args) {
             if (!args || !args.length) {
                 return target.apply(ctx, args);
             }
@@ -306,4 +307,67 @@ function makeHandler() {
             },
         }),
     };
+}
+function overrideScreenByReassigning(target, newProperties) {
+    for (const [prop, value] of Object.entries(newProperties)) {
+        if (value > 0) {
+            // The 0 values are introduced by collecting in the hidden iframe.
+            // They are document sizes anyway so no need to test them or inject them.
+            target[prop] = value;
+        }
+    }
+}
+
+// eslint-disable-next-line no-unused-vars
+function overrideWindowDimensionsProps(props) {
+    overrideScreenByReassigning(window, props);
+}
+
+// eslint-disable-next-line no-unused-vars
+function overrideDocumentDimensionsProps(props) {
+    overrideScreenByReassigning(window.document.body, props);
+}
+
+// eslint-disable-next-line no-unused-vars
+function overrideUserAgentData(userAgentData) {
+    const { brands, mobile, platform, ...highEntropyValues } = userAgentData;
+    // Override basic properties
+    const getHighEntropyValues = {
+        // eslint-disable-next-line
+        apply: async function (target, ctx, args) {
+            // Just to throw original validation error
+            // Remove traces of our Proxy
+            const stripErrorStack = (stack) => stack
+                .split('\n')
+                .filter((line) => !line.includes('at Object.apply'))
+                .filter((line) => !line.includes('at Object.get'))
+                .join('\n');
+
+            try {
+                if (!args || !args.length) {
+                    return target.apply(ctx, args);
+                }
+                const [hints] = args;
+                await target.apply(ctx, args);
+
+                // If the codec is not in our collected data use
+                const data = {};
+                hints.forEach((hint) => {
+                    data[hint] = highEntropyValues[hint];
+                });
+                return data;
+            } catch (err) {
+                err.stack = stripErrorStack(err.stack);
+                throw err;
+            }
+        },
+    };
+
+    overridePropertyWithProxy(
+        Object.getPrototypeOf(window.navigator.userAgentData),
+        'getHighEntropyValues',
+        getHighEntropyValues,
+    );
+
+    overrideInstancePrototype(window.navigator.userAgentData, { brands, mobile, platform });
 }

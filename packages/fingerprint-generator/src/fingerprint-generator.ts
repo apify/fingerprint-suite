@@ -15,9 +15,6 @@ export type ScreenFingerprint = {
     height: number;
     pixelDepth: number;
     width: number;
-}
-
-export type WindowFingerprint = {
     devicePixelRatio: number;
     pageXOffset: number;
     pageYOffset: number;
@@ -60,7 +57,6 @@ export type VideoCard = {
 
 export type Fingerprint = {
     screen: ScreenFingerprint;
-    window: WindowFingerprint;
     navigator: NavigatorFingerprint;
     videoCodecs: Record<string, string>;
     audioCodecs: Record<string, string>;
@@ -220,30 +216,8 @@ export class FingerprintGenerator extends HeaderGenerator {
             webdriver,
         };
 
-        const {
-            availHeight,
-            availWidth,
-            availTop,
-            availLeft,
-            colorDepth,
-            height,
-            pixelDepth,
-            width,
-        } = screen;
-
-        const screenData = {
-            availHeight,
-            availWidth,
-            availTop,
-            availLeft,
-            colorDepth,
-            height,
-            pixelDepth,
-            width,
-        };
-
         return {
-            screen: screenData,
+            screen,
             navigator,
             audioCodecs,
             videoCodecs,
