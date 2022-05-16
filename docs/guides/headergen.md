@@ -1,4 +1,8 @@
-# Header generator
+---
+id: header-generator
+title: Header generator
+---
+
 NodeJs package for generating browser-like headers.
 
 <!-- toc -->

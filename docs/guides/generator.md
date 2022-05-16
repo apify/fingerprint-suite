@@ -1,4 +1,9 @@
-# Fingerprint generator
+---
+id: fingerprint-generator
+title: Fingerprint generator
+---
+
+
 NodeJs package for generating realistic browser fingerprints and matching headers. Works best with the [Fingerprint injector](https://github.com/apify/fingerprint-injector).
 
 <!-- toc -->

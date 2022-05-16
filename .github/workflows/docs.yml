@@ -1,0 +1,41 @@
+name: docs
+
+on:
+    push:
+        branches:
+            - main
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+
+        steps:
+            -   uses: actions/checkout@v2
+            -   name: Use Node.js 16
+                uses: actions/setup-node@v2-beta
+                with:
+                    node-version: 16
+
+            -   name: Set git identity
+                run: |
+                    git config --global user.name "Jindřich Bär"
+                    git config --global user.email "jindrichbar@apify.com"
+            #    - name: Cache node_modules
+            #      uses: actions/cache@v2
+            #      with:
+            #        path: '**/node_modules'
+            #        key: ${{ runner.os }}-${{ matrix.node-version }}-modules-${{ hashFiles('**/yarn.lock') }}
+
+            -   name: Build & deploy docs
+                run: |
+                    # install project deps
+                    npm install --force
+                    # go to website dir
+                    cd website
+                    # install website deps
+                    npm install --force
+                    # build and deploy the docs
+                    npm run deploy
+                env:
+                    GIT_USER: "barjin:${{ secrets.GH_TOKEN }}"
+                    GH_TOKEN: ${{ secrets.GH_TOKEN }}

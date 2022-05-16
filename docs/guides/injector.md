@@ -1,4 +1,8 @@
-# Fingerprint injector
+---
+id: fingerprint-injector
+title: Fingerprint Injector
+---
+
 The Fingerprint injector is a sparse javascript library built for stealth override of browser signatures or so-called fingerprints. Overriding browser fingerprints help simulate real user browsers.
 This library can inject fingerprints to `playwright` and `puppeteer` controlled browsers through a unified interface.
 It is recommended to use this library with the Apify [`fingerprint-generator`](https://github.com/apify/fingerprint-generator) to achieve the best results and meet the necessary fingerprint structure.
