@@ -6,7 +6,7 @@ module.exports = {
   tagline: 'Modern privacy for your scrapers.',
   url: 'https://apify.github.io',
   baseUrl: '/fingerprint-suite/',
-  organizationName: 'barjin',
+  organizationName: 'apify',
   projectName: 'fingerprint-suite',
   favicon: 'img/favicon.ico',
   customFields: {

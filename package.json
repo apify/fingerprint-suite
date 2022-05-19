@@ -36,6 +36,7 @@
     "scripts": {
         "postinstall": "npx husky install",
         "prepublishOnly": "turbo run copy",
+        "publish:next": "lerna publish from-package --contents dist --dist-tag next --force-publish",
         "clean": "turbo run clean",
         "build": "turbo run build",
         "ci:build": "turbo run build --cache-dir=\".turbo\"",
@@ -59,6 +60,7 @@
         "husky": "^7.0.4",
         "jest": "^27.5.1",
         "jest-circus": "^27.2.4",
+        "lerna": "^4.0.0",
         "playwright": "^1.20.2",
         "puppeteer": "^10.4.0",
         "ts-jest": "^27.1.3",
