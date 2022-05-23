@@ -1,5 +1,4 @@
-// @ts-expect-error not a ts library
-import { BayesianNetwork } from 'generative-bayesian-network';
+import BayesianNetwork from 'generative-bayesian-network';
 
 import ow from 'ow';
 import {

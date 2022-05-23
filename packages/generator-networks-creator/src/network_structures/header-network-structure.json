@@ -1,0 +1,76 @@
+{
+  "nodes": [
+    {
+      "name": "*BROWSER",
+      "parentNames": []
+    },
+    {
+      "name": "*OPERATING_SYSTEM",
+      "parentNames": []
+    },
+    {
+      "name": "*DEVICE",
+      "parentNames": []
+    },
+    {
+      "name": "*HTTP_VERSION",
+      "parentNames": []
+    },
+    {
+      "name": "sec-ch-ua-mobile",
+      "parentNames": ["*HTTP_VERSION", "*DEVICE", "*OPERATING_SYSTEM", "*BROWSER"]
+    },
+    {
+      "name": "user-agent",
+      "parentNames": ["*HTTP_VERSION", "*DEVICE", "*OPERATING_SYSTEM", "*BROWSER", "sec-ch-ua-mobile"]
+    },
+    {
+      "name": "User-Agent",
+      "parentNames": ["*HTTP_VERSION", "*DEVICE", "*OPERATING_SYSTEM", "*BROWSER", "sec-ch-ua-mobile"]
+    },
+    {
+      "name": "accept-encoding",
+      "parentNames": ["user-agent"]
+    },
+    {
+      "name": "Accept-Encoding",
+      "parentNames": ["User-Agent"]
+    },
+    {
+      "name": "accept",
+      "parentNames": ["user-agent"]
+    },
+    {
+      "name": "Accept",
+      "parentNames": ["User-Agent"]
+    },
+    {
+      "name": "dnt",
+      "parentNames": ["user-agent"]
+    },
+    {
+      "name": "DNT",
+      "parentNames": ["User-Agent"]
+    },
+    {
+      "name": "sec-ch-ua",
+      "parentNames": ["user-agent", "User-Agent", "sec-ch-ua-mobile"]
+    },
+    {
+      "name": "Connection",
+      "parentNames": ["user-agent", "User-Agent"]
+    },
+    {
+      "name": "te",
+      "parentNames": ["user-agent", "User-Agent"]
+    },
+    {
+      "name": "upgrade-insecure-requests",
+      "parentNames": ["user-agent"]
+    },
+    {
+      "name": "Upgrade-Insecure-Requests",
+      "parentNames": ["User-Agent"]
+    }
+  ]
+}

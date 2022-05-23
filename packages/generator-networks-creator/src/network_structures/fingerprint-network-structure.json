@@ -1,0 +1,104 @@
+{
+  "nodes": [
+    {
+      "name": "userAgent",
+      "parentNames": []
+    },
+    {
+      "name": "userAgentData",
+      "parentNames": ["userAgent"]
+    },
+    {
+      "name": "appCodeName",
+      "parentNames": ["userAgent"]
+    },
+    {
+      "name": "appName",
+      "parentNames": ["userAgent"]
+    },
+    {
+      "name": "appVersion",
+      "parentNames": ["userAgent"]
+    },
+    {
+      "name": "doNotTrack",
+      "parentNames": ["userAgent"]
+    },
+    {
+      "name": "extraProperties",
+      "parentNames": ["userAgent"]
+    },
+    {
+      "name": "maxTouchPoints",
+      "parentNames": ["userAgent"]
+    },
+    {
+      "name": "oscpu",
+      "parentNames": ["userAgent"]
+    },
+    {
+      "name": "webdriver",
+      "parentNames": ["userAgent"]
+    },
+    {
+      "name": "deviceMemory",
+      "parentNames": ["userAgent"]
+    },
+    {
+      "name": "product",
+      "parentNames": ["userAgent"]
+    },
+    {
+      "name": "productSub",
+      "parentNames": ["product"]
+    },
+    {
+      "name": "hardwareConcurrency",
+      "parentNames": ["userAgent"]
+    },
+    {
+      "name": "vendor",
+      "parentNames": ["userAgent"]
+    },
+    {
+      "name": "vendorSub",
+      "parentNames": ["vendor"]
+    },
+    {
+      "name": "platform",
+      "parentNames": ["userAgent"]
+    },
+    {
+      "name": "screen",
+      "parentNames": ["userAgent"]
+    },
+    {
+      "name": "pluginsData",
+      "parentNames": ["userAgent"]
+    },
+    {
+      "name": "audioCodecs",
+      "parentNames": ["userAgent"]
+    },
+    {
+      "name": "videoCodecs",
+      "parentNames": ["userAgent"]
+    },
+    {
+      "name": "battery",
+      "parentNames": ["userAgent"]
+    },
+    {
+      "name": "videoCard",
+      "parentNames": ["userAgent"]
+    },
+    {
+      "name": "multimediaDevices",
+      "parentNames": ["userAgent"]
+    },
+    {
+      "name": "fonts",
+      "parentNames": ["userAgent"]
+    }
+  ]
+}

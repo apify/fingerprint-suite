@@ -1,0 +1,15 @@
+{
+  "name": "GeneratorProject",
+  "version": "1.0.0",
+  "dependencies": {
+    "apify": "^1.0.2",
+    "csv-parse": "^4.15.3",
+    "csv-parser": "^3.0.0",
+    "danfojs-node": "^0.2.2",
+    "generative-bayesian-network": "file:../generative-bayesian-network"
+  },
+  "scripts": {
+    "generate-fingerprint-files": "node generateFingerprintFiles.js",
+    "generate-header-files": "node generateHeaderFiles.js"
+  }
+}

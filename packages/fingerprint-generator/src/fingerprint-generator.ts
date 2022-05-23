@@ -1,7 +1,6 @@
 import { HeaderGenerator, HeaderGeneratorOptions, Headers } from 'header-generator';
 
-// @ts-expect-error No ts definition
-import { BayesianNetwork } from 'generative-bayesian-network';
+import BayesianNetwork from 'generative-bayesian-network';
 
 import fingerprintNetworkDefinition from './data_files/fingerprint-network-definition.json';
 import { MISSING_VALUE_DATASET_TOKEN, STRINGIFIED_PREFIX } from './constants';
@@ -101,7 +100,7 @@ export type BrowserFingerprintWithHeaders = {
  * Fingerprint generator - randomly generates realistic browser fingerprints
  */
 export class FingerprintGenerator extends HeaderGenerator {
-    fingerprintGeneratorNetwork: BayesianNetwork;
+    fingerprintGeneratorNetwork: any;
 
     /**
      * @param {HeaderGeneratorOptions} options - default header generation options used unless overridden

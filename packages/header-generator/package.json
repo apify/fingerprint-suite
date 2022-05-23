@@ -26,8 +26,8 @@
   },
   "dependencies": {
     "browserslist": "^4.19.1",
-    "generative-bayesian-network": "0.1.0-beta.1",
-    "ow": "^0.23.0",
+    "generative-bayesian-network": "file:../generative-bayesian-network",
+    "ow": "^0.28.1",
     "tslib": "^2.3.1"
   },
   "scripts": {
