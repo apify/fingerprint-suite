@@ -21,9 +21,6 @@ import {
     HTTP2_SEC_FETCH_ATTRIBUTES,
 } from './constants';
 
-import headerNetworkDefinition from './data_files/header-network-definition.json';
-
-import inputNetworkDefinition from './data_files/input-network-definition.json';
 import headersOrder from './data_files/headers-order.json';
 import uniqueBrowserStrings from './data_files/browser-helper-file.json';
 
@@ -148,8 +145,8 @@ export class HeaderGenerator {
             }
         }
 
-        this.inputGeneratorNetwork = new BayesianNetwork(inputNetworkDefinition);
-        this.headerGeneratorNetwork = new BayesianNetwork(headerNetworkDefinition);
+        this.inputGeneratorNetwork = new BayesianNetwork({ path: `${__dirname}/data_files/input-network-definition.json` });
+        this.headerGeneratorNetwork = new BayesianNetwork({ path: `${__dirname}/data_files/header-network-definition.json` });
     }
 
     /**

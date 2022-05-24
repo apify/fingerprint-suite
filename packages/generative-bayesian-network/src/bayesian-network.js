@@ -10,7 +10,8 @@ class BayesianNetwork {
     /**
      * @param {object} networkDefinition - object defining the network structure and distributions
      */
-    constructor(networkDefinition) {
+    constructor({path}) {
+        const networkDefinition = JSON.parse(fs.readFileSync(path, 'utf8'));
         this.nodesInSamplingOrder = networkDefinition.nodes.map((nodeDefinition) => new BayesianNode(nodeDefinition));
         this.nodesByName = {};
         for (const node of this.nodesInSamplingOrder) {

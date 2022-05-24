@@ -2,7 +2,6 @@ import { HeaderGenerator, HeaderGeneratorOptions, Headers } from 'header-generat
 
 import BayesianNetwork from 'generative-bayesian-network';
 
-import fingerprintNetworkDefinition from './data_files/fingerprint-network-definition.json';
 import { MISSING_VALUE_DATASET_TOKEN, STRINGIFIED_PREFIX } from './constants';
 
 export type ScreenFingerprint = {
@@ -107,7 +106,7 @@ export class FingerprintGenerator extends HeaderGenerator {
      */
     constructor(options: Partial<HeaderGeneratorOptions> = {}) {
         super(options);
-        this.fingerprintGeneratorNetwork = new BayesianNetwork(fingerprintNetworkDefinition);
+        this.fingerprintGeneratorNetwork = new BayesianNetwork({ path: `${__dirname}/data_files/fingerprint-network-definition.json` });
     }
 
     /**

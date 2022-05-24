@@ -2,15 +2,13 @@
 import * as path from 'path';
 import BayesianNetwork from 'generative-bayesian-network';
 
-const testNetworkStructureDefinition = require('./testNetworkStructureDefinition.json');
-
 const testNetworkDefinitionPath = path.join(__dirname, './testNetworkDefinition.json');
 
 describe.skip('Setup test', () => {
     const dfd = require('danfojs-node');
     const fs = require('fs');
     const parse = require('csv-parse/lib/sync');
-    const testGeneratorNetwork = new BayesianNetwork(testNetworkStructureDefinition);
+    const testGeneratorNetwork = new BayesianNetwork({path: path.join(__dirname, './testNetworkStructureDefinition.json')});
 
     test('Calculates probabilities from data', () => {
         const datasetText = fs.readFileSync(path.join(__dirname, './testDataset.csv'), { encoding: 'utf8' }).replace(/^\ufeff/, '');
@@ -25,10 +23,8 @@ describe.skip('Setup test', () => {
     });
 });
 
-const testNetworkDefinition = require(testNetworkDefinitionPath);
-
 describe('Generation tests', () => {
-    const testGeneratorNetwork = new BayesianNetwork(testNetworkDefinition);
+    const testGeneratorNetwork = new BayesianNetwork({path: testNetworkDefinitionPath});
 
     test('Generates a sample', () => {
         expect(testGeneratorNetwork.generateSample()).toBeTruthy();
