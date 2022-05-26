@@ -18,7 +18,7 @@ describe.skip('Setup test', () => {
         });
         const dataframe = new dfd.DataFrame(records);
         testGeneratorNetwork.setProbabilitiesAccordingToData(dataframe);
-        testGeneratorNetwork.saveNetworkDefinition(testNetworkDefinitionPath);
+        testGeneratorNetwork.saveNetworkDefinition({path: testNetworkDefinitionPath});
         expect(testGeneratorNetwork.generateSample()).toBeTruthy();
     });
 });

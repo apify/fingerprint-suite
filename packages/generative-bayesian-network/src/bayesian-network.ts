@@ -1,36 +1,36 @@
-const fs = require('fs');
-
-const { BayesianNode } = require('./bayesian-node');
+import fs from 'fs';
+import { DataFrame } from 'danfojs-node';
+import { BayesianNode } from './bayesian-node';
 
 /**
  * BayesianNetwork is an implementation of a bayesian network capable of randomly sampling from the distribution
  * represented by the network.
  */
-class BayesianNetwork {
-    /**
-     * @param {object} networkDefinition - object defining the network structure and distributions
-     */
-    constructor({path}) {
+export default class BayesianNetwork {
+    private nodesInSamplingOrder : BayesianNode[];
+    private nodesByName : Record<string, BayesianNode>;
+
+    constructor({ path }: {path: string}) {
         const networkDefinition = JSON.parse(fs.readFileSync(path, 'utf8'));
-        this.nodesInSamplingOrder = networkDefinition.nodes.map((nodeDefinition) => new BayesianNode(nodeDefinition));
-        this.nodesByName = {};
-        for (const node of this.nodesInSamplingOrder) {
-            this.nodesByName[node.name] = node;
-        }
+        this.nodesInSamplingOrder = networkDefinition.nodes.map((nodeDefinition: any) => new BayesianNode(nodeDefinition));
+
+        this.nodesByName = this.nodesInSamplingOrder.reduce((p, node) => ({
+            ...p,
+            [node.name]: node,
+        }), {});
     }
 
     /**
      * Randomly samples from the distribution represented by the bayesian network.
      * @param {object} inputValues - node values that are known already
      */
-    generateSample(inputValues = {}) {
+    generateSample(inputValues: Record<string, string> = {}) {
         const sample = inputValues;
         for (const node of this.nodesInSamplingOrder) {
             if (!(node.name in sample)) {
                 sample[node.name] = node.sample(sample);
             }
         }
-
         return sample;
     }
 
@@ -41,8 +41,8 @@ class BayesianNetwork {
      * @param {object} valuePossibilities - a dictionary of lists of possible values for nodes
      *                                      (if a node isn't present in the dictionary, all values are possible)
      */
-    generateConsistentSampleWhenPossible(valuePossibilities) {
-        return this._recursivelyGenerateConsistentSampleWhenPossible({}, valuePossibilities, 0);
+    generateConsistentSampleWhenPossible(valuePossibilities: Record<string, string[]>) {
+        return this.recursivelyGenerateConsistentSampleWhenPossible({}, valuePossibilities, 0);
     }
 
     /**
@@ -54,21 +54,22 @@ class BayesianNetwork {
      *                         specifies what node this function call is sampling
      * @private
      */
-    _recursivelyGenerateConsistentSampleWhenPossible(sampleSoFar, valuePossibilities, depth) {
-        const bannedValues = [];
+    private recursivelyGenerateConsistentSampleWhenPossible(
+        sampleSoFar: Record<string, string>, valuePossibilities: Record<string, string[]>, depth: number,
+    ) : Record<string, string> {
+        const bannedValues : string[] = [];
         const node = this.nodesInSamplingOrder[depth];
-
         let sampleValue;
+
         do {
             sampleValue = node.sampleAccordingToRestrictions(sampleSoFar, valuePossibilities[node.name], bannedValues);
-
             if (!sampleValue) break;
 
             sampleSoFar[node.name] = sampleValue;
 
             if (depth + 1 < this.nodesInSamplingOrder.length) {
-                const sample = this._recursivelyGenerateConsistentSampleWhenPossible(sampleSoFar, valuePossibilities, depth + 1);
-                if (sample) {
+                const sample = this.recursivelyGenerateConsistentSampleWhenPossible(sampleSoFar, valuePossibilities, depth + 1);
+                if (Object.keys(sample).length !== 0) {
                     return sample;
                 }
             } else {
@@ -78,16 +79,16 @@ class BayesianNetwork {
             bannedValues.push(sampleValue);
         } while (sampleValue);
 
-        return false;
+        return {};
     }
 
     /**
      * Sets the conditional probability distributions of this network's nodes to match the given data.
      * @param {object} dataframe - a Danfo.js dataframe containing the data
      */
-    setProbabilitiesAccordingToData(dataframe) {
+    setProbabilitiesAccordingToData(dataframe: DataFrame) {
         this.nodesInSamplingOrder.forEach((node) => {
-            const possibleParentValues = {};
+            const possibleParentValues: Record<string, string[]> = {};
             for (const parentName of node.parentNames) {
                 possibleParentValues[parentName] = this.nodesByName[parentName].possibleValues;
             }
@@ -99,15 +100,11 @@ class BayesianNetwork {
      * Saves the network definition to the specified file path to be used later.
      * @param {string} networkDefinitionFilePath - a file path where the network definition should be saved
      */
-    saveNetworkDefinition(networkDefinitionFilePath) {
+    saveNetworkDefinition({ path } : {path: string}) {
         const network = {
-            nodes: this.nodesInSamplingOrder.map((node) => node.nodeDefinition),
+            nodes: this.nodesInSamplingOrder,
         };
 
-        fs.writeFileSync(networkDefinitionFilePath, JSON.stringify(network));
+        fs.writeFileSync(path, JSON.stringify(network));
     }
 }
-
-module.exports = {
-    BayesianNetwork,
-};

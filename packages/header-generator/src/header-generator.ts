@@ -163,7 +163,7 @@ export class HeaderGenerator {
         // Generate a sample of input attributes consistent with the data used to create the definition files if possible.
         const inputSample = this.inputGeneratorNetwork.generateConsistentSampleWhenPossible(possibleAttributeValues);
 
-        if (!inputSample) {
+        if (Object.keys(inputSample).length === 0) {
             throw new Error('No headers based on this input can be generated. Please relax or change some of the requirements you specified.');
         }
 

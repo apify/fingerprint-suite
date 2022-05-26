@@ -2,27 +2,26 @@
   "author": {
     "name": "Apify"
   },
-	"files": [
-		"dist"
-	],
-	"main": "dist/index.js",
-	"module": "dist/index.mjs",
-	"types": "dist/index.d.ts",
-	"exports": {
-		".": {
-			"import": "./dist/index.mjs",
-			"require": "./dist/index.js"
-		}
-	},
+  "files": [
+    "dist"
+  ],
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
+  },
   "bugs": {
     "url": "https://github.com/apify/generative-bayesian-network/issues"
   },
   "dependencies": {
+    "danfojs-node": "^1.1.1",
     "ow": "^0.23.0"
   },
   "description": "An implementation of a bayesian network usable for .",
-  "devDependencies": {
-    },
   "homepage": "https://github.com/apify/generative-bayesian-network#readme",
   "license": "Apache-2.0",
   "name": "generative-bayesian-network",
