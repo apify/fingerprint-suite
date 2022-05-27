@@ -19,9 +19,13 @@
 	},
 	"dependencies": {
 		"@apify/log": "^1.0.5",
+		"fingerprint-generator": "file:../fingerprint-generator",
 		"tslib": "^2.3.1",
-		"useragent": "^2.3.0",
-		"fingerprint-generator": "file:../fingerprint-generator"
+		"useragent": "^2.3.0"
+	},
+	"peerDependencies": {
+		"playwright": "^1.22.2",
+		"puppeteer": "^14.1.1"
 	},
 	"scripts": {
 		"build": "npm run clean && npm run compile",

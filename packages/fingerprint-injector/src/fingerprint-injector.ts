@@ -1,34 +1,15 @@
 import path from 'path';
 import log from '@apify/log';
 import { readFileSync } from 'fs';
-import { BrowserFingerprintWithHeaders, Fingerprint, Headers } from 'fingerprint-generator';
+import { BrowserFingerprintWithHeaders, Fingerprint } from 'fingerprint-generator';
+
+import { Page } from 'puppeteer';
+import { BrowserContext } from 'playwright';
 import { UTILS_FILE_NAME } from './constants';
 
 interface EnhancedFingerprint extends Fingerprint {
     userAgent: string;
     historyLength: number;
-}
-// Supporting types
-type addInitScriptOptions = {
-    content: string;
-}
-
-type BrowserContext = {
-    addInitScript: (options: addInitScriptOptions) => Promise<void>;
-    setExtraHTTPHeaders: (headers: Headers) => Promise<void>;
-
-}
-
-type Viewport = {
-    width: number;
-    height: number;
-}
-
-type Page = {
-    evaluateOnNewDocument: (functionToEvaluate: string) => Promise<void>;
-    setUserAgent: (userAgent: string) => Promise<void>;
-    setViewport: (viewport: Viewport) => Promise<void>;
-    setExtraHTTPHeaders: (headers: Headers) => Promise<void>;
 }
 
 /**
@@ -36,9 +17,8 @@ type Page = {
  * @class
  */
 export class FingerprintInjector {
-    log = log.child({ prefix: 'FingerprintInjector' });
-
-    utilsJs = this._loadUtils();
+    private log = log.child({ prefix: 'FingerprintInjector' });
+    private utilsJs = this._loadUtils();
 
     /**
      * Adds init script to the browser context, so the fingerprint is changed before every document creation.
@@ -73,14 +53,14 @@ export class FingerprintInjector {
     async attachFingerprintToPuppeteer(page: Page, browserFingerprintWithHeaders: BrowserFingerprintWithHeaders): Promise<void> {
         const { fingerprint, headers } = browserFingerprintWithHeaders;
         const enhancedFingerprint = this._enhanceFingerprint(fingerprint);
-        const { screen, userAgent } = enhancedFingerprint;
+        const { screen: { width, height }, userAgent } = enhancedFingerprint;
 
         this.log.debug(`Using fingerprint`, { fingerprint: enhancedFingerprint });
         await page.setUserAgent(userAgent);
 
         await page.setViewport({
-            width: screen.width,
-            height: screen.height,
+            width,
+            height,
         });
         // Override the language properly
         await page.setExtraHTTPHeaders({
@@ -110,7 +90,7 @@ export class FingerprintInjector {
     private _getInjectableFingerprintFunction(fingerprint: EnhancedFingerprint): string {
         function inject() {
             const {
-                batteryInfo,
+                battery,
                 navigator: {
                     // eslint-disable-next-line @typescript-eslint/no-unused-vars
                     extraProperties,
@@ -124,7 +104,7 @@ export class FingerprintInjector {
                 audioCodecs,
                 videoCodecs,
                 // @ts-expect-error internal browser code
-            } = fp;
+            } = fp as EnhancedFingerprint;
 
             const {
                 // window screen props
@@ -162,48 +142,37 @@ export class FingerprintInjector {
                 clientWidth,
             };
             // override navigator
-            // @ts-ignore Internal browser code for injection
             overrideInstancePrototype(window.navigator, navigatorProps);
 
             if (userAgentData) {
-                // @ts-ignore Internal browser code for injection
                 overrideUserAgentData(userAgentData);
             }
 
-            // @ts-ignore Internal browser code for injection
             if (window.navigator.webdriver) {
                 // Override the webdriver
-                navigatorProps.webdriver = webdriver;
+                (navigatorProps as any).webdriver = webdriver;
             }
 
             // override screen
-
-            // @ts-ignore Internal browser code for injection
             overrideInstancePrototype(window.screen, newScreen);
-            // @ts-ignore Internal browser code for injection
             overrideWindowDimensionsProps(windowScreenProps);
-            // @ts-ignore Internal browser code for injection
             overrideDocumentDimensionsProps(documentScreenProps);
 
-            // @ts-ignore Internal browser code for injection
             overrideInstancePrototype(window.history, { length: historyLength });
 
             // override webGl
             // @TODO: Find another way out of this.
             // This feels like a dirty hack, but without this it throws while running tests.
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore Internal browser code for injection
             overrideWebGl(videoCard);
 
             // override codecs
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore Internal browser code for injection
             overrideCodecs(audioCodecs, videoCodecs);
 
             // override batteryInfo
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore Internal browser code for injection
-            overrideBattery(batteryInfo);
+            overrideBattery(battery);
         }
 
         const mainFunctionString: string = inject.toString();

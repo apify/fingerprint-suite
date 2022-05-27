@@ -66,7 +66,8 @@ describe('FingerprintInjector', () => {
     });
 
     test('should build utils', async () => {
-        expect(fpInjector.utilsJs).toBeTruthy();
+        // eslint-disable-next-line dot-notation
+        expect(fpInjector['utilsJs']).toBeTruthy();
     });
     // @ts-expect-error test only
     describe.each(cases)('%s', (frameworkName, testCases) => {
