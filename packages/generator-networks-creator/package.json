@@ -1,8 +1,8 @@
 {
-  "name": "GeneratorProject",
+  "name": "generator-networks-creator",
   "version": "1.0.0",
   "dependencies": {
-    "apify": "^1.0.2",
+    "apify": "^2.3.2",
     "csv-parse": "^4.15.3",
     "csv-parser": "^3.0.0",
     "danfojs-node": "^0.2.2",

@@ -145,8 +145,8 @@ export class HeaderGenerator {
             }
         }
 
-        this.inputGeneratorNetwork = new BayesianNetwork({ path: `${__dirname}/data_files/input-network-definition.json` });
-        this.headerGeneratorNetwork = new BayesianNetwork({ path: `${__dirname}/data_files/header-network-definition.json` });
+        this.inputGeneratorNetwork = new BayesianNetwork({ path: `${__dirname}/data_files/input-network-definition.zip` });
+        this.headerGeneratorNetwork = new BayesianNetwork({ path: `${__dirname}/data_files/header-network-definition.zip` });
     }
 
     /**

@@ -19,8 +19,8 @@
     }
   },
   "scripts": {
-    "postbuild": "cp -r ./src/data_files ./dist/ && unzip dist/data_files/fingerprint-generator-network -d dist/data_files/",
     "build": "npm run clean && npm run compile",
+    "postbuild": "cp -r src/data_files dist/",
     "clean": "rimraf ./dist",
     "compile": "tsc -p tsconfig.build.json && gen-esm-wrapper ./dist/index.js ./dist/index.mjs",
     "copy": "ts-node -T ../../scripts/copy.ts"

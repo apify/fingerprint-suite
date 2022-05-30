@@ -106,7 +106,7 @@ export class FingerprintGenerator extends HeaderGenerator {
      */
     constructor(options: Partial<HeaderGeneratorOptions> = {}) {
         super(options);
-        this.fingerprintGeneratorNetwork = new BayesianNetwork({ path: `${__dirname}/data_files/fingerprint-network-definition.json` });
+        this.fingerprintGeneratorNetwork = new BayesianNetwork({ path: `${__dirname}/data_files/fingerprint-network-definition.zip` });
     }
 
     /**

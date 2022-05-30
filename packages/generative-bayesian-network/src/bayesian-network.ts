@@ -1,5 +1,5 @@
-import fs from 'fs';
 import { DataFrame } from 'danfojs-node';
+import AdmZip from 'adm-zip';
 import { BayesianNode } from './bayesian-node';
 
 /**
@@ -7,11 +7,14 @@ import { BayesianNode } from './bayesian-node';
  * represented by the network.
  */
 export default class BayesianNetwork {
-    private nodesInSamplingOrder : BayesianNode[];
-    private nodesByName : Record<string, BayesianNode>;
+    private nodesInSamplingOrder : BayesianNode[] = [];
+    private nodesByName : Record<string, BayesianNode> = {};
 
     constructor({ path }: {path: string}) {
-        const networkDefinition = JSON.parse(fs.readFileSync(path, 'utf8'));
+        const zip = new AdmZip(path);
+        const zipEntries = zip.getEntries();
+
+        const networkDefinition = JSON.parse(zipEntries[0].getData().toString('utf8'));
         this.nodesInSamplingOrder = networkDefinition.nodes.map((nodeDefinition: any) => new BayesianNode(nodeDefinition));
 
         this.nodesByName = this.nodesInSamplingOrder.reduce((p, node) => ({
@@ -105,6 +108,10 @@ export default class BayesianNetwork {
             nodes: this.nodesInSamplingOrder,
         };
 
-        fs.writeFileSync(path, JSON.stringify(network));
+        // creating archives
+        const zip = new AdmZip();
+
+        zip.addFile('network.json', Buffer.from(JSON.stringify(network), 'utf8'));
+        zip.writeZip(path);
     }
 }

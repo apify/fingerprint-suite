@@ -18,6 +18,7 @@
     "url": "https://github.com/apify/generative-bayesian-network/issues"
   },
   "dependencies": {
+    "adm-zip": "^0.5.9",
     "danfojs-node": "^1.1.1",
     "ow": "^0.23.0"
   },
@@ -35,5 +36,8 @@
     "compile": "tsc -p tsconfig.build.json && gen-esm-wrapper ./dist/index.js ./dist/index.mjs",
     "copy": "ts-node -T ../../scripts/copy.ts"
   },
-  "version": "0.1.0"
+  "version": "0.1.0",
+  "devDependencies": {
+    "@types/adm-zip": "^0.5.0"
+  }
 }
