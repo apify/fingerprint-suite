@@ -1,4 +1,6 @@
 {
+  "name": "generative-bayesian-network",
+  "version": "2.0.0",
   "author": {
     "name": "Apify"
   },
@@ -19,13 +21,11 @@
   },
   "dependencies": {
     "adm-zip": "^0.5.9",
-    "danfojs-node": "^1.1.1",
-    "ow": "^0.23.0"
+    "danfojs-node": "^1.1.1"
   },
   "description": "An implementation of a bayesian network usable for .",
   "homepage": "https://github.com/apify/generative-bayesian-network#readme",
   "license": "Apache-2.0",
-  "name": "generative-bayesian-network",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/apify/generative-bayesian-network.git"
@@ -35,9 +35,5 @@
     "clean": "rimraf ./dist",
     "compile": "tsc -p tsconfig.build.json && gen-esm-wrapper ./dist/index.js ./dist/index.mjs",
     "copy": "ts-node -T ../../scripts/copy.ts"
-  },
-  "version": "0.1.0",
-  "devDependencies": {
-    "@types/adm-zip": "^0.5.0"
   }
 }

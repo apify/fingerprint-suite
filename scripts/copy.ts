@@ -46,11 +46,11 @@ function getNextVersion() {
         process.exit(1);
     }
 
+    const preid = options.preid ?? 'alpha';
     const prereleaseNumbers = versions
-        .filter((v) => (v.startsWith(pkgJson.version) && v.includes('-')))
+        .filter((v) => v.startsWith(`${pkgJson.version}-${preid}.`))
         .map((v) => Number(v.match(/\.(\d+)$/)?.[1]));
     const lastPrereleaseNumber = Math.max(-1, ...prereleaseNumbers);
-    const preid = options.preid ?? 'alpha';
 
     return `${pkgJson.version}-${preid}.${lastPrereleaseNumber + 1}`;
 }

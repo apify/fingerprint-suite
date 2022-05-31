@@ -3,10 +3,9 @@
   "version": "1.0.0",
   "dependencies": {
     "apify": "^2.3.2",
-    "csv-parse": "^4.15.3",
-    "csv-parser": "^3.0.0",
-    "danfojs-node": "^0.2.2",
-    "generative-bayesian-network": "file:../generative-bayesian-network"
+    "csv-parse": "^5.1.0",
+    "danfojs-node": "^1.1.1",
+    "generative-bayesian-network": "^2.0.0"
   },
   "scripts": {
     "generate-fingerprint-files": "node generateFingerprintFiles.js",

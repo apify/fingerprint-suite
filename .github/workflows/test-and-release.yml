@@ -135,7 +135,7 @@ jobs:
                 run: |
                     git config --global user.name 'Apify Release Bot'
                     git config --global user.email 'noreply@apify.com'
-                    npx turbo run copy --force -- -- --canary
+                    npx turbo run copy --force -- -- --canary --preid=dev
                     git commit -am 'chore: bump canary versions [skip ci]'
 
                     echo "access=public" >> .npmrc
