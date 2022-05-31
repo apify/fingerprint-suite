@@ -2,9 +2,8 @@ import { DataFrame, Series } from 'danfojs-node';
 
 /**
 * Calculates relative frequencies of values of specific attribute from the given data
-* @param {object} dataframe - a Danfo.js dataframe containing the data
-* @param {string} attributeName - name of the attribute
-* @private
+* @param dataframe A Danfo.js dataframe containing the data.
+* @param attributeName Attribute name.
 */
 function getRelativeFrequencies(dataframe: DataFrame, attributeName: string) {
     const frequencies : Record<string, number> = {};
@@ -18,23 +17,36 @@ function getRelativeFrequencies(dataframe: DataFrame, attributeName: string) {
     return frequencies;
 }
 
+/**
+ * Bayesian network node definition.
+ */
 interface NodeDefinition {
+    /**
+     * Name of this node.
+     */
     name: string;
+    /**
+     * Name of the current node's parent nodes.
+     */
     parentNames: string[];
+    /**
+     * Array of possible values for this node.
+     */
     possibleValues: string[];
+    /**
+     * Conditional probabilities for the `possibleValues`, given specified ancestor values.
+     */
     conditionalProbabilities: any;
 }
 
 /**
- * BayesianNode is an implementation of a single node in a bayesian network allowing
- * sampling from its conditional distribution.
+ * BayesianNode is an implementation of a single node in a bayesian network allowing sampling from its conditional distribution.
  */
 export class BayesianNode {
     private nodeDefinition: NodeDefinition;
 
     /**
-     * @param {object} nodeDefinition - node structure and distributions definition
-     *                                  taken from the network definition file
+     * @param nodeDefinition Node structure and distributions definition taken from the network definition file.
      */
     constructor(nodeDefinition: NodeDefinition) {
         this.nodeDefinition = nodeDefinition;
@@ -46,8 +58,7 @@ export class BayesianNode {
 
     /**
      * Extracts unconditional probabilities of node values given the values of the parent nodes
-     * @param {object} parentValues - values of the parent nodes
-     * @private
+     * @param parentValues Parent nodes values.
      */
     private getProbabilitiesGivenKnownValues(parentValues: Record<string, string> = {}) {
         let probabilities = this.nodeDefinition.conditionalProbabilities;
@@ -65,12 +76,9 @@ export class BayesianNode {
 
     /**
      * Randomly samples from the given values using the given probabilities
-     * @param {array} possibleValues - a list of values to sample from
-     * @param {number} totalProbabilityOfPossibleValues - a sum of probabilities of possibleValues
-     *                                                    in the conditional distribution
-     * @param {object} probabilities - a dictionary of probabilities from the conditional distribution
-     *                                 indexed by the values
-     * @private
+     * @param possibleValues A list of values to sample from.
+     * @param totalProbabilityOfPossibleValues Sum of probabilities of possibleValues in the conditional distribution.
+     * @param probabilities A dictionary of probabilities from the conditional distribution, indexed by the values.
      */
     private sampleRandomValueFromPossibilities(possibleValues: string[], totalProbabilityOfPossibleValues: number, probabilities: Record<string, number>) {
         let chosenValue = possibleValues[0];
@@ -89,7 +97,7 @@ export class BayesianNode {
 
     /**
      * Randomly samples from the conditional distribution of this node given values of parents
-     * @param {object} parentValues - values of the parent nodes
+     * @param parentValues Values of the parent nodes.
      */
     sample(parentValues = {}) {
         const probabilities = this.getProbabilitiesGivenKnownValues(parentValues);
@@ -101,9 +109,9 @@ export class BayesianNode {
     /**
      * Randomly samples from the conditional distribution of this node given restrictions on the possible
      * values and the values of the parents.
-     * @param {object} parentValues - values of the parent nodes
-     * @param {object} valuePossibilities - a list of possible values for this node
-     * @param {object} bannedValues - what values of this node are banned
+     * @param parentValues Values of the parent nodes.
+     * @param valuePossibilities List of possible values for this node.
+     * @param bannedValues What values of this node are banned.
      */
     sampleAccordingToRestrictions(parentValues: Record<string, string>, valuePossibilities: string[], bannedValues: string[]) : string | false {
         const probabilities = this.getProbabilitiesGivenKnownValues(parentValues);
@@ -124,8 +132,8 @@ export class BayesianNode {
 
     /**
      * Sets the conditional probability distribution for this node to match the given data.
-     * @param {object} dataframe - a Danfo.js dataframe containing the data
-     * @param {object} possibleParentValues - a dictionary of lists of possible values for parent nodes
+     * @param dataframe A Danfo.js dataframe containing the data.
+     * @param possibleParentValues A dictionary of lists of possible values for parent nodes.
      */
     setProbabilitiesAccordingToData(dataframe: DataFrame, possibleParentValues: Record<string, string[]> = {}) {
         this.nodeDefinition.possibleValues = dataframe[this.name].unique().values;
@@ -138,10 +146,9 @@ export class BayesianNode {
 
     /**
      * Recursively calculates the conditional probability distribution for this node from the data.
-     * @param {object} dataframe - a Danfo.js dataframe containing the data
-     * @param {object} possibleParentValues - a dictionary of lists of possible values for parent nodes
-     * @param {number} depth - depth of the recursive call
-     * @private
+     * @param dataframe A Danfo.js dataframe containing the data.
+     * @param possibleParentValues A dictionary of lists of possible values for parent nodes.
+     * @param depth Depth of the current recursive call.
      */
     private recursivelyCalculateConditionalProbabilitiesAccordingToData(dataframe: DataFrame, possibleParentValues: Record<string, string[]>, depth: number) {
         let probabilities = {

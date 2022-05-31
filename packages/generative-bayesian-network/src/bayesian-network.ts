@@ -1,12 +1,12 @@
 import { DataFrame } from 'danfojs-node';
-import AdmZip from 'adm-zip';
+import AdmZip = require('adm-zip');
 import { BayesianNode } from './bayesian-node';
 
 /**
  * BayesianNetwork is an implementation of a bayesian network capable of randomly sampling from the distribution
  * represented by the network.
  */
-export default class BayesianNetwork {
+export class BayesianNetwork {
     private nodesInSamplingOrder : BayesianNode[] = [];
     private nodesByName : Record<string, BayesianNode> = {};
 
@@ -25,7 +25,7 @@ export default class BayesianNetwork {
 
     /**
      * Randomly samples from the distribution represented by the bayesian network.
-     * @param {object} inputValues - node values that are known already
+     * @param inputValues Already known node values.
      */
     generateSample(inputValues: Record<string, string> = {}) {
         const sample = inputValues;
@@ -38,11 +38,10 @@ export default class BayesianNetwork {
     }
 
     /**
-     * Randomly samples from the distribution represented by the bayesian network,
+     * Randomly samples values from the distribution represented by the bayesian network,
      * making sure the sample is consistent with the provided restrictions on value possibilities.
      * Returns false if no such sample can be generated.
-     * @param {object} valuePossibilities - a dictionary of lists of possible values for nodes
-     *                                      (if a node isn't present in the dictionary, all values are possible)
+     * @param valuePossibilities A dictionary of lists of possible values for nodes (if a node isn't present in the dictionary, all values are possible).
      */
     generateConsistentSampleWhenPossible(valuePossibilities: Record<string, string[]>) {
         return this.recursivelyGenerateConsistentSampleWhenPossible({}, valuePossibilities, 0);
@@ -50,12 +49,9 @@ export default class BayesianNetwork {
 
     /**
      * Recursively generates a random sample consistent with the given restrictions on possible values.
-     * @param {object} sampleSoFar - node values that are known already
-     * @param {object} valuePossibilities - a dictionary of lists of possible values for nodes
-     *                                      (if a node isn't present in the dictionary, all values are possible)
-     * @param {number} depth - in what depth of the recursion this function call is,
-     *                         specifies what node this function call is sampling
-     * @private
+     * @param sampleSoFar Already known node values.
+     * @param valuePossibilities A dictionary of lists of possible values for nodes (if a node isn't present in the dictionary, all values are possible).
+     * @param depth Current recursion depth.
      */
     private recursivelyGenerateConsistentSampleWhenPossible(
         sampleSoFar: Record<string, string>, valuePossibilities: Record<string, string[]>, depth: number,
@@ -87,7 +83,7 @@ export default class BayesianNetwork {
 
     /**
      * Sets the conditional probability distributions of this network's nodes to match the given data.
-     * @param {object} dataframe - a Danfo.js dataframe containing the data
+     * @param dataframe A Danfo.js dataframe containing the data.
      */
     setProbabilitiesAccordingToData(dataframe: DataFrame) {
         this.nodesInSamplingOrder.forEach((node) => {
@@ -101,7 +97,7 @@ export default class BayesianNetwork {
 
     /**
      * Saves the network definition to the specified file path to be used later.
-     * @param {string} networkDefinitionFilePath - a file path where the network definition should be saved
+     * @param networkDefinitionFilePath File path where the network definition should be saved.
      */
     saveNetworkDefinition({ path } : {path: string}) {
         const network = {

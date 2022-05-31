@@ -11,9 +11,9 @@ const cache = {
 };
 
 /**
- * @param {object} masterObject - Object ot override
- * @param {string} propertyName - property to override
- * @param {function} proxyHandler - proxy handled with the new value
+ * @param masterObject Object to override.
+ * @param propertyName Property to override.
+ * @param proxyHandler Proxy handled with the new value.
  */
 function overridePropertyWithProxy(masterObject, propertyName, proxyHandler) {
     const originalObject = masterObject[propertyName];
@@ -24,9 +24,9 @@ function overridePropertyWithProxy(masterObject, propertyName, proxyHandler) {
 }
 
 /**
- * @param {object} masterObject - Object ot override
- * @param {string} propertyName - property to override
- * @param {function} proxyHandler - proxy handled with getter handler
+ * @param masterObject Object to override.
+ * @param propertyName Property to override.
+ * @param proxyHandler Proxy handled with getter handler.
  */
 function overrideGetterWithProxy(masterObject, propertyName, proxyHandler) {
     const fn = Object.getOwnPropertyDescriptor(masterObject, propertyName).get;
@@ -38,8 +38,8 @@ function overrideGetterWithProxy(masterObject, propertyName, proxyHandler) {
 }
 
 /**
- * @param {Object} instance - instance to override such as navigator.
- * @param {Object} overrideObj - new instance values such as userAgent.
+ * @param instance Instance to override.
+ * @param overrideObj New instance values.
  */
 // eslint-disable-next-line no-unused-vars
 function overrideInstancePrototype(instance, overrideObj) {

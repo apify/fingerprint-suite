@@ -1,6 +1,6 @@
 /* eslint-disable */
 import * as path from 'path';
-import BayesianNetwork from 'generative-bayesian-network';
+import { BayesianNetwork } from 'generative-bayesian-network';
 
 const testNetworkDefinitionPath = path.join(__dirname, './testNetworkDefinition.zip');
 

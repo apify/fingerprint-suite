@@ -24,15 +24,15 @@ export class FingerprintInjector {
      * Adds init script to the browser context, so the fingerprint is changed before every document creation.
      * DISCLAIMER: Since the playwright does not support changing viewport and User-agent after the context is created,
      * you have to set it manually when the context is created. Check the playwright usage example.
-     * @param browserContext - playwright browser context
-     * @param fingerprint fingerprint from [`fingerprint-generator`](https://github.com/apify/fingerprint-generator)
+     * @param browserContext Playwright browser context to be injected with the fingerprint.
+     * @param fingerprint Fingerprint from [`fingerprint-generator`](https://github.com/apify/fingerprint-generator).
      */
     async attachFingerprintToPlaywright(browserContext: BrowserContext, browserFingerprintWithHeaders: BrowserFingerprintWithHeaders): Promise<void> {
         const { fingerprint, headers } = browserFingerprintWithHeaders;
         const enhancedFingerprint = this._enhanceFingerprint(fingerprint);
 
         this.log.debug(`Using fingerprint`, { fingerprint: enhancedFingerprint });
-        const content = this._getInjectableFingerprintFunction(enhancedFingerprint);
+        const content = this.getInjectableFingerprintFunction(enhancedFingerprint);
 
         // Override the language properly
         await browserContext.setExtraHTTPHeaders({
@@ -47,8 +47,8 @@ export class FingerprintInjector {
     /**
      * Adds script that is evaluated before every document creation.
      * Sets User-Agent and viewport using native puppeteer interface
-     * @param page - puppeteer page
-     * @param fingerprint - fingerprint from [`fingerprint-generator`](https://github.com/apify/fingerprint-generator)
+     * @param page Puppeteer `Page` object to be injected with the fingerprint.
+     * @param fingerprint Fingerprint from [`fingerprint-generator`](https://github.com/apify/fingerprint-generator).
      */
     async attachFingerprintToPuppeteer(page: Page, browserFingerprintWithHeaders: BrowserFingerprintWithHeaders): Promise<void> {
         const { fingerprint, headers } = browserFingerprintWithHeaders;
@@ -67,7 +67,7 @@ export class FingerprintInjector {
             'accept-language': headers['accept-language'],
         });
 
-        await page.evaluateOnNewDocument(this._getInjectableFingerprintFunction(enhancedFingerprint));
+        await page.evaluateOnNewDocument(this.getInjectableFingerprintFunction(enhancedFingerprint));
     }
 
     /**
@@ -78,16 +78,15 @@ export class FingerprintInjector {
         const enhancedFingerprint = this._enhanceFingerprint(fingerprint);
 
         this.log.debug(`Using fingerprint`, { fingerprint: enhancedFingerprint });
-        return this._getInjectableFingerprintFunction(enhancedFingerprint);
+        return this.getInjectableFingerprintFunction(enhancedFingerprint);
     }
 
     /**
      * Create injection function string.
-     * @private
-     * @param fingerprint - enhanced fingerprint.
-     * @returns {string} - script that overrides browser fingerprint.
+     * @param fingerprint Enhanced fingerprint.
+     * @returns Script overriding browser fingerprint.
      */
-    private _getInjectableFingerprintFunction(fingerprint: EnhancedFingerprint): string {
+    private getInjectableFingerprintFunction(fingerprint: EnhancedFingerprint): string {
         function inject() {
             const {
                 battery,

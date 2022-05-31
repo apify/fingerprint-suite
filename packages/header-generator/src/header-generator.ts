@@ -1,4 +1,4 @@
-import BayesianNetwork from 'generative-bayesian-network';
+import { BayesianNetwork } from 'generative-bayesian-network';
 
 import ow from 'ow';
 import {
@@ -39,70 +39,112 @@ export const headerGeneratorOptionsShape = {
     httpVersion: ow.optional.string,
     browserListQuery: ow.optional.string,
 };
-/**
- * @typedef BrowserSpecification
- * @param {string} name - One of `chrome`, `edge`, `firefox` and `safari`.
- * @param {number} minVersion - Minimal version of browser used.
- * @param {number} maxVersion - Maximal version of browser used.
- * @param {string} httpVersion - Http version to be used to generate headers (the headers differ depending on the version).
- *  Either 1 or 2. If none specified the httpVersion specified in `HeaderGeneratorOptions` is used.
- */
 
+/**
+ * String specifying the HTTP version to use.
+ */
 export type HttpVersion = typeof SUPPORTED_HTTP_VERSIONS[number];
 
+/**
+ * String specifying the device type to use.
+ */
 export type Device = typeof SUPPORTED_DEVICES[number];
 
+/**
+ * String specifying the operating system to use.
+ */
 export type OperatingSystem = typeof SUPPORTED_OPERATING_SYSTEMS[number];
 
+/**
+ * String specifying the browser to use.
+ */
 export type BrowserName = typeof SUPPORTED_BROWSERS[number];
 
 export interface BrowserSpecification {
-    name: BrowserName ;
+    /**
+    * String representing the browser name.
+    */
+    name: BrowserName;
+    /**
+    * Minimum version of browser used.
+    */
     minVersion?: number;
+    /**
+    * Maximum version of browser used.
+    */
     maxVersion?: number;
+    /**
+    * HTTP version to be used for header generation (the headers differ depending on the version).
+    * If not specified, the `httpVersion` specified in `HeaderGeneratorOptions` is used.
+    */
     httpVersion?: HttpVersion;
 }
 
 export type BrowsersType = BrowserSpecification[] | BrowserName[];
 
+/**
+ * Options for the `HeaderGenerator` class constructor.
+ */
 export interface HeaderGeneratorOptions {
+    /**
+    * List of BrowserSpecifications to generate the headers for,
+    * or one of `chrome`, `edge`, `firefox` and `safari`.
+    */
     browsers: BrowsersType;
+    /**
+    * Browser generation query based on the real world data.
+    *  For more info see the [query docs](https://github.com/browserslist/browserslist#full-list).
+    *  If `browserListQuery` is passed the `browsers` array is ignored.
+    */
     browserListQuery: string;
+    /**
+    * List of operating systems to generate the headers for.
+    */
     operatingSystems: OperatingSystem[];
+    /**
+    * List of devices to generate the headers for.
+    */
     devices: Device[];
+    /**
+    * List of at most 10 languages to include in the
+    *  [Accept-Language](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Accept-Language) request header
+    *  in the language format accepted by that header, for example `en`, `en-US` or `de`.
+    */
     locales: string[];
+    /**
+    * Http version to be used to generate headers (the headers differ depending on the version).
+    *  Can be either 1 or 2. Default value is 2.
+    */
     httpVersion: HttpVersion;
 }
 
-export type HttpBrowserObject = {
+/**
+ * Structured information about a browser and HTTP version used.
+ */
+export interface HttpBrowserObject {
+    /**
+     * Name of the browser used.
+     */
     name: BrowserName | typeof MISSING_VALUE_DATASET_TOKEN;
-    version: any[];
+    /**
+     * Browser version split into parts of the semantic version number.
+     */
+    version: number[];
+    /**
+     * String containing the browser name, browser version and HTTP version (e.g. `chrome/88.0.4324.182|2`).
+     */
     completeString: string;
+    /**
+     * HTTP version as a string ("1" or "2").
+     */
     httpVersion: HttpVersion;
-}
+};
 
-export type Headers = Record<string, string>
-
-/**
- * @typedef HeaderGeneratorOptions
- * @param {Array<BrowserSpecification|string>} browsers - List of BrowserSpecifications to generate the headers for,
- *  or one of `chrome`, `edge`, `firefox` and `safari`.
- * @param {string} browserListQuery - Browser generation query based on the real world data.
- *  For more info see the [query docs](https://github.com/browserslist/browserslist#full-list).
- *  If `browserListQuery` is passed the `browsers` array is ignored.
- * @param {Array<string>} operatingSystems - List of operating systems to generate the headers for.
- *  The options are `windows`, `macos`, `linux`, `android` and `ios`.
- * @param {Array<string>} devices - List of devices to generate the headers for. Options are `desktop` and `mobile`.
- * @param {Array<string>} locales - List of at most 10 languages to include in the
- *  [Accept-Language](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Accept-Language) request header
- *  in the language format accepted by that header, for example `en`, `en-US` or `de`.
- * @param {string} httpVersion - Http version to be used to generate headers (the headers differ depending on the version).
- *  Can be either 1 or 2. Default value is 2.
- */
+export type Headers = Record<string, string>;
 
 /**
- * HeaderGenerator randomly generates realistic browser headers based on specified options.
- */
+* Randomly generates realistic HTTP headers based on specified options.
+*/
 export class HeaderGenerator {
     globalOptions: HeaderGeneratorOptions;
 
@@ -115,8 +157,8 @@ export class HeaderGenerator {
     private uniqueBrowsers: HttpBrowserObject[];
 
     /**
-     * @param {HeaderGeneratorOptions} options - default header generation options used unless overridden
-     */
+    * @param options Default header generation options used - unless overridden.
+    */
     constructor(options: Partial<HeaderGeneratorOptions> = {}) {
         ow(options, 'HeaderGeneratorOptions', ow.object.exactShape(headerGeneratorOptionsShape));
         // Use a default setup when the necessary values are not provided
@@ -141,7 +183,7 @@ export class HeaderGenerator {
         for (const browserString of uniqueBrowserStrings) {
             // There are headers without user agents in the datasets we used to configure the generator. They should be disregarded.
             if (browserString !== MISSING_VALUE_DATASET_TOKEN) {
-                this.uniqueBrowsers.push(this._prepareHttpBrowserObject(browserString));
+                this.uniqueBrowsers.push(this.prepareHttpBrowserObject(browserString));
             }
         }
 
@@ -150,11 +192,11 @@ export class HeaderGenerator {
     }
 
     /**
-     * Generates a single set of ordered headers using a combination of the default options specified in the constructor
-     * and their possible overrides provided here.
-     * @param {HeaderGeneratorOptions} options - specifies options that should be overridden for this one call
-     * @param {Object} requestDependentHeaders - specifies known values of headers dependent on the particular request
-     */
+    * Generates a single set of ordered headers using a combination of the default options specified in the constructor
+    * and their possible overrides provided here.
+    * @param options Specifies options that should be overridden for this one call.
+    * @param requestDependentHeaders Specifies known values of headers dependent on the particular request.
+    */
     getHeaders(options: Partial<HeaderGeneratorOptions> = {}, requestDependentHeaders: Headers = {}): Headers {
         ow(options, 'HeaderGeneratorOptions', ow.object.exactShape(headerGeneratorOptionsShape));
         const headerOptions = { ...this.globalOptions, ...options };
@@ -171,7 +213,7 @@ export class HeaderGenerator {
         const generatedSample = this.headerGeneratorNetwork.generateSample(inputSample);
 
         // Manually fill the accept-language header with random ordering of the locales from input
-        const generatedHttpAndBrowser = this._prepareHttpBrowserObject(generatedSample[BROWSER_HTTP_NODE_NAME]);
+        const generatedHttpAndBrowser = this.prepareHttpBrowserObject(generatedSample[BROWSER_HTTP_NODE_NAME]);
         let secFetchAttributeNames: typeof HTTP2_SEC_FETCH_ATTRIBUTES | typeof HTTP1_SEC_FETCH_ATTRIBUTES = HTTP2_SEC_FETCH_ATTRIBUTES;
         let acceptLanguageFieldName = 'accept-language';
         if (generatedHttpAndBrowser.httpVersion !== '2') {
@@ -186,8 +228,8 @@ export class HeaderGenerator {
         const isEdge = generatedHttpAndBrowser.name === 'edge';
 
         const hasSecFetch = (isChrome && generatedHttpAndBrowser.version[0] >= 76)
-            || (isFirefox && generatedHttpAndBrowser.version[0] >= 90)
-            || (isEdge && generatedHttpAndBrowser.version[0] >= 79);
+        || (isFirefox && generatedHttpAndBrowser.version[0] >= 90)
+        || (isEdge && generatedHttpAndBrowser.version[0] >= 79);
 
         // Add fixed headers if needed
         if (hasSecFetch) {
@@ -209,11 +251,11 @@ export class HeaderGenerator {
     }
 
     /**
-     * Returns a new object that contains ordered headers.
-     * @param {object} headers - specifies known values of headers dependent on the particular request
-     * @param {string[]} order - an array of ordered header names, optional (will be deducted from `user-agent`)
-     */
-    orderHeaders(headers: Headers, order = this._getOrderFromUserAgent(headers)): Headers {
+    * Returns a new object that contains ordered headers.
+    * @param headers Specifies known values of headers dependent on the particular request.
+    * @param order An array of ordered header names, optional (will be deducted from `user-agent`).
+    */
+    orderHeaders(headers: Headers, order = this.getOrderFromUserAgent(headers)): Headers {
         const orderedSample: Headers = {};
 
         for (const attribute of order) {
@@ -334,17 +376,16 @@ export class HeaderGenerator {
 
     /**
     * Extract structured information about a browser and http version in the form of an object from httpBrowserString.
-    * @param {string} httpBrowserString - a string containing the browser name, version and http version, such as "chrome/88.0.4324.182|2"
-    * @private
+    * @param httpBrowserString A string containing the browser name, version and http version, such as `chrome/88.0.4324.182|2`.
     */
-    private _prepareHttpBrowserObject(httpBrowserString: string): HttpBrowserObject {
+    private prepareHttpBrowserObject(httpBrowserString: string): HttpBrowserObject {
         const [browserString, httpVersion] = httpBrowserString.split('|');
         let browserObject;
 
         if (browserString === MISSING_VALUE_DATASET_TOKEN) {
             browserObject = { name: MISSING_VALUE_DATASET_TOKEN };
         } else {
-            browserObject = this._prepareBrowserObject(browserString);
+            browserObject = this.prepareBrowserObject(browserString);
         }
 
         return {
@@ -355,11 +396,10 @@ export class HeaderGenerator {
     }
 
     /**
-    * Extract structured information about a browser in the form of an object from browserString.
-    * @param {string} browserString - a string containing the browser name and version, such as "chrome/88.0.4324.182"
-    * @private
-    */
-    private _prepareBrowserObject(browserString: string): HttpBrowserObject {
+     * Extract structured information about a browser in the form of an object from browserString.
+     * @param browserString A string containing the browser name and version, e.g. `chrome/88.0.4324.182`.
+     */
+    private prepareBrowserObject(browserString: string): HttpBrowserObject {
         const nameVersionSplit = browserString.split('/');
         const versionSplit = nameVersionSplit[1].split('.');
         const preparedVersion = [];
@@ -375,11 +415,11 @@ export class HeaderGenerator {
     }
 
     /**
-     * @param {object} headers - non-normalized request headers
-     * @returns {string[]} order
-     * @private
+     * Returns a new object containing header names ordered by their appearance in the given browser.
+     * @param headers Non-normalized request headers
+     * @returns Correct header order for the given browser.
      */
-    private _getOrderFromUserAgent(headers: Record<string, string>) {
+    private getOrderFromUserAgent(headers: Record<string, string>) : string[] {
         const userAgent = getUserAgent(headers);
         const browser = getBrowser(userAgent);
 

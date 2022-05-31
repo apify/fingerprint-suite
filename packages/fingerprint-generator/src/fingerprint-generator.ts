@@ -1,7 +1,5 @@
 import { HeaderGenerator, HeaderGeneratorOptions, Headers } from 'header-generator';
-
-import BayesianNetwork from 'generative-bayesian-network';
-
+import { BayesianNetwork } from 'generative-bayesian-network';
 import { MISSING_VALUE_DATASET_TOKEN, STRINGIFIED_PREFIX } from './constants';
 
 export type ScreenFingerprint = {
@@ -69,40 +67,15 @@ export type BrowserFingerprintWithHeaders = {
     headers: Headers;
     fingerprint: Fingerprint;
 }
-/**
- * @typedef BrowserSpecification
- * @param {string} name - One of `chrome`, `edge`, `firefox` and `safari`.
- * @param {number} minVersion - Minimal version of browser used.
- * @param {number} maxVersion - Maximal version of browser used.
- * @param {string} httpVersion - Http version to be used to generate headers (the headers differ depending on the version).
- *  Either 1 or 2. If none specified the httpVersion specified in `HeaderGeneratorOptions` is used.
- */
 
 /**
- * @typedef HeaderGeneratorOptions
- * @param {Array<BrowserSpecification|string>} browsers - List of BrowserSpecifications to generate the headers for,
- *  or one of `chrome`, `edge`, `firefox` and `safari`.
- * @param {string} browserListQuery - Browser generation query based on the real world data.
- *  For more info see the [query docs](https://github.com/browserslist/browserslist#full-list).
- *  If `browserListQuery` is passed the `browsers` array is ignored.
- * @param {Array<string>} operatingSystems - List of operating systems to generate the headers for.
- *  The options are `windows`, `macos`, `linux`, `android` and `ios`.
- * @param {Array<string>} devices - List of devices to generate the headers for. Options are `desktop` and `mobile`.
- * @param {Array<string>} locales - List of at most 10 languages to include in the
- *  [Accept-Language](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Accept-Language) request header
- *  in the language format accepted by that header, for example `en`, `en-US` or `de`.
- * @param {string} httpVersion - Http version to be used to generate headers (the headers differ depending on the version).
- *  Can be either 1 or 2. Default value is 2.
- */
-
-/**
- * Fingerprint generator - randomly generates realistic browser fingerprints
+ * Fingerprint generator - Class for realistic browser fingerprint generation.
  */
 export class FingerprintGenerator extends HeaderGenerator {
     fingerprintGeneratorNetwork: any;
 
     /**
-     * @param {HeaderGeneratorOptions} options - default header generation options used unless overridden
+     * @param options Default header generation options used - unless overridden.
      */
     constructor(options: Partial<HeaderGeneratorOptions> = {}) {
         super(options);
@@ -112,12 +85,12 @@ export class FingerprintGenerator extends HeaderGenerator {
     /**
      * Generates a fingerprint and a matching set of ordered headers using a combination of the default options specified in the constructor
      * and their possible overrides provided here.
-     * @param {HeaderGeneratorOptions} options - specifies options that should be overridden for this one call
-     * @param {Object} requestDependentHeaders - specifies known values of headers dependent on the particular request
+     * @param options Overrides default `FingerprintGenerator` options.
+     * @param requestDependentHeaders Specifies known values of headers dependent on the particular request.
      */
     getFingerprint(
         options: Partial<HeaderGeneratorOptions> = {},
-        requestDependentHeaders: Record<string, string> = {},
+        requestDependentHeaders: Headers = {},
     ): BrowserFingerprintWithHeaders {
         // Generate headers consistent with the inputs to get input-compatible user-agent and accept-language headers needed later
         const headers = super.getHeaders(options, requestDependentHeaders);
@@ -148,19 +121,18 @@ export class FingerprintGenerator extends HeaderGenerator {
         fingerprint.languages = acceptedLanguages;
 
         return {
-            fingerprint: this._transformFingerprint(fingerprint),
+            fingerprint: this.transformFingerprint(fingerprint),
             headers,
         };
     }
 
     /**
      * Transforms fingerprint to the final scheme, more suitable for fingerprint manipulation and injection.
-     * This schema is used in the fingerprint-injector.
-     * @private
-     * @param {Object} fingerprint
-     * @returns {Object} final fingerprint.
+     * This schema is used in the `fingerprint-injector`.
+     * @param fingerprint Fingerprint to be transformed.
+     * @returns Transformed fingerprint.
      */
-    _transformFingerprint(fingerprint: Record<string, any>): Fingerprint {
+    private transformFingerprint(fingerprint: Record<string, any>): Fingerprint {
         const {
             userAgent,
             userAgentData,

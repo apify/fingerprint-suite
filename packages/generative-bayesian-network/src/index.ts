@@ -1,3 +1,1 @@
-import B from './bayesian-network';
-
-export default B;
+export { BayesianNetwork } from './bayesian-network';
