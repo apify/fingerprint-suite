@@ -4,7 +4,7 @@
     "description": "NodeJs package for generating realistic browser fingerprints.",
     "homepage": "https://github.com/apify/fingerprint-generator#readme",
     "engines": {
-        "node": ">=15.10.0"
+        "node": ">=16.0.0"
     },
     "files": [
         "dist"

@@ -1,9 +1,9 @@
 {
     "name": "fingerprint-injector",
     "version": "2.0.0",
-    "description": "Browser fingerprint injection library for playwright and puppeteer.",
+    "description": "Browser fingerprint injection library for Playwright and Puppeteer.",
     "engines": {
-        "node": ">=15.10.0"
+        "node": ">=16.0.0"
     },
     "files": [
         "dist"
@@ -24,6 +24,14 @@
     "peerDependencies": {
         "playwright": "^1.22.2",
         "puppeteer": "^14.1.1"
+    },
+    "peerDependenciesMeta": {
+        "playwright": {
+            "optional": true
+        },
+        "puppeteer": {
+            "optional": true
+        }
     },
     "scripts": {
         "build": "npm run clean && npm run compile",

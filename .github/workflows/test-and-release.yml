@@ -15,7 +15,7 @@ on:
 jobs:
     lint:
         name: Lint
-        # if: ${{ !contains(github.event.head_commit.message, '[skip ci]') }}
+        if: ${{ !contains(github.event.head_commit.message, '[skip ci]') }}
         runs-on: ubuntu-latest
 
         steps:
@@ -45,7 +45,7 @@ jobs:
         strategy:
             matrix:
                 os: [ ubuntu-latest ]
-                node-version: [ 15, 16 ]
+                node-version: [ 16, 18 ]
 
         steps:
             - uses: actions/checkout@v2
