@@ -1,4 +1,4 @@
-import { DataFrame } from 'danfojs-node';
+import type { DataFrame } from 'danfojs-node';
 import AdmZip = require('adm-zip');
 import { BayesianNode } from './bayesian-node';
 

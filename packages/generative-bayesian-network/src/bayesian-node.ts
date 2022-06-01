@@ -1,4 +1,4 @@
-import { DataFrame, Series } from 'danfojs-node';
+import type { DataFrame, Series } from 'danfojs-node';
 
 /**
 * Calculates relative frequencies of values of specific attribute from the given data
@@ -8,7 +8,7 @@ import { DataFrame, Series } from 'danfojs-node';
 function getRelativeFrequencies(dataframe: DataFrame, attributeName: string) {
     const frequencies : Record<string, number> = {};
     const totalCount = dataframe.shape[0];
-    const valueCounts = new Series(dataframe[attributeName]).valueCounts();
+    const valueCounts = (dataframe[attributeName] as Series).valueCounts();
 
     for (let index = 0; index < valueCounts.index.length; index++) {
         frequencies[valueCounts.index[index]] = (valueCounts.values[index] as number) / totalCount;

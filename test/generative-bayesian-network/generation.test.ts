@@ -1,22 +1,24 @@
 /* eslint-disable */
 import * as path from 'path';
 import { BayesianNetwork } from 'generative-bayesian-network';
+import { parse } from 'csv-parse';
+import { DataFrame } from 'danfojs-node';
+import fs from 'fs';
 
 const testNetworkDefinitionPath = path.join(__dirname, './testNetworkDefinition.zip');
 
 describe.skip('Setup test', () => {
-    const dfd = require('danfojs-node');
-    const fs = require('fs');
-    const parse = require('csv-parse/lib/sync');
+
     const testGeneratorNetwork = new BayesianNetwork({path: path.join(__dirname, './testNetworkStructureDefinition.zip')});
 
     test('Calculates probabilities from data', () => {
         const datasetText = fs.readFileSync(path.join(__dirname, './testDataset.csv'), { encoding: 'utf8' }).replace(/^\ufeff/, '');
+        // csv-parse behavior changed, needs fix
         const records = parse(datasetText, {
             columns: true,
             skip_empty_lines: true,
         });
-        const dataframe = new dfd.DataFrame(records);
+        const dataframe = new DataFrame(records);
         testGeneratorNetwork.setProbabilitiesAccordingToData(dataframe);
         testGeneratorNetwork.saveNetworkDefinition({path: testNetworkDefinitionPath});
         expect(testGeneratorNetwork.generateSample()).toBeTruthy();
