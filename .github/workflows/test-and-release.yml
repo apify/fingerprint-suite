@@ -1,9 +1,9 @@
 name: Run tests
 
 on:
-    # Push to master will deploy a dev version
+    # Push to prepublish will deploy a dev version
     push:
-        branches: [ main, renovate/** ]
+        branches: [ renovate/**, prepublish ]
     # PR to master branch will skip deployment
     pull_request:
         branches: [ main ]

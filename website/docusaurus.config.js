@@ -16,6 +16,7 @@ module.exports = {
       gaGtag: true,
       repoUrl: 'https://github.com/apify/fingerprint-suite',
   },
+  trailingSlash: true,
   onBrokenLinks:
   /** @type {import('@docusaurus/types').ReportingSeverity} */ ('error'),
   onBrokenMarkdownLinks:
