@@ -1,4 +1,4 @@
-import { copyFileSync, readFileSync, writeFileSync } from 'fs';
+import { copyFileSync, readFileSync, writeFileSync, readdirSync } from 'fs';
 import { resolve } from 'path';
 import { execSync } from 'node:child_process';
 
@@ -67,8 +67,9 @@ if (options.canary) {
     const nextVersion = getNextVersion();
     pkgJson.version = nextVersion;
 
+    const packageNames = readdirSync(`${__dirname}/../packages/`);
     for (const dep of Object.keys(pkgJson.dependencies)) {
-        if (dep.startsWith('@crawlee/') || dep === 'crawlee') {
+        if (packageNames.includes(dep)) {
             const prefix = pkgJson.dependencies[dep].startsWith('^') ? '^' : '';
             pkgJson.dependencies[dep] = prefix + nextVersion;
         }
