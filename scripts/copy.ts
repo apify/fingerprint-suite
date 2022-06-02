@@ -30,7 +30,7 @@ function rewrite(path: string, replacer: (from: string) => string): void {
 function getNextVersion() {
     const versions: string[] = [];
     // eslint-disable-next-line @typescript-eslint/no-var-requires,import/no-dynamic-require,global-require
-    const pkgJson = require(resolve(root, 'package.json'));
+    const pkgJson = require(resolve('../fingerprint-injector', 'package.json'));
 
     try {
         const versionString = execSync(`npm show ${pkgJson.name} versions --json`, { encoding: 'utf8', stdio: 'pipe' });

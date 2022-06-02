@@ -5,9 +5,6 @@
     "node": ">=16.0.0"
   },
   "private": true,
-  "files": [
-      "dist"
-  ],
   "main": "dist/index.js",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
@@ -26,6 +23,7 @@
     "build": "npm run clean && npm run compile && npm run copyfiles",
     "clean": "rimraf ./dist",
     "compile": "tsc -p tsconfig.build.json && gen-esm-wrapper ./dist/index.js ./dist/index.mjs",
-    "copyfiles": "cp -r ./src/network_structures ./dist"
+        "copyfiles": "cp -r ./src/network_structures ./dist",
+        "copy": "ts-node -T ../../scripts/copy.ts"
   }
 }
