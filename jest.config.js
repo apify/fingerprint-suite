@@ -15,7 +15,7 @@ module.exports = {
         '^header-generator$': '<rootDir>/packages/header-generator/dist',
         '^fingerprint-generator$': '<rootDir>/packages/fingerprint-generator/dist',
         '^fingerprint-injector$': '<rootDir>/packages/fingerprint-injector/dist',
-        "^generative-bayesian-network$": ["<rootDir>/packages/generative-bayesian-network/dist"],
+        "^generative-bayesian-network$": ["<rootDir>/packages/generative-bayesian-network/src"],
         "^generator-networks-creator$": ["<rootDir>/packages/generator-networks-creator/dist"],
     },
     modulePathIgnorePatterns: [

@@ -9,7 +9,7 @@ describe('Generation tests', () => {
             browsers: ['chrome'],
             devices: ['desktop'],
         });
-        expect(fingerprint.navigator.userAgent.includes('Chrome')).toBe(true);
+        expect(fingerprint.navigator.userAgent).toContain('Chrome');
     });
 
     test('Works with presets', () => {
@@ -19,6 +19,7 @@ describe('Generation tests', () => {
             expect(fingerprint).toBeDefined();
         }
     });
+
     test('Generates fingerprints without errors', () => {
         for (let x = 0; x < 10000; x++) {
             const { fingerprint } = fingerprintGenerator.getFingerprint({
@@ -30,15 +31,13 @@ describe('Generation tests', () => {
     });
 
     test('Generates fingerprints with correct languages', () => {
+        const locales = ['en', 'de', 'en-GB'];
         const { fingerprint } = fingerprintGenerator.getFingerprint({
-            locales: ['en', 'de', 'en-GB'],
+            locales,
         });
 
         const fingerprintLanguages = fingerprint.navigator.languages;
-        expect(fingerprintLanguages.length).toBe(3);
-        expect(fingerprintLanguages.includes('en')).toBeTruthy();
-        expect(fingerprintLanguages.includes('de')).toBeTruthy();
-        expect(fingerprintLanguages.includes('en-GB')).toBeTruthy();
+        expect(fingerprintLanguages.sort()).toEqual(locales.sort());
     });
 
     test('Generated fingerprint and headers match', () => {
@@ -46,21 +45,26 @@ describe('Generation tests', () => {
             locales: ['en', 'de', 'en-GB'],
         });
 
-        const headersUserAgent = 'User-Agent' in headers ? headers['User-Agent'] : headers['user-agent'];
+        const headersUserAgent = headers['User-Agent'] ?? headers['user-agent'];
         expect(headersUserAgent === fingerprint.navigator.userAgent).toBeTruthy();
     });
 
     test('Transforms schema', () => {
-        const { fingerprint } = fingerprintGenerator.getFingerprint();
+        const { fingerprint: { screen, navigator } } = fingerprintGenerator.getFingerprint();
 
-        expect(fingerprint.screen.width).toBeDefined();
-        expect(fingerprint.screen.height).toBeDefined();
-        expect(fingerprint.screen.availHeight).toBeDefined();
-        expect(fingerprint.screen.availWidth).toBeDefined();
-        expect(fingerprint.screen.pixelDepth).toBeDefined();
+        const fields = [
+            screen.width,
+            screen.height,
+            screen.availHeight,
+            screen.availWidth,
+            screen.pixelDepth,
+            navigator.language,
+            navigator.languages,
+            navigator.hardwareConcurrency,
+        ];
 
-        expect(fingerprint.navigator.language).toBeDefined();
-        expect(fingerprint.navigator.languages).toBeDefined();
-        expect(fingerprint.navigator.hardwareConcurrency).toBeDefined();
+        for (const field of fields) {
+            expect(field).toBeDefined();
+        }
     });
 });

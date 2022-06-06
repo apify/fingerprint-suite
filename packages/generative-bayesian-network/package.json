@@ -17,8 +17,7 @@
     "url": "https://github.com/apify/generative-bayesian-network/issues"
   },
   "dependencies": {
-    "adm-zip": "^0.5.9",
-    "danfojs-node": "^1.1.1"
+    "adm-zip": "^0.5.9"
   },
   "description": "An implementation of a bayesian network usable for .",
   "homepage": "https://github.com/apify/generative-bayesian-network#readme",

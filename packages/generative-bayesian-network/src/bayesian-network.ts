@@ -1,6 +1,7 @@
-import type { DataFrame } from 'danfojs-node';
 import AdmZip = require('adm-zip');
 import { BayesianNode } from './bayesian-node';
+
+export type RecordList = Record<string, any>[];
 
 /**
  * BayesianNetwork is an implementation of a bayesian network capable of randomly sampling from the distribution
@@ -85,13 +86,13 @@ export class BayesianNetwork {
      * Sets the conditional probability distributions of this network's nodes to match the given data.
      * @param dataframe A Danfo.js dataframe containing the data.
      */
-    setProbabilitiesAccordingToData(dataframe: DataFrame) {
+    setProbabilitiesAccordingToData(data: RecordList) {
         this.nodesInSamplingOrder.forEach((node) => {
             const possibleParentValues: Record<string, string[]> = {};
             for (const parentName of node.parentNames) {
                 possibleParentValues[parentName] = this.nodesByName[parentName].possibleValues;
             }
-            node.setProbabilitiesAccordingToData(dataframe, possibleParentValues);
+            node.setProbabilitiesAccordingToData(data, possibleParentValues);
         });
     }
 

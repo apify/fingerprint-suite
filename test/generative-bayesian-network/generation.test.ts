@@ -1,25 +1,33 @@
 /* eslint-disable */
 import * as path from 'path';
 import { BayesianNetwork } from 'generative-bayesian-network';
-import { parse } from 'csv-parse';
-import { DataFrame } from 'danfojs-node';
-import fs from 'fs';
+import { parseFile } from 'fast-csv';
 
 const testNetworkDefinitionPath = path.join(__dirname, './testNetworkDefinition.zip');
 
-describe.skip('Setup test', () => {
-
+describe('Setup test', () => {
     const testGeneratorNetwork = new BayesianNetwork({path: path.join(__dirname, './testNetworkStructureDefinition.zip')});
 
-    test('Calculates probabilities from data', () => {
-        const datasetText = fs.readFileSync(path.join(__dirname, './testDataset.csv'), { encoding: 'utf8' }).replace(/^\ufeff/, '');
-        // csv-parse behavior changed, needs fix
-        const records = parse(datasetText, {
-            columns: true,
-            skip_empty_lines: true,
+    test('Calculates probabilities from data', async () => {
+        const rows : string[][] = [];
+
+        await new Promise<void>((res) => {
+            parseFile(path.join(__dirname, './testDataset.csv'))
+            .on('data', r => rows.push(r))
+            .on('end', () => {
+               res();
+            })
         });
-        const dataframe = new DataFrame(records);
-        testGeneratorNetwork.setProbabilitiesAccordingToData(dataframe);
+
+        const data = rows.slice(1).map(r => {
+            const x = {} as Record<string, any>;
+            for(let i = 0; i < r.length; i++) {
+                x[rows[0][i]] = r[i];
+            }
+            return x;
+        });
+        
+        testGeneratorNetwork.setProbabilitiesAccordingToData(data);
         testGeneratorNetwork.saveNetworkDefinition({path: testNetworkDefinitionPath});
         expect(testGeneratorNetwork.generateSample()).toBeTruthy();
     });

@@ -1,20 +1,20 @@
-import type { DataFrame, Series } from 'danfojs-node';
+import { RecordList } from './bayesian-network';
 
 /**
 * Calculates relative frequencies of values of specific attribute from the given data
 * @param dataframe A Danfo.js dataframe containing the data.
 * @param attributeName Attribute name.
 */
-function getRelativeFrequencies(dataframe: DataFrame, attributeName: string) {
+function getRelativeFrequencies(data: RecordList, attributeName: keyof RecordList[number]) {
     const frequencies : Record<string, number> = {};
-    const totalCount = dataframe.shape[0];
-    const valueCounts = (dataframe[attributeName] as Series).valueCounts();
+    const totalCount = data.length;
 
-    for (let index = 0; index < valueCounts.index.length; index++) {
-        frequencies[valueCounts.index[index]] = (valueCounts.values[index] as number) / totalCount;
-    }
+    data.forEach((record) => {
+        const value = record[attributeName];
+        frequencies[value] = (frequencies[value] ?? 0) + 1;
+    });
 
-    return frequencies;
+    return Object.fromEntries(Object.entries(frequencies).map(([key, value]) => [key, value / totalCount]));
 }
 
 /**
@@ -135,10 +135,10 @@ export class BayesianNode {
      * @param dataframe A Danfo.js dataframe containing the data.
      * @param possibleParentValues A dictionary of lists of possible values for parent nodes.
      */
-    setProbabilitiesAccordingToData(dataframe: DataFrame, possibleParentValues: Record<string, string[]> = {}) {
-        this.nodeDefinition.possibleValues = dataframe[this.name].unique().values;
+    setProbabilitiesAccordingToData(data: RecordList, possibleParentValues: Record<string, string[]> = {}) {
+        this.nodeDefinition.possibleValues = Array.from(new Set(data.map((record) => record[this.name])));
         this.nodeDefinition.conditionalProbabilities = this.recursivelyCalculateConditionalProbabilitiesAccordingToData(
-            dataframe,
+            data,
             possibleParentValues,
             0,
         );
@@ -150,7 +150,11 @@ export class BayesianNode {
      * @param possibleParentValues A dictionary of lists of possible values for parent nodes.
      * @param depth Depth of the current recursive call.
      */
-    private recursivelyCalculateConditionalProbabilitiesAccordingToData(dataframe: DataFrame, possibleParentValues: Record<string, string[]>, depth: number) {
+    private recursivelyCalculateConditionalProbabilitiesAccordingToData(
+        data: RecordList,
+        possibleParentValues: Record<string, string[]>,
+        depth: number,
+    ) {
         let probabilities = {
             deeper: {},
         } as any;
@@ -158,13 +162,13 @@ export class BayesianNode {
         if (depth < this.parentNames.length) {
             const currentParentName = this.parentNames[depth];
             for (const possibleValue of possibleParentValues[currentParentName]) {
-                const skip = !dataframe[currentParentName].unique().values.includes(possibleValue);
-                let filteredDataframe = dataframe;
+                const skip = !data.map((record) => record[currentParentName]).includes(possibleValue);
+                let filteredData = data;
                 if (!skip) {
-                    filteredDataframe = dataframe.query(dataframe[currentParentName].eq(possibleValue)) as DataFrame;
+                    filteredData = data.filter((record) => record[currentParentName] === possibleValue);
                 }
                 const nextLevel = this.recursivelyCalculateConditionalProbabilitiesAccordingToData(
-                    filteredDataframe,
+                    filteredData,
                     possibleParentValues,
                     depth + 1,
                 );
@@ -176,7 +180,7 @@ export class BayesianNode {
                 }
             }
         } else {
-            probabilities = getRelativeFrequencies(dataframe, this.name);
+            probabilities = getRelativeFrequencies(data, this.name);
         }
 
         return probabilities;

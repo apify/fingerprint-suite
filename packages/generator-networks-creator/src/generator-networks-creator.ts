@@ -1,7 +1,6 @@
-import { DataFrame, readJSON } from 'danfojs-node';
+import fetch from 'node-fetch';
 import fs from 'fs';
 import path from 'path';
-import { ArrayType2D } from 'danfojs-node/dist/danfojs-base/shared/types';
 import { BayesianNetwork } from 'generative-bayesian-network';
 
 const browserHttpNodeName = '*BROWSER_HTTP';
@@ -52,17 +51,16 @@ async function prepareRecords(records: Record<string, any>[], preprocessingType:
 
     // TODO this could break if the list is not there anymore
     // The robots list is available under the MIT license, for details see https://github.com/atmire/COUNTER-Robots/blob/master/LICENSE
-    const robotUserAgents = await readJSON('https://raw.githubusercontent.com/atmire/COUNTER-Robots/master/COUNTER_Robots_list.json') as DataFrame;
+    const robotUserAgents = await fetch('https://raw.githubusercontent.com/atmire/COUNTER-Robots/master/COUNTER_Robots_list.json')
+        .then((res) => res.json()) as {pattern: string}[];
 
     const deconstructedRecords = [];
     const userAgents = new Set();
     for (let x = 0; x < cleanedRecords.length; x++) {
         let record = cleanedRecords[x];
-        const { userAgent } = record;
-        let useRecord = !userAgent.match(/(bot|bots|slurp|spider|crawler|crawl)\b/i);
-        for (const pattern of robotUserAgents.pattern.values) {
-            useRecord = useRecord && !userAgent.match(new RegExp(pattern, 'i'));
-        }
+        const { userAgent } = record as { userAgent: string };
+        let useRecord = !userAgent.match(/(bot|bots|slurp|spider|crawler|crawl)\b/i)
+            && !robotUserAgents.some((robot) => userAgent.match(new RegExp(robot.pattern, 'i')));
 
         if (useRecord) {
             if (preprocessingType === 'headers') {
@@ -104,35 +102,26 @@ async function prepareRecords(records: Record<string, any>[], preprocessingType:
 
     return reorganizedRecords;
 }
-
 export class GeneratorNetworksCreator {
     async prepareHeaderGeneratorFiles(datasetPath: string, resultsPath: string) {
-        /*
-            Danfo-js can't read CSVs where field values contain a newline right now, the replace was added to deal with
-            issue described in https://github.com/adaltas/node-csv-parse/issues/139
-        */
-        const datasetText = fs.readFileSync(datasetPath, { encoding: 'utf8' }).replace(/^\ufeff/, '');
+        const datasetText = fs.readFileSync(datasetPath, { encoding: 'utf8' });
         const records = await prepareRecords(JSON.parse(datasetText), 'headers');
 
         const inputGeneratorNetwork = new BayesianNetwork({ path: path.join(__dirname, 'network_structures', 'input-network-structure.zip') });
         const headerGeneratorNetwork = new BayesianNetwork({ path: path.join(__dirname, 'network_structures', 'header-network-structure.zip') });
         // eslint-disable-next-line dot-notation
-        const desiredHeaderAttributes = Object.keys(headerGeneratorNetwork['nodesByName']).filter((attribute) => !nonGeneratedNodes.includes(attribute));
-        const headers = new DataFrame(records);
+        const desiredHeaderAttributes = Object.keys(headerGeneratorNetwork['nodesByName'])
+            .filter((attribute) => !nonGeneratedNodes.includes(attribute));
 
-        const selectedHeaders = headers.loc({ columns: desiredHeaderAttributes });
-        selectedHeaders.fillna({ values: [missingValueDatasetToken], inplace: true });
+        let selectedRecords = records.map((record) => {
+            return Object.entries(record).reduce((acc: typeof record, [key, value]) => {
+                if (desiredHeaderAttributes.includes(key)) acc[key] = value ?? missingValueDatasetToken;
+                return acc;
+            }, {});
+        });
 
-        const browsers = [];
-        const operatingSystems = [];
-        const devices = [];
-        const userAgents = selectedHeaders.loc({ columns: ['user-agent', 'User-Agent'] });
-
-        for (const row of userAgents.values as ArrayType2D) {
-            let userAgent = row[0] as string;
-            if (userAgent === missingValueDatasetToken) {
-                userAgent = row[1] as string;
-            }
+        selectedRecords = selectedRecords.map((record) => {
+            let userAgent = (record['user-agent'] !== missingValueDatasetToken ? record['user-agent'] : record['User-Agent']) as string;
             userAgent = userAgent.toLowerCase();
 
             let operatingSystem = missingValueDatasetToken;
@@ -167,24 +156,17 @@ export class GeneratorNetworksCreator {
                 }
             }
 
-            browsers.push(browser);
-            operatingSystems.push(operatingSystem);
-            devices.push(device);
-        }
+            return {
+                ...record,
+                [browserNodeName]: browser,
+                [operatingSystemNodeName]: operatingSystem,
+                [deviceNodeName]: device,
+                [browserHttpNodeName]: `${browser}|${(record[httpVersionNodeName] as string).startsWith('_1') ? '1' : '2'}`,
+            };
+        });
 
-        selectedHeaders.addColumn(browserNodeName, browsers);
-        selectedHeaders.addColumn(operatingSystemNodeName, operatingSystems);
-        selectedHeaders.addColumn(deviceNodeName, devices);
-
-        const browserHttps = [];
-        for (let x = 0; x < selectedHeaders.shape[0]; x++) {
-            const httpVersion = selectedHeaders[httpVersionNodeName].values[x].startsWith('_1') ? '1' : '2';
-            browserHttps.push(`${selectedHeaders[browserNodeName].values[x]}|${httpVersion}`);
-        }
-        selectedHeaders.addColumn(browserHttpNodeName, browserHttps);
-
-        await headerGeneratorNetwork.setProbabilitiesAccordingToData(selectedHeaders as DataFrame);
-        await inputGeneratorNetwork.setProbabilitiesAccordingToData(selectedHeaders as DataFrame);
+        await headerGeneratorNetwork.setProbabilitiesAccordingToData(selectedRecords);
+        await inputGeneratorNetwork.setProbabilitiesAccordingToData(selectedRecords);
 
         const inputNetworkDefinitionPath = path.join(resultsPath, 'input-network-definition.json');
         const headerNetworkDefinitionPath = path.join(resultsPath, 'header-network-definition.json');
@@ -193,7 +175,7 @@ export class GeneratorNetworksCreator {
         headerGeneratorNetwork.saveNetworkDefinition({ path: headerNetworkDefinitionPath });
         inputGeneratorNetwork.saveNetworkDefinition({ path: inputNetworkDefinitionPath });
 
-        const uniqueBrowsersAndHttps = await selectedHeaders[browserHttpNodeName].unique().values;
+        const uniqueBrowsersAndHttps = await Array.from(new Set(selectedRecords.map((record) => record[browserHttpNodeName])));
         fs.writeFileSync(browserHelperFilePath, JSON.stringify(uniqueBrowsersAndHttps));
     }
 
@@ -215,7 +197,7 @@ export class GeneratorNetworksCreator {
             record.pluginsData = pluginCharacteristics !== {} ? pluginCharacteristics : missingValueDatasetToken;
 
             for (const attribute of Object.keys(record)) {
-                if (record[attribute] === '') {
+                if ([null, '', undefined].includes(record[attribute])) {
                     record[attribute] = missingValueDatasetToken;
                 } else {
                     record[attribute] = (typeof record[attribute] === 'string' || record[attribute] instanceof String)
@@ -230,14 +212,17 @@ export class GeneratorNetworksCreator {
         const fingerprintGeneratorNetwork = new BayesianNetwork({ path: path.join(__dirname, 'network_structures', 'fingerprint-network-structure.zip') });
         // eslint-disable-next-line dot-notation
         const desiredFingerprintAttributes = Object.keys(fingerprintGeneratorNetwork['nodesByName']);
-        const fingerprints = new DataFrame(records);
 
-        const selectedFingerprints = fingerprints.loc({ columns: desiredFingerprintAttributes });
-        selectedFingerprints.fillna({ values: [missingValueDatasetToken], inplace: true });
+        const selectedRecords = records.map((record) => {
+            return Object.entries(record).reduce((acc: typeof record, [key, value]) => {
+                if (desiredFingerprintAttributes.includes(key)) acc[key] = value ?? missingValueDatasetToken;
+                return acc;
+            }, {});
+        });
 
         const fingerprintNetworkDefinitionPath = path.join(__dirname, '..', 'results', 'fingerprint-network-definition.zip');
 
-        await fingerprintGeneratorNetwork.setProbabilitiesAccordingToData(selectedFingerprints as DataFrame);
+        await fingerprintGeneratorNetwork.setProbabilitiesAccordingToData(selectedRecords);
         fingerprintGeneratorNetwork.saveNetworkDefinition({ path: fingerprintNetworkDefinitionPath });
     }
 }
