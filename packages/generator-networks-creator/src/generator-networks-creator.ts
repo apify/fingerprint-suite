@@ -168,8 +168,8 @@ export class GeneratorNetworksCreator {
         await headerGeneratorNetwork.setProbabilitiesAccordingToData(selectedRecords);
         await inputGeneratorNetwork.setProbabilitiesAccordingToData(selectedRecords);
 
-        const inputNetworkDefinitionPath = path.join(resultsPath, 'input-network-definition.json');
-        const headerNetworkDefinitionPath = path.join(resultsPath, 'header-network-definition.json');
+        const inputNetworkDefinitionPath = path.join(resultsPath, 'input-network-definition.zip');
+        const headerNetworkDefinitionPath = path.join(resultsPath, 'header-network-definition.zip');
         const browserHelperFilePath = path.join(resultsPath, 'browser-helper-file.json');
 
         headerGeneratorNetwork.saveNetworkDefinition({ path: headerNetworkDefinitionPath });
@@ -179,7 +179,7 @@ export class GeneratorNetworksCreator {
         fs.writeFileSync(browserHelperFilePath, JSON.stringify(uniqueBrowsersAndHttps));
     }
 
-    async prepareFingerprintGeneratorFiles(datasetPath: string) {
+    async prepareFingerprintGeneratorFiles(datasetPath: string, resultsPath: string) {
         const datasetText = fs.readFileSync(datasetPath, { encoding: 'utf8' }).replace(/^\ufeff/, '');
         const records = await prepareRecords(JSON.parse(datasetText), 'fingerprints');
         for (let x = 0; x < records.length; x++) {
@@ -220,7 +220,7 @@ export class GeneratorNetworksCreator {
             }, {});
         });
 
-        const fingerprintNetworkDefinitionPath = path.join(__dirname, '..', 'results', 'fingerprint-network-definition.zip');
+        const fingerprintNetworkDefinitionPath = path.join(resultsPath, 'fingerprint-network-definition.zip');
 
         await fingerprintGeneratorNetwork.setProbabilitiesAccordingToData(selectedRecords);
         fingerprintGeneratorNetwork.saveNetworkDefinition({ path: fingerprintNetworkDefinitionPath });
