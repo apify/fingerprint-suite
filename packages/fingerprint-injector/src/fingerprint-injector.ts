@@ -12,6 +12,14 @@ interface EnhancedFingerprint extends Fingerprint {
     historyLength: number;
 }
 
+declare function overrideInstancePrototype<T>(instance: T, overrideObj: Partial<T>): void;
+declare function overrideUserAgentData(userAgentData: Record<string, string>) : void;
+declare function overrideDocumentDimensionsProps(props: Record<string, number>) : void;
+declare function overrideWindowDimensionsProps(props: Record<string, number>): void;
+declare function overrideBattery(batteryInfo?: Record<string, string|number>) : void;
+declare function overrideCodecs(audioCodecs: Record<string, string>, videoCodecs: Record<string, string>) : void;
+declare function overrideWebGl(webGlInfo: Record<string, string>) : void;
+
 /**
  * Fingerprint injector class.
  * @class
@@ -148,29 +156,18 @@ export class FingerprintInjector {
             }
 
             if (window.navigator.webdriver) {
-                // Override the webdriver
                 (navigatorProps as any).webdriver = webdriver;
             }
 
-            // override screen
             overrideInstancePrototype(window.screen, newScreen);
             overrideWindowDimensionsProps(windowScreenProps);
             overrideDocumentDimensionsProps(documentScreenProps);
 
             overrideInstancePrototype(window.history, { length: historyLength });
 
-            // override webGl
-            // @TODO: Find another way out of this.
-            // This feels like a dirty hack, but without this it throws while running tests.
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             overrideWebGl(videoCard);
-
-            // override codecs
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             overrideCodecs(audioCodecs, videoCodecs);
 
-            // override batteryInfo
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             overrideBattery(battery);
         }
 

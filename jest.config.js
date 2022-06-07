@@ -12,11 +12,11 @@ module.exports = {
         '<rootDir>/packages/*/src/**/*.[jt]s',
     ],
     moduleNameMapper: {
-        '^header-generator$': '<rootDir>/packages/header-generator/dist',
-        '^fingerprint-generator$': '<rootDir>/packages/fingerprint-generator/dist',
-        '^fingerprint-injector$': '<rootDir>/packages/fingerprint-injector/dist',
+        '^header-generator$': '<rootDir>/packages/header-generator/src',
+        '^fingerprint-generator$': '<rootDir>/packages/fingerprint-generator/src',
+        '^fingerprint-injector$': '<rootDir>/packages/fingerprint-injector/src',
         "^generative-bayesian-network$": ["<rootDir>/packages/generative-bayesian-network/src"],
-        "^generator-networks-creator$": ["<rootDir>/packages/generator-networks-creator/dist"],
+        "^generator-networks-creator$": ["<rootDir>/packages/generator-networks-creator/src"],
     },
     modulePathIgnorePatterns: [
         'dist/package.json',
