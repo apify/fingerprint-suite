@@ -24,13 +24,12 @@ function rewrite(path: string, replacer: (from: string) => string): void {
 }
 
 /**
- * Checks next dev version number based on the `@crawlee/core` package via `npm show`.
- * We always use this package, so we ensure the version is the same for each package in the monorepo.
+ * Checks next dev version number based on the local package via `npm show`.
  */
 function getNextVersion() {
     const versions: string[] = [];
     // eslint-disable-next-line @typescript-eslint/no-var-requires,import/no-dynamic-require,global-require
-    const pkgJson = require(resolve('../fingerprint-injector', 'package.json'));
+    const pkgJson = require(resolve('package.json'));
 
     try {
         const versionString = execSync(`npm show ${pkgJson.name} versions --json`, { encoding: 'utf8', stdio: 'pipe' });
@@ -70,8 +69,11 @@ if (options.canary) {
     const packageNames = readdirSync(`${__dirname}/../packages/`);
     for (const dep of Object.keys(pkgJson.dependencies)) {
         if (packageNames.includes(dep)) {
+            // We can read the new version of the dependency package because of turborepo (that builds a build graph).
+            // eslint-disable-next-line @typescript-eslint/no-var-requires,import/no-dynamic-require,global-require
+            const pkgJsonDep = require(resolve(`../${dep}`, 'package.json'));
             const prefix = pkgJson.dependencies[dep].startsWith('^') ? '^' : '';
-            pkgJson.dependencies[dep] = prefix + nextVersion;
+            pkgJson.dependencies[dep] = prefix + pkgJsonDep.version;
         }
     }
 
