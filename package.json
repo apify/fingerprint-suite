@@ -44,7 +44,8 @@
         "test": "jest --silent",
         "coverage": "jest --coverage",
         "lint": "eslint packages/*/src test",
-        "lint:fix": "eslint packages/*/src test --fix"
+        "lint:fix": "eslint packages/*/src test --fix",
+        "buildNetwork": "turbo run build --filter=generator-networks-creator && ./scripts/netgen.sh && npm version --workspace=header-generator --workspace=fingerprint-generator patch"
     },
     "devDependencies": {
         "@apify/eslint-config-ts": "^0.2.3",
