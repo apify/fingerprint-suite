@@ -1,35 +1,36 @@
 {
-  "name": "generative-bayesian-network",
-  "version": "2.0.0",
-  "author": {
-    "name": "Apify"
-  },
-  "main": "dist/index.js",
-  "module": "dist/index.mjs",
-  "types": "dist/index.d.ts",
-  "exports": {
-    ".": {
-      "import": "./dist/index.mjs",
-      "require": "./dist/index.js"
+    "name": "generative-bayesian-network",
+    "version": "2.0.0",
+    "author": {
+        "name": "Apify"
+    },
+    "main": "dist/index.js",
+    "module": "dist/index.mjs",
+    "types": "dist/index.d.ts",
+    "exports": {
+        ".": {
+            "import": "./dist/index.mjs",
+            "require": "./dist/index.js",
+            "types": "./dist/index.d.ts"
+        }
+    },
+    "bugs": {
+        "url": "https://github.com/apify/generative-bayesian-network/issues"
+    },
+    "dependencies": {
+        "adm-zip": "^0.5.9"
+    },
+    "description": "An implementation of a bayesian network usable for .",
+    "homepage": "https://github.com/apify/generative-bayesian-network#readme",
+    "license": "Apache-2.0",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/apify/generative-bayesian-network.git"
+    },
+    "scripts": {
+        "build": "npm run clean && npm run compile",
+        "clean": "rimraf ./dist",
+        "compile": "tsc -p tsconfig.build.json && gen-esm-wrapper ./dist/index.js ./dist/index.mjs",
+        "copy": "ts-node -T ../../scripts/copy.ts"
     }
-  },
-  "bugs": {
-    "url": "https://github.com/apify/generative-bayesian-network/issues"
-  },
-  "dependencies": {
-    "adm-zip": "^0.5.9"
-  },
-  "description": "An implementation of a bayesian network usable for .",
-  "homepage": "https://github.com/apify/generative-bayesian-network#readme",
-  "license": "Apache-2.0",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/apify/generative-bayesian-network.git"
-  },
-  "scripts": {
-    "build": "npm run clean && npm run compile",
-    "clean": "rimraf ./dist",
-    "compile": "tsc -p tsconfig.build.json && gen-esm-wrapper ./dist/index.js ./dist/index.mjs",
-    "copy": "ts-node -T ../../scripts/copy.ts"
-  }
 }
