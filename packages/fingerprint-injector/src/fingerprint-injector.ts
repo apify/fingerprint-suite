@@ -19,6 +19,7 @@ declare function overrideWindowDimensionsProps(props: Record<string, number>): v
 declare function overrideBattery(batteryInfo?: Record<string, string|number>) : void;
 declare function overrideCodecs(audioCodecs: Record<string, string>, videoCodecs: Record<string, string>) : void;
 declare function overrideWebGl(webGlInfo: Record<string, string>) : void;
+declare function overrideIntlAPI(language: string) : void;
 
 /**
  * Fingerprint injector class.
@@ -169,6 +170,7 @@ export class FingerprintInjector {
             overrideCodecs(audioCodecs, videoCodecs);
 
             overrideBattery(battery);
+            overrideIntlAPI(navigator.language);
         }
 
         const mainFunctionString: string = inject.toString();
