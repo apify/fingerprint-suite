@@ -253,6 +253,15 @@ describe('FingerprintInjector', () => {
                 expect(browserRenderer).toBe(renderer);
             });
 
+            test('should override Intl methods', async () => {
+                const { navigator: { language } } = fingerprint;
+                const intlLocale = await page.evaluate(async () => {
+                    return (new Intl.NumberFormat()).resolvedOptions().locale;
+                });
+
+                expect(intlLocale).toBe(language);
+            });
+
             test('should override codecs', async () => {
                 const { videoCodecs, audioCodecs } = fingerprint;
 
