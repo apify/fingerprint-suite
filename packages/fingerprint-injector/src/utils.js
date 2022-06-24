@@ -292,6 +292,27 @@ function overrideBattery(batteryInfo) {
     );
 }
 
+function overrideIntlAPI(language){
+    const innerHandler = {
+        construct(target, [locales, options]) {  
+          return new target(locales ?? language, options);
+        },
+        apply(target, _, [locales, options]) {
+            return target(locales ?? language, options);
+        }
+      };
+
+    overridePropertyWithProxy(window, 'Intl', {
+        get(target, key){
+            if(key[0].toLowerCase() === key[0]) return target[key];
+            return new Proxy(
+                target[key],
+                innerHandler
+            );
+        }
+    });
+}
+
 function makeHandler() {
     return {
         // Used by simple `navigator` getter evasions
@@ -372,23 +393,3 @@ function overrideUserAgentData(userAgentData) {
     overrideInstancePrototype(window.navigator.userAgentData, { brands, mobile, platform });
 };
 
-function overrideIntlAPI(language){
-    const innerHandler = {
-        construct(target, [locales, options]) {  
-          return new target(locales ?? language, options);
-        },
-        apply(target, _, [locales, options]) {
-            return target(locales ?? language, options);
-        }
-      };
-    
-    Intl = new Proxy(Intl, {
-        get(target, key){
-            if(key[0].toLowerCase() === key[0]) return target[key];
-            return new Proxy(
-                target[key],
-                innerHandler
-            );
-        }
-    });
-}

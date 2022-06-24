@@ -170,7 +170,7 @@ export class FingerprintInjector {
             overrideCodecs(audioCodecs, videoCodecs);
 
             overrideBattery(battery);
-            overrideIntlAPI(navigator.language);
+            overrideIntlAPI(navigatorProps.language);
         }
 
         const mainFunctionString: string = inject.toString();
