@@ -253,15 +253,6 @@ describe('FingerprintInjector', () => {
                 expect(browserRenderer).toBe(renderer);
             });
 
-            test('should override Intl methods', async () => {
-                const { navigator: { language } } = fingerprint;
-                const intlLocale = await page.evaluate(async () => {
-                    return (new Intl.NumberFormat()).resolvedOptions().locale;
-                });
-
-                expect(intlLocale).toBe(language);
-            });
-
             test('should override codecs', async () => {
                 const { videoCodecs, audioCodecs } = fingerprint;
 
@@ -282,11 +273,19 @@ describe('FingerprintInjector', () => {
                 }
             });
 
-            test.skip('should override locales', async () => {
-                response = await page.goto('https://google.com');
+            test('should override locales', async () => {
+                response = await page.goto(`https://example.org`);
                 const requestHeaders = response.request().headers();
 
                 expect(requestHeaders['accept-language']?.includes('cs')).toBe(true);
+
+                const { navigator: { language } } = fingerprint;
+
+                const intlLocale = await page.evaluate(async () => {
+                    return (new Intl.NumberFormat()).resolvedOptions().locale;
+                });
+
+                expect(intlLocale).toBe(language);
             });
         });
     });
