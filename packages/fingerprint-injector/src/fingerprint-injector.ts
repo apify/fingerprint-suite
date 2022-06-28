@@ -149,6 +149,8 @@ export class FingerprintInjector {
                 clientHeight,
                 clientWidth,
             };
+            // override internationalization API
+            overrideIntlAPI(navigatorProps.language);
             // override navigator
             overrideInstancePrototype(window.navigator, navigatorProps);
 
@@ -170,7 +172,6 @@ export class FingerprintInjector {
             overrideCodecs(audioCodecs, videoCodecs);
 
             overrideBattery(battery);
-            overrideIntlAPI(navigatorProps.language);
         }
 
         const mainFunctionString: string = inject.toString();
