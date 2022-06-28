@@ -1,11 +1,6 @@
 import playwright from 'playwright';
 import puppeteer from 'puppeteer';
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore bypass unnecessary module declaration for tests
 import { BrowserFingerprintWithHeaders, Fingerprint, FingerprintGenerator } from 'fingerprint-generator';
-
-// USe fingerprint injector from dist to test if the published version works.
-// Historically injection was not working from build files, but all tests passed.
 import { FingerprintInjector } from 'fingerprint-injector';
 
 const cases = [
