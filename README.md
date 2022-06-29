@@ -19,7 +19,6 @@
 Today's websites are increasingly using fingerprinting to track users and identify them.
 With the help of `fingerprint-suite` you can generate and inject browser fingerprints into your browser, allowing you to fly your scrapers under the radar.
 
-
 **View full documentation, guides and examples on the [fingerprint-suite website](https://apify.github.io/fingerprint-suite/)**
 
 > Would you like to work with us on our fingerprinting tools or similar projects? [We are hiring!](https://apify.com/jobs#senior-node.js-engineer)
