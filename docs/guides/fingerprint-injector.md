@@ -181,6 +181,4 @@ const playwright = require('playwright');
 
 ```
 ## API Reference
-All public classes, methods and their parameters can be inspected in this API reference.
-
-{{>all-docs~}}
+All public classes, methods and their parameters can be inspected in the [API reference](../../../api/fingerprint-injector/).

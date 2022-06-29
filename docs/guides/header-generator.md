@@ -71,7 +71,4 @@ A result that can be generated for the usage example above:
 }
 ```
 ## API Reference
-All public classes, methods and their parameters can be inspected in this API reference.
-
-{{>all-docs~}}
-
+All public classes, methods and their parameters can be inspected in the [API reference](../../../api/header-generator/).

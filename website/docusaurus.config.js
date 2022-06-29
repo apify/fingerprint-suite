@@ -89,12 +89,12 @@ module.exports = {
                   label: 'Guides',
                   position: 'left',
               },
-              {
-                  type: 'docsVersion',
-                  to: 'docs/examples',
-                  label: 'Examples',
-                  position: 'left',
-              },
+            //   {
+            //       type: 'docsVersion',
+            //       to: 'docs/examples',
+            //       label: 'Examples',
+            //       position: 'left',
+            //   },
               {
                   type: 'docsVersion',
                   to: 'api/',
@@ -139,10 +139,10 @@ module.exports = {
                           label: 'Guides',
                           to: 'docs/guides',
                       },
-                      {
-                          label: 'Examples',
-                          to: 'docs/examples',
-                      },
+                    //   {
+                    //       label: 'Examples',
+                    //       to: 'docs/examples',
+                    //   },
                       {
                           label: 'API reference',
                           to: 'api',
