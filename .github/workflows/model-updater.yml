@@ -39,7 +39,7 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
           commit_message: "[auto] fingerprint/header model update"
-          branch: main
+          branch: stable
 
           file_pattern: packages
 
