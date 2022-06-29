@@ -1,6 +1,6 @@
 {
     "name": "fingerprint-generator",
-    "version": "2.0.1",
+    "version": "2.0.0",
     "description": "NodeJs package for generating realistic browser fingerprints.",
     "homepage": "https://github.com/apify/fingerprint-generator#readme",
     "engines": {

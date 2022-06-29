@@ -1,12 +1,12 @@
 name: Sync + tests + publishing
 
 on:
-    # Push to prepublish will deploy a dev version, push to main deploys the latest version (and syncs the prepublish branch)
+    # Push to master will deploy a dev version, push to stable deploys the latest version (and syncs the master branch)
     push:
-        branches: [ prepublish, main ]
+        branches: [ master, stable ]
     # PRs will run tests (skip deployment)
     pull_request:
-        branches: [ prepublish, main ]
+        branches: [ master, stable ]
     # A release via GitHub releases will deploy the latest version
     release:
         types: [ published ]
@@ -15,7 +15,7 @@ on:
 jobs:
     sync_branches:
         name: Sync branches
-        if: ((github.ref == 'refs/heads/main') && (github.event_name == 'push' ))
+        if: ((github.ref == 'refs/heads/stable') && (github.event_name == 'push' ))
         runs-on: ubuntu-latest
         steps:
             -   name: Checkout Source code
@@ -23,18 +23,18 @@ jobs:
                 with:
                     token: ${{ secrets.GH_TOKEN }}
 
-            -   name: Git merge main -> prepublish
+            -   name: Git merge stable -> master
                 run: |
                     git config --global user.name "autosync[bot] 🔃"
                     git config --global user.email "autosync[bot]@users.noreply.github.com"
 
                     git fetch --unshallow
-                    git checkout prepublish
-                    git merge -s recursive --squash --no-commit main
+                    git checkout master
+                    git merge -s recursive --squash --no-commit stable
                     git add -A
-                    git diff-index --quiet HEAD || git commit -m "[skip ci] Automatic sync from main"
+                    git diff-index --quiet HEAD || git commit -m "[skip ci] Automatic sync from stable"
 
-                    git push origin prepublish
+                    git push origin master
     lint:
         name: Lint
         if: ${{ !contains(github.event.head_commit.message, '[skip ci]') }}
@@ -109,7 +109,7 @@ jobs:
 
     publish_prerelease:
         name: Publish prerelease
-        if: ((github.ref == 'refs/heads/prepublish') && (github.event_name == 'push'))
+        if: ((github.ref == 'refs/heads/master') && (github.event_name == 'push'))
         runs-on: ubuntu-latest
         needs: [ lint, build_and_test ]
         steps:
@@ -170,7 +170,7 @@ jobs:
 
     publish_latest:
         name: Publish latest
-        if: ((github.ref == 'refs/heads/main') && (github.event_name == 'push'))
+        if: ((github.ref == 'refs/heads/stable') && (github.event_name == 'push'))
         runs-on: ubuntu-latest
         needs: [ lint, build_and_test ]
         steps:
