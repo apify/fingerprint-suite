@@ -6,7 +6,7 @@ echo "Downloading data..."
 
 curl \
     -o $(dirname $0)/dataset.json \
-    $APIFY_DATASET_URL;
+    "$APIFY_DATASET_URL";
 
 echo "Generating network..."
 
