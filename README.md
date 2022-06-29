@@ -6,7 +6,6 @@
         </picture>
     </a>
     <br>
-    <small>a modular toolkit for browser fingerprint generation and injection.</small>
 </h1>
 
 <p align=center>
@@ -19,11 +18,6 @@
 `fingerprint-suite` is a handcrafted assembly of tools for browser fingerprint generation and injection.
 Today's websites are increasingly using fingerprinting to track users and identify them.
 With the help of `fingerprint-suite` you can generate and inject browser fingerprints into your browser, allowing you to fly your scrapers under the radar.
-
-The packages are available as the [`crawlee`](https://www.npmjs.com/package/crawlee) NPM package.
-It can be used either stand-alone in your own applications
-or in [actors](https://docs.apify.com/actor)
-running on the [Apify Cloud](https://apify.com/).
 
 **View full documentation, guides and examples on the [fingerprint-suite website](https://apify.github.io/fingerprint-suite/)**
 

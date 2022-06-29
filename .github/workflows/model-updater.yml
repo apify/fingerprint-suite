@@ -34,6 +34,8 @@ jobs:
 
       - name: Generate model and update versions
         run: npm run buildNetwork
+        env:
+          APIFY_DATASET_URL: ${{ secrets.APIFY_DATASET_URL }}
 
       - name: Push new model
         uses: stefanzweifel/git-auto-commit-action@v4
