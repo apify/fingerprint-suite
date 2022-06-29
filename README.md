@@ -32,6 +32,33 @@ With the help of `fingerprint-suite` you can generate and inject browser fingerp
 - [`fingerprint-injector`](https://www.npmjs.com/package/fingerprint-injector): injects browser fingerprints into your Playwright or Puppeteer managed browser instance
 - [`generative-bayesian-network`](https://www.npmjs.com/package/generative-bayesian-network): our fast implementation of Bayesian generative network used to generate realistic browser fingerprints
 
+## Quick start
+
+The following example shows how to use the fingerprinting tools to camouflage your Playwright-managed Chromium instance.
+
+```javascript
+const { chromium } = require('playwright');
+const { FingerprintGenerator } = require('fingerprint-generator');
+const { FingerprintInjector } = require('fingerprint-injector');
+
+(async () => {
+    const b = await chromium.launch({headless: false});
+    const ctx = await b.newContext();
+
+    const fingerprintGenerator = new FingerprintGenerator();
+    const fingerprintInjector = new FingerprintInjector();
+
+    const fingerprint = fingerprintGenerator.getFingerprint({
+        'locales': ['cs-CZ'],           // setup your desired fingerprint features
+        'operatingSystems': ['linux'],
+    });
+    await fingerprintInjector.attachFingerprintToPlaywright(ctx, fingerprint);
+
+    // ...and enjoy your undercover browser while using the browser context as usual!
+    const page = await ctx.newPage();
+    await page.goto("https://apify.com");
+})();
+```
 ## Support
 
 If you find any bug or issue with any of the fingerprinting tools, please [submit an issue on GitHub](https://github.com/apify/fingerprint-suite/issues).
