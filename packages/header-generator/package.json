@@ -29,7 +29,7 @@
     },
     "scripts": {
         "build": "npm run clean && npm run compile",
-        "postbuild": "cp -r src/data_files/ dist/",
+        "postbuild": "cp -r src/data_files/ dist/ && cp ../../README.md dist/",
         "clean": "rimraf ./dist",
         "compile": "tsc -p tsconfig.build.json && gen-esm-wrapper ./dist/index.js ./dist/index.mjs",
         "copy": "ts-node -T ../../scripts/copy.ts"
