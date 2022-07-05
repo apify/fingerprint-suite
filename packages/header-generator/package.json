@@ -1,13 +1,13 @@
 {
     "name": "header-generator",
-    "version": "2.0.0",
+    "version": "2.0.1",
     "description": "NodeJS package for generating realistic browser-like HTTP headers.",
     "author": {
         "name": "Apify",
         "email": "support@apify.com",
         "url": "https://apify.com"
     },
-    "homepage": "https://github.com/apify/header-generator#readme",
+    "homepage": "https://github.com/apify/fingeprint-suite",
     "license": "Apache-2.0",
     "engines": {
         "node": ">=16.0.0"
