@@ -220,10 +220,7 @@ jobs:
 
                     echo "access=public" >> .npmrc
 
-                    ####
-                    # we do not want to push the latest version just yet
-                    ####
-                    # echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" >> .npmrc
+                    echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" >> .npmrc
                     lerna publish from-package --contents dist --force-publish --yes --no-verify-access
                 env:
                     NPM_TOKEN: ${{ secrets.NPM_TOKEN }}

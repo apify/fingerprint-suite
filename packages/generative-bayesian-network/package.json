@@ -20,7 +20,7 @@
     "dependencies": {
         "adm-zip": "^0.5.9"
     },
-    "description": "An implementation of a bayesian network usable for .",
+    "description": "An fast implementation of a generative bayesian network.",
     "homepage": "https://github.com/apify/generative-bayesian-network#readme",
     "license": "Apache-2.0",
     "repository": {
