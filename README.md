@@ -1,15 +1,15 @@
 <h1 align="center">
     <a href="https://apify.github.io/fingerprint-suite/">
         <picture>
-          <source media="(prefers-color-scheme: dark)" srcset="./website/static/img/logo_big_light.svg">
-          <img alt="Fingerprinting suite" src="./website/static/img/logo_big_dark.svg" width="500">
+          <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/apify/fingerprint-suite/master/website/static/img/logo_big_dark.svg">
+          <img alt="Fingerprinting suite" src="https://raw.githubusercontent.com/apify/fingerprint-suite/master/website/static/img/logo_big_light.svg" width="500">
         </picture>
     </a>
     <br>
 </h1>
 
 <p align=center>
-    <a href="https://www.npmjs.com/package/fingerprint-injector" rel="nofollow"><img src="https://img.shields.io/npm/v/fingerprint-injector/next.svg" alt="NPM dev version" data-canonical-src="https://img.shields.io/npm/v/fingerprint-injector/next.svg" style="max-width: 100%;"></a>
+    <a href="https://www.npmjs.com/package/fingerprint-injector" rel="nofollow"><img src="https://img.shields.io/npm/v/fingerprint-injector/latest.svg" alt="NPM dev version" data-canonical-src="https://img.shields.io/npm/v/fingerprint-injector/next.svg" style="max-width: 100%;"></a>
     <a href="https://www.npmjs.com/package/fingerprint-injector" rel="nofollow"><img src="https://img.shields.io/npm/dw/fingerprint-injector" alt="Downloads" data-canonical-src="https://img.shields.io/npm/dw/fingerprint-injector" style="max-width: 100%;"></a>
     <a href="https://discord.gg/jyEM2PRvMU" rel="nofollow"><img src="https://img.shields.io/discord/801163717915574323?label=discord" alt="Chat on discord" data-canonical-src="https://img.shields.io/discord/801163717915574323?label=discord" style="max-width: 100%;"></a>
     <a href="https://github.com/apify/fingerprint-suite/actions/workflows/test-and-release.yml"><img src="https://github.com/apify/fingerprint-suite/actions/workflows/test-and-release.yml/badge.svg?branch=stable" alt="Build Status" style="max-width: 100%;"></a>
@@ -30,7 +30,7 @@ With the help of `fingerprint-suite` you can generate and inject browser fingerp
 - [`header-generator`](https://www.npmjs.com/package/header-generator): generates configurable, realistic HTTP headers
 - [`fingerprint-generator`](https://www.npmjs.com/package/fingerprint-generator): generates realistic browser fingerprints, affecting the HTTP headers and browser JS APIs 
 - [`fingerprint-injector`](https://www.npmjs.com/package/fingerprint-injector): injects browser fingerprints into your Playwright or Puppeteer managed browser instance
-- [`generative-bayesian-network`](https://www.npmjs.com/package/generative-bayesian-network): our fast implementation of Bayesian generative network used to generate realistic browser fingerprints
+- [`generative-bayesian-network`](https://www.npmjs.com/package/generative-bayesian-network): our fast implementation of a Bayesian generative network used to generate realistic browser fingerprints
 
 ## Quick start
 
