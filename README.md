@@ -1,8 +1,8 @@
 <h1 align="center">
     <a href="https://apify.github.io/fingerprint-suite/">
         <picture>
-          <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/apify/fingerprint-suite/master/website/static/img/logo_big_dark.svg">
-          <img alt="Fingerprinting suite" src="https://raw.githubusercontent.com/apify/fingerprint-suite/master/website/static/img/logo_big_light.svg" width="500">
+          <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/apify/fingerprint-suite/master/website/static/img/logo_big_light.svg">
+          <img alt="Fingerprinting suite" src="https://raw.githubusercontent.com/apify/fingerprint-suite/master/website/static/img/logo_big_dark.svg" width="500">
         </picture>
     </a>
     <br>
