@@ -23,7 +23,7 @@
         }
     },
     "dependencies": {
-        "browserslist": "^4.19.1",
+        "browserslist": "^4.21.1",
         "generative-bayesian-network": "^2.0.0",
         "ow": "^0.28.1"
     },
