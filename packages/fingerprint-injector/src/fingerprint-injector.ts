@@ -20,6 +20,7 @@ declare function overrideBattery(batteryInfo?: Record<string, string|number>) : 
 declare function overrideCodecs(audioCodecs: Record<string, string>, videoCodecs: Record<string, string>) : void;
 declare function overrideWebGl(webGlInfo: Record<string, string>) : void;
 declare function overrideIntlAPI(language: string) : void;
+declare function overrideBasics() : void;
 
 /**
  * Fingerprint injector class.
@@ -46,6 +47,10 @@ export class FingerprintInjector {
         // Override the language properly
         await browserContext.setExtraHTTPHeaders({
             'accept-language': headers['accept-language'],
+        });
+
+        await browserContext.on('page', async (page) => {
+            await page.emulateMedia({ colorScheme: 'dark' });
         });
 
         await browserContext.addInitScript({
@@ -149,6 +154,7 @@ export class FingerprintInjector {
                 clientHeight,
                 clientWidth,
             };
+            overrideBasics();
             // override internationalization API
             overrideIntlAPI(navigatorProps.language);
             // override navigator

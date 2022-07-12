@@ -393,3 +393,8 @@ function overrideUserAgentData(userAgentData) {
     overrideInstancePrototype(window.navigator.userAgentData, { brands, mobile, platform });
 };
 
+function overrideBasics(){
+    Object.defineProperty(window.navigator, 'webdriver', {
+        get: () => false
+    });
+}
