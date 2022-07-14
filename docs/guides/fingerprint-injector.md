@@ -41,7 +41,7 @@ const { FingerprintInjector }  = require('fingerprint-injector');
         browsers: [{ name: 'firefox', minVersion: 88 }],
     });
 
-    const { fingerprint } = fingerprintGenerator.getFingerprint();
+    const browserFingerprintWithHeaders = fingerprintGenerator.getFingerprint();
 
     const fingerprintInjector = new FingerprintInjector();
 
@@ -53,7 +53,7 @@ const { FingerprintInjector }  = require('fingerprint-injector');
         locale: fingerprint.navigator.language,
     });
    // Attach fingerprint
-   await fingerprintInjector.attachFingerprintToPlaywright(context, fingerprint);
+   await fingerprintInjector.attachFingerprintToPlaywright(context, browserFingerprintWithHeaders);
 
    const page = await context.newPage();
 })();
@@ -76,11 +76,11 @@ const puppeteer = require('puppeteer')
         browsers: [{ name: 'chrome', minVersion: 88 }],
     });
 
-    const { fingerprint } = fingerprintGenerator.getFingerprint();
+    const browserFingerprintWithHeaders = fingerprintGenerator.getFingerprint();
     const browser = await puppeteer.launch({headless: false})
     const page = await browser.newPage();
     // Attach fingerprint to page
-    await fingerprintInjector.attachFingerprintToPuppeteer(page, fingerprint);
+    await fingerprintInjector.attachFingerprintToPuppeteer(page, browserFingerprintWithHeaders);
     // Now you can use the page
     await page.goto('https://google.com')
 
