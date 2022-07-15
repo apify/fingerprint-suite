@@ -158,19 +158,17 @@ export class FingerprintInjector {
                 clientHeight,
                 clientWidth,
             };
-            overrideStatic();
             // override internationalization API
             overrideIntlAPI(navigatorProps.language);
-            // override navigator
-            overrideInstancePrototype(window.navigator, navigatorProps);
 
             if (userAgentData) {
                 overrideUserAgentData(userAgentData);
             }
 
             if (window.navigator.webdriver) {
-                (navigatorProps as any).webdriver = webdriver;
+                (navigatorProps as any).webdriver = false;
             }
+            overrideInstancePrototype(window.navigator, navigatorProps);
 
             overrideInstancePrototype(window.screen, newScreen);
             overrideWindowDimensionsProps(windowScreenProps);
