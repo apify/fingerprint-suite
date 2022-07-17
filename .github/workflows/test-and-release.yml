@@ -114,36 +114,36 @@ jobs:
         needs: [ build_and_test ]
         steps:
         - name: Cache Node Modules
-            uses: actions/cache@v2
-            with:
-                path: |
-                    node_modules
-                key: cache-${{ github.run_id }}
+          uses: actions/cache@v2
+          with:
+            path: |
+                node_modules
+            key: cache-${{ github.run_id }}
 
         - name: Turbo cache
-            id: turbo-cache
-            uses: actions/cache@v2
-            with:
+          id: turbo-cache
+          uses: actions/cache@v2
+          with:
             path: .turbo
             key: turbo-${{ github.job }}-${{ github.ref_name }}-${{ github.sha }}
             restore-keys: |
-                turbo-${{ github.job }}-${{ github.ref_name }}-
+              turbo-${{ github.job }}-${{ github.ref_name }}-
 
         - id: tests
-            run: | 
-                echo "::set-output name=botd::$(node $GITHUB_WORKSPACE/test/antibot-services/antibot.js botd)"
-                echo "::set-output name=creepjs::$(node $GITHUB_WORKSPACE/test/antibot-services/antibot.js creepjs)"
+          run: | 
+              echo "::set-output name=botd::$(node $GITHUB_WORKSPACE/test/antibot-services/antibot.js botd)"
+              echo "::set-output name=creepjs::$(node $GITHUB_WORKSPACE/test/antibot-services/antibot.js creepjs)"
         - name: CreepJS badge
-            uses: RubbaBoy/BYOB@v1.3.0
-            with:
+          uses: RubbaBoy/BYOB@v1.3.0
+          with:
             NAME: CreepJS
             LABEL: 'CreepJS (chromium, linux)'
             STATUS: ${{ steps.tests.outputs.creepjs }}
             COLOR: 7900aa
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         - name: BotD badge
-            uses: RubbaBoy/BYOB@v1.3.0
-            with:
+          uses: RubbaBoy/BYOB@v1.3.0
+          with:
             NAME: BotD
             LABEL: 'BotD (chromium, linux)'
             STATUS: ${{ steps.tests.outputs.botd }}
