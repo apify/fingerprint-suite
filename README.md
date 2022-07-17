@@ -59,6 +59,17 @@ const { FingerprintInjector } = require('fingerprint-injector');
     await page.goto("https://apify.com");
 })();
 ```
+
+## Performance
+With ever-improving performance of antibot fingerprinting services, we use some of the industry-leading services to benchmark our performance.
+The following table shows how is the latest build of `fingerprint-suite` doing in tests provided by various open-source fingerprinting services.
+
+The performace is evaluated using school-like grades (A being the best, F being the worst).
+|Service|Grade|
+|---|---|
+|BotD    |![](https://byob.yarr.is/apify/fingerprint-suite/BotD) |
+|CreepJS |![](https://byob.yarr.is/apify/fingerprint-suite/CreepJS)|
+
 ## Support
 
 If you find any bug or issue with any of the fingerprinting tools, please [submit an issue on GitHub](https://github.com/apify/fingerprint-suite/issues).
