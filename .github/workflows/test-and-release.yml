@@ -106,13 +106,15 @@ jobs:
               run: xvfb-run --auto-servernum -- npm test
               if: ${{ matrix.os == 'ubuntu-latest'}}
 
-
     test_antibot:
         name: Test antibot services (with badges)
         if: ((github.ref == 'refs/heads/master') && (github.event_name == 'push'))
         runs-on: ubuntu-latest
         needs: [ build_and_test ]
         steps:
+        - name: Checkout Source code
+          uses: actions/checkout@v3
+
         - name: Cache Node Modules
           uses: actions/cache@v2
           with:
@@ -129,10 +131,16 @@ jobs:
             restore-keys: |
               turbo-${{ github.job }}-${{ github.ref_name }}-
 
+        - name: Build
+          run: npm run ci:build
+        
+        - name: Install Playwright
+          run: npx playwright install --with-deps
+
         - id: tests
           run: | 
-              echo "::set-output name=botd::$(node $GITHUB_WORKSPACE/test/antibot-services/antibot.js botd)"
-              echo "::set-output name=creepjs::$(node $GITHUB_WORKSPACE/test/antibot-services/antibot.js creepjs)"
+              echo "::set-output name=botd::$(xvfb-run --auto-servernum -- node $GITHUB_WORKSPACE/test/antibot-services/antibot.js botd)"
+              echo "::set-output name=creepjs::$(xvfb-run --auto-servernum -- node $GITHUB_WORKSPACE/test/antibot-services/antibot.js creepjs)"
         - name: CreepJS badge
           uses: RubbaBoy/BYOB@v1.3.0
           with:
@@ -152,7 +160,10 @@ jobs:
 
     publish_prerelease:
         name: Publish prerelease
-        if: ((github.ref == 'refs/heads/master') && (github.event_name == 'push') && ${{ !contains(github.event.head_commit.message, '[skip publish]') }})
+        if: |
+            !contains(github.event.head_commit.message, '[skip publish]')
+            && (github.ref == 'refs/heads/master')
+            && (github.event_name == 'push')
         runs-on: ubuntu-latest
         needs: [ lint, build_and_test ]
         steps:
@@ -213,7 +224,10 @@ jobs:
 
     publish_latest:
         name: Publish latest
-        if: ((github.ref == 'refs/heads/stable') && (github.event_name == 'push') && ${{ !contains(github.event.head_commit.message, '[skip publish]') }})
+        if: |
+            !contains(github.event.head_commit.message, '[skip publish]') 
+            && (github.ref == 'refs/heads/stable')
+            && (github.event_name == 'push')
         runs-on: ubuntu-latest
         needs: [ lint, build_and_test ]
         steps:
