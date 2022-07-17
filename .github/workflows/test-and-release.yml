@@ -107,9 +107,52 @@ jobs:
               if: ${{ matrix.os == 'ubuntu-latest'}}
 
 
+    test_antibot:
+        name: Test antibot services (with badges)
+        if: ((github.ref == 'refs/heads/master') && (github.event_name == 'push'))
+        runs-on: ubuntu-latest
+        needs: [ build_and_test ]
+        steps:
+        - name: Cache Node Modules
+            uses: actions/cache@v2
+            with:
+                path: |
+                    node_modules
+                key: cache-${{ github.run_id }}
+
+        - name: Turbo cache
+            id: turbo-cache
+            uses: actions/cache@v2
+            with:
+            path: .turbo
+            key: turbo-${{ github.job }}-${{ github.ref_name }}-${{ github.sha }}
+            restore-keys: |
+                turbo-${{ github.job }}-${{ github.ref_name }}-
+
+        - id: tests
+            run: | 
+                echo "::set-output name=botd::$(node $GITHUB_WORKSPACE/test/antibot-services/antibot.js botd)"
+                echo "::set-output name=creepjs::$(node $GITHUB_WORKSPACE/test/antibot-services/antibot.js creepjs)"
+        - name: CreepJS badge
+            uses: RubbaBoy/BYOB@v1.3.0
+            with:
+            NAME: CreepJS
+            LABEL: 'CreepJS (chromium, linux)'
+            STATUS: ${{ steps.tests.outputs.creepjs }}
+            COLOR: 7900aa
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        - name: BotD badge
+            uses: RubbaBoy/BYOB@v1.3.0
+            with:
+            NAME: BotD
+            LABEL: 'BotD (chromium, linux)'
+            STATUS: ${{ steps.tests.outputs.botd }}
+            COLOR: 0079AA
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
     publish_prerelease:
         name: Publish prerelease
-        if: ((github.ref == 'refs/heads/master') && (github.event_name == 'push'))
+        if: ((github.ref == 'refs/heads/master') && (github.event_name == 'push') && ${{ !contains(github.event.head_commit.message, '[skip publish]') }})
         runs-on: ubuntu-latest
         needs: [ lint, build_and_test ]
         steps:
@@ -170,7 +213,7 @@ jobs:
 
     publish_latest:
         name: Publish latest
-        if: ((github.ref == 'refs/heads/stable') && (github.event_name == 'push'))
+        if: ((github.ref == 'refs/heads/stable') && (github.event_name == 'push') && ${{ !contains(github.event.head_commit.message, '[skip publish]') }})
         runs-on: ubuntu-latest
         needs: [ lint, build_and_test ]
         steps:
