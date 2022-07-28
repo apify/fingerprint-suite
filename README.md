@@ -1,8 +1,8 @@
 <h1 align="center">
     <a href="https://apify.github.io/fingerprint-suite/">
         <picture>
-          <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/apify/fingerprint-suite/master/website/static/img/logo_big_dark.svg">
-          <img alt="Fingerprinting suite" src="https://raw.githubusercontent.com/apify/fingerprint-suite/master/website/static/img/logo_big_light.svg" width="500">
+          <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/apify/fingerprint-suite/master/website/static/img/logo_big_light.svg">
+          <img alt="Fingerprinting suite" src="https://raw.githubusercontent.com/apify/fingerprint-suite/master/website/static/img/logo_big_dark.svg" width="500">
         </picture>
     </a>
     <br>
@@ -59,6 +59,17 @@ const { FingerprintInjector } = require('fingerprint-injector');
     await page.goto("https://apify.com");
 })();
 ```
+
+## Performance
+With ever-improving performance of antibot fingerprinting services, we use some of the industry-leading services to benchmark our performance.
+The following table shows how is the latest build of `fingerprint-suite` doing in tests provided by various open-source fingerprinting services.
+
+The performace is evaluated using school-like grades (A being the best, F being the worst).
+|Service|Grade|
+|---|---|
+|BotD    |![](https://byob.yarr.is/apify/fingerprint-suite/BotD) |
+|CreepJS |![](https://byob.yarr.is/apify/fingerprint-suite/CreepJS)|
+
 ## Support
 
 If you find any bug or issue with any of the fingerprinting tools, please [submit an issue on GitHub](https://github.com/apify/fingerprint-suite/issues).

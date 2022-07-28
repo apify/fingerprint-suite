@@ -346,7 +346,8 @@ function overrideWindowDimensionsProps(props) {
 
 // eslint-disable-next-line no-unused-vars
 function overrideDocumentDimensionsProps(props) {
-    overrideScreenByReassigning(window.document.body, props);
+    // FIX THIS = non-zero values here block the injecting process?
+    // overrideScreenByReassigning(window.document.body, props);
 }
 
 // eslint-disable-next-line no-unused-vars
@@ -393,3 +394,6 @@ function overrideUserAgentData(userAgentData) {
     overrideInstancePrototype(window.navigator.userAgentData, { brands, mobile, platform });
 };
 
+function overrideStatic(){
+    window.SharedArrayBuffer = undefined;
+}

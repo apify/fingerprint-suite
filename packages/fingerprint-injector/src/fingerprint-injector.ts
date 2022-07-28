@@ -20,6 +20,7 @@ declare function overrideBattery(batteryInfo?: Record<string, string|number>) : 
 declare function overrideCodecs(audioCodecs: Record<string, string>, videoCodecs: Record<string, string>) : void;
 declare function overrideWebGl(webGlInfo: Record<string, string>) : void;
 declare function overrideIntlAPI(language: string) : void;
+declare function overrideStatic() : void;
 
 /**
  * Fingerprint injector class.
@@ -46,6 +47,11 @@ export class FingerprintInjector {
         // Override the language properly
         await browserContext.setExtraHTTPHeaders({
             'accept-language': headers['accept-language'],
+        });
+
+        await browserContext.on('page', (page) => {
+            page.emulateMedia({ colorScheme: 'dark' })
+                .catch(() => {});
         });
 
         await browserContext.addInitScript({
@@ -75,6 +81,10 @@ export class FingerprintInjector {
         await page.setExtraHTTPHeaders({
             'accept-language': headers['accept-language'],
         });
+
+        await page.emulateMediaFeatures([
+            { name: 'prefers-color-scheme', value: 'dark' },
+        ]);
 
         await page.evaluateOnNewDocument(this.getInjectableFingerprintFunction(enhancedFingerprint));
     }
@@ -151,16 +161,16 @@ export class FingerprintInjector {
             };
             // override internationalization API
             overrideIntlAPI(navigatorProps.language);
-            // override navigator
-            overrideInstancePrototype(window.navigator, navigatorProps);
+            overrideStatic();
 
             if (userAgentData) {
                 overrideUserAgentData(userAgentData);
             }
 
             if (window.navigator.webdriver) {
-                (navigatorProps as any).webdriver = webdriver;
+                (navigatorProps as any).webdriver = false;
             }
+            overrideInstancePrototype(window.navigator, navigatorProps);
 
             overrideInstancePrototype(window.screen, newScreen);
             overrideWindowDimensionsProps(windowScreenProps);
