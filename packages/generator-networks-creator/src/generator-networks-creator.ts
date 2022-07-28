@@ -29,25 +29,22 @@ function isEdge(browserAndVersion: string) {
 }
 
 async function prepareRecords(records: Record<string, any>[], preprocessingType: string) : Promise<Record<string, any>[]> {
-    const cleanedRecords = [];
-    for (let x = 0; x < records.length; x++) {
-        const record = records[x];
-        const { headers } = record.requestFingerprint;
-
-        let headersUserAgent = '';
-        if ('user-agent' in headers) {
-            headersUserAgent = headers['user-agent'];
-        } else {
-            headersUserAgent = headers['User-Agent'];
-        }
-
-        record.userAgent = headersUserAgent;
-
-        const browserUserAgent = record.browserFingerprint.userAgent;
-        if (browserUserAgent === headersUserAgent) {
-            cleanedRecords.push(record);
-        }
-    }
+    const cleanedRecords = records
+        .filter((
+            {
+                requestFingerprint: { headers },
+                browserFingerprint,
+            }) => {
+            return (headers['user-agent'] ?? headers['User-Agent']) === browserFingerprint.userAgent;
+        })
+        .filter(
+            ({
+                browserFingerprint: {
+                    screen: { width, height },
+                },
+            }) => width >= 1280 || width < height,
+        )
+        .map((record) => ({ ...record, userAgent: record.browserFingerprint.userAgent } as any));
 
     // TODO this could break if the list is not there anymore
     // The robots list is available under the MIT license, for details see https://github.com/atmire/COUNTER-Robots/blob/master/LICENSE
