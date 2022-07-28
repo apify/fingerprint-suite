@@ -42,7 +42,7 @@ async function prepareRecords(records: Record<string, any>[], preprocessingType:
                 browserFingerprint: {
                     screen: { width, height },
                 },
-            }) => width >= 1280 || width < height,
+            }) => ((width >= 1280) || (width < height)),
         )
         .map((record) => ({ ...record, userAgent: record.browserFingerprint.userAgent } as any));
 
