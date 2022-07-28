@@ -395,7 +395,5 @@ function overrideUserAgentData(userAgentData) {
 };
 
 function overrideStatic(){
-    if(navigator.webdriver){
-        overrideInstancePrototype(window.navigator, { webdriver: false });
-    }
+    window.SharedArrayBuffer = undefined;
 }

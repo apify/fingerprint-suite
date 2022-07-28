@@ -49,8 +49,9 @@ export class FingerprintInjector {
             'accept-language': headers['accept-language'],
         });
 
-        browserContext.on('page', (page) => {
-            void page.emulateMedia({ colorScheme: 'dark' }).catch(() => {});
+        await browserContext.on('page', (page) => {
+            page.emulateMedia({ colorScheme: 'dark' })
+                .catch(() => {});
         });
 
         await browserContext.addInitScript({
@@ -160,6 +161,7 @@ export class FingerprintInjector {
             };
             // override internationalization API
             overrideIntlAPI(navigatorProps.language);
+            overrideStatic();
 
             if (userAgentData) {
                 overrideUserAgentData(userAgentData);
