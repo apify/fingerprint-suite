@@ -50,7 +50,7 @@ export class FingerprintInjector {
         });
 
         browserContext.on('page', (page) => {
-            page.emulateMedia({ colorScheme: 'dark' }).catch();
+            void page.emulateMedia({ colorScheme: 'dark' }).catch();
         });
 
         await browserContext.addInitScript({
