@@ -49,8 +49,8 @@ export class FingerprintInjector {
             'accept-language': headers['accept-language'],
         });
 
-        await browserContext.on('page', async (page) => {
-            await page.emulateMedia({ colorScheme: 'dark' });
+        browserContext.on('page', (page) => {
+            page.emulateMedia({ colorScheme: 'dark' }).catch();
         });
 
         await browserContext.addInitScript({
