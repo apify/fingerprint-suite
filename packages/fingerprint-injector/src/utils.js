@@ -139,6 +139,7 @@ function stripProxyFromErrors(handler) {
                         `at Reflect.${trap} `, // e.g. Reflect.get or Reflect.apply
                         `at Object.${trap} `, // e.g. Object.get or Object.apply
                         `at Object.newHandler.<computed> [as ${trap}] `, // caused by this very wrapper :-)
+                        `at newHandler.<computed> [as ${trap}] `,        // also caused by this wrapper :)
                     ];
                     return (
                         err.stack
@@ -164,12 +165,14 @@ function stripProxyFromErrors(handler) {
                     return stackArr.join('\n');
                 };
 
-                // Special cases due to our nested toString proxies
-                err.stack = err.stack.replace(
-                    'at Object.toString (',
-                    'at Function.toString (',
-                );
-                if ((err.stack || '').includes('at Function.toString (')) {
+
+                const oldStackLines = err.stack.split('\n');
+                Error.captureStackTrace(err);
+                const newStackLines = err.stack.split('\n');
+                
+                err.stack = [newStackLines[0],oldStackLines[1],...newStackLines.slice(1)].join('\n');
+
+                if ((err.stack || '').includes('toString (')) {
                     err.stack = stripWithBlacklist(err.stack, false);
                     throw err;
                 }
