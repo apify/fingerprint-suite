@@ -66,28 +66,40 @@ function redirectToString(proxyObj, originalObj) {
                 return makeNativeString('toString');
             }
 
-            // `toString` targeted at our proxied Object detected
-            if (ctx === proxyObj) {
-                const fallback = () => (originalObj && originalObj.name
-                    ? makeNativeString(originalObj.name)
-                    : makeNativeString(proxyObj.name));
-
-                // Return the toString representation of our original object if possible
-                return `${originalObj}` || fallback();
-            }
-
-            // Check if the toString prototype of the context is the same as the global prototype,
-            // if not indicates that we are doing a check across different windows., e.g. the iframeWithdirect` test case
-            const hasSameProto = Object.getPrototypeOf(
-                Function.prototype.toString,
-            ).isPrototypeOf(ctx.toString); // eslint-disable-line no-prototype-builtins
-            if (!hasSameProto) {
-                // Pass the call on to the local Function.prototype.toString instead
-                return ctx.toString();
-            }
+            if (Object.getPrototypeOf(ctx) === proxyObj){
+                try {
+                    return target.call(ctx);    
+                } catch (err) {
+                    err.stack = err.stack.replace(
+                        'at Object.toString (',
+                        'at Function.toString (',
+                    );
+                throw err;
+            }}
 
             return target.call(ctx);
         },
+        get: function(target, prop, receiver) {
+            if (prop === 'toString') {
+              return new Proxy(target.toString, {
+                apply: function(tget, thisArg, argumentsList) {
+                    try {
+                        return tget.bind(thisArg)(...argumentsList);
+                    } catch (err) {
+                        if(Object.getPrototypeOf(thisArg) === tget){
+                            err.stack = err.stack.replace(
+                                'at Object.toString (',
+                                'at Function.toString (',
+                            );
+                        }
+
+                        throw err;
+                    }
+                }
+              });
+            }
+            return Reflect.get(...arguments);
+          }
     };
 
     const toStringProxy = new Proxy(
