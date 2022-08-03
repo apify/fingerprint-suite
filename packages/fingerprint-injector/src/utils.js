@@ -31,7 +31,10 @@ function overridePropertyWithProxy(masterObject, propertyName, proxyHandler) {
 function overrideGetterWithProxy(masterObject, propertyName, proxyHandler) {
     const fn = Object.getOwnPropertyDescriptor(masterObject, propertyName).get;
     const fnStr = fn.toString; // special getter function string
-    const proxyObj = new Proxy(fn, stripProxyFromErrors(proxyHandler));
+    const proxyObj = new Proxy(fn, {
+        ...stripProxyFromErrors(proxyHandler),
+        setPrototypeOf: (target, newProto) => false,
+    });
 
     redefineProperty(masterObject, propertyName, { get: proxyObj });
     redirectToString(proxyObj, fnStr);
@@ -61,6 +64,9 @@ function overrideInstancePrototype(instance, overrideObj) {
 
 function redirectToString(proxyObj, originalObj) {
     const handler = {
+        setPrototypeOf: (target, newProto) => {
+            return false;
+        },
         apply(target, ctx) {
             // This fixes e.g. `HTMLMediaElement.prototype.canPlayType.toString + ""`
             if (ctx === Function.prototype.toString) {
