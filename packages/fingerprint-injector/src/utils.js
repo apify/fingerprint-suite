@@ -23,6 +23,31 @@ function overridePropertyWithProxy(masterObject, propertyName, proxyHandler) {
     redirectToString(proxy, originalObject);
 }
 
+const prototypeProxyHandler = {
+    setPrototypeOf: (target, newProto) => {
+        try {
+            throw new TypeError('Cyclic __proto__ value');
+        } catch (e) {
+            const oldStack = e.stack;
+            const oldProto = Object.getPrototypeOf(target);
+            Object.setPrototypeOf(target, newProto);
+            try {
+                // shouldn't throw if prototype is okay, will throw if there is a prototype cycle (maximum call stack size exceeded).
+                target['nonexistentpropertytest'];
+                return true;
+            }
+            catch (err) {
+                Object.setPrototypeOf(target, oldProto);
+                if (oldStack.includes('Reflect.setPrototypeOf')) return false;
+                const newError = new TypeError('Cyclic __proto__ value');
+                const stack = oldStack.split('\n');
+                newError.stack = [stack[0], ...stack.slice(2)].join('\n');
+                throw newError;
+            }
+        }
+    },
+}
+
 /**
  * @param masterObject Object to override.
  * @param propertyName Property to override.
@@ -33,7 +58,7 @@ function overrideGetterWithProxy(masterObject, propertyName, proxyHandler) {
     const fnStr = fn.toString; // special getter function string
     const proxyObj = new Proxy(fn, {
         ...stripProxyFromErrors(proxyHandler),
-        setPrototypeOf: (target, newProto) => false,
+        ...prototypeProxyHandler,
     });
 
     redefineProperty(masterObject, propertyName, { get: proxyObj });
@@ -65,7 +90,14 @@ function overrideInstancePrototype(instance, overrideObj) {
 function redirectToString(proxyObj, originalObj) {
     const handler = {
         setPrototypeOf: (target, newProto) => {
-            return false;
+            try {
+                throw new TypeError('Cyclic __proto__ value');
+            } catch (e) {
+                if (e.stack.includes('Reflect.setPrototypeOf')) return false;
+                // const stack = e.stack.split('\n');
+                // e.stack = [stack[0], ...stack.slice(2)].join('\n');
+                throw e;
+            }
         },
         apply(target, ctx) {
             // This fixes e.g. `HTMLMediaElement.prototype.canPlayType.toString + ""`
@@ -217,12 +249,9 @@ function overrideWebGl(webGl) {
             .join('\n');
 
         const getParameterProxyHandler = {
+            ...prototypeProxyHandler,
             get(target, key) {
                 try {
-                    // Mitigate Chromium bug (#130)
-                    if (typeof target[key] === 'function') {
-                        return target[key].bind(target);
-                    }
                     return Reflect.get(target, key);
                 } catch (err) {
                     err.stack = stripErrorStack(err.stack);
@@ -301,10 +330,12 @@ const overrideCodecs = (audioCodecs, videoCodecs) => {
 // eslint-disable-next-line no-unused-vars
 function overrideBattery(batteryInfo) {
     const getBattery = {
+        ...prototypeProxyHandler,
         // eslint-disable-next-line
         apply: async function () {
             return batteryInfo;
         },
+        
     };
 
     if(navigator.getBattery) { // Firefox does not have this method - to be fixed
