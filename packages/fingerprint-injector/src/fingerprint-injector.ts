@@ -54,6 +54,30 @@ export class FingerprintInjector {
                 .catch(() => {});
         });
 
+        const workerBootstrap = `
+        if (typeof WorkerGlobalScope !== 'undefined') {
+            Object.defineProperty(self.navigator, 'userAgent', { get: () => "${browserFingerprintWithHeaders.fingerprint.navigator.userAgent}" });
+            Object.defineProperty(self.navigator, 'deviceMemory', { get: () => ${browserFingerprintWithHeaders.fingerprint.navigator.deviceMemory} });
+            Object.defineProperty(self.navigator, 'platform', { get: () => "${browserFingerprintWithHeaders.fingerprint.navigator.platform}" });
+            Object.defineProperty(self.navigator, 'hardwareConcurrency', {
+                get: () => ${browserFingerprintWithHeaders.fingerprint.navigator.hardwareConcurrency} });
+        }
+        `;
+
+        await browserContext.route('**/*', (route, request) => {
+            if (['script', 'other'].includes(request.resourceType())) {
+                browserContext.request.fetch(request)
+                    .then((response) => response?.text())
+                    .then((script) => route.fulfill({
+                        status: 200,
+                        contentType: 'application/js',
+                        body: workerBootstrap + script,
+                    })).catch(() => {});
+                return;
+            }
+            route.continue().catch(() => {});
+        }).catch(() => {});
+
         await browserContext.addInitScript({
             content,
         });
