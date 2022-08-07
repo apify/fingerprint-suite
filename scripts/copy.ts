@@ -2,7 +2,11 @@ import { copyFileSync, readFileSync, writeFileSync, readdirSync } from 'fs';
 import { resolve } from 'path';
 import { execSync } from 'node:child_process';
 
-const options = process.argv.slice(2).reduce((args, arg) => {
+const options: {
+    preid?: string;
+    canary?: boolean;
+    bump: 'patch'|'minor'|'major';
+} = process.argv.slice(2).reduce((args, arg) => {
     const [key, value] = arg.split('=');
     args[key.substring(2)] = value ?? true;
 
@@ -26,7 +30,7 @@ function rewrite(path: string, replacer: (from: string) => string): void {
 /**
  * Checks next dev version number based on the local package via `npm show`.
  */
-function getNextVersion() {
+function getNextVersion(bump: typeof options['bump']) {
     const versions: string[] = [];
     // eslint-disable-next-line @typescript-eslint/no-var-requires,import/no-dynamic-require,global-require
     const pkgJson = require(resolve('package.json'));
@@ -39,19 +43,23 @@ function getNextVersion() {
         // the package might not have been published yet
     }
 
-    if (versions.some((v) => v === pkgJson.version)) {
-        // eslint-disable-next-line no-console
-        console.error(`before-deploy: A release with version ${pkgJson.version} already exists. Please increment version accordingly.`);
-        process.exit(1);
+    if (options.canary) {
+        if (versions.some((v) => v === pkgJson.version)) {
+            // eslint-disable-next-line no-console
+            console.error(`before-deploy: A release with version ${pkgJson.version} already exists. Please increment version accordingly.`);
+            process.exit(1);
+        }
+
+        const preid = options.preid ?? 'alpha';
+        const prereleaseNumbers = versions
+            .filter((v) => v.startsWith(`${pkgJson.version}-${preid}.`))
+            .map((v) => Number(v.match(/\.(\d+)$/)?.[1]));
+        const lastPrereleaseNumber = Math.max(-1, ...prereleaseNumbers);
+
+        return `${pkgJson.version}-${preid}.${lastPrereleaseNumber + 1}`;
     }
-
-    const preid = options.preid ?? 'alpha';
-    const prereleaseNumbers = versions
-        .filter((v) => v.startsWith(`${pkgJson.version}-${preid}.`))
-        .map((v) => Number(v.match(/\.(\d+)$/)?.[1]));
-    const lastPrereleaseNumber = Math.max(-1, ...prereleaseNumbers);
-
-    return `${pkgJson.version}-${preid}.${lastPrereleaseNumber + 1}`;
+    const [_, major, minor, patch] = pkgJson.version.match(/(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(-.+\.\d+)?/);
+    return `${Number(major) + (bump === 'major' ? 1 : 0)}.${Number(minor) + (bump === 'minor' ? 1 : 0)}.${Number(patch) + (bump === 'patch' ? 1 : 0)}`;
 }
 
 // as we publish only the dist folder, we need to copy some meta files inside (readme/license/package.json)
@@ -60,10 +68,10 @@ const root = resolve(__dirname, '..');
 const target = resolve(process.cwd(), 'dist');
 const pkgPath = resolve(process.cwd(), 'package.json');
 
-if (options.canary) {
+if (options.canary || options.bump) {
     // eslint-disable-next-line @typescript-eslint/no-var-requires,import/no-dynamic-require,global-require
     const pkgJson = require(pkgPath);
-    const nextVersion = getNextVersion();
+    const nextVersion = getNextVersion(options.bump);
     pkgJson.version = nextVersion;
 
     const packageNames = readdirSync(`${__dirname}/../packages/`);
