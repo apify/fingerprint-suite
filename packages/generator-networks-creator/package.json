@@ -1,6 +1,6 @@
 {
     "name": "generator-networks-creator",
-    "version": "1.0.0",
+    "version": "1.0.2",
     "engines": {
         "node": ">=16.0.0"
     },
@@ -16,8 +16,9 @@
         }
     },
     "dependencies": {
-        "generative-bayesian-network": "^2.0.0",
-        "node-fetch": "^2.6.7"
+        "generative-bayesian-network": "^2.0.4",
+        "node-fetch": "^2.6.7",
+        "tslib": "^2.4.0"
     },
     "scripts": {
         "build": "npm run compile && npm run copyfiles",
