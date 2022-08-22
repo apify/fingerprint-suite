@@ -52,7 +52,8 @@ function overrideInstancePrototype(instance, overrideObj) {
                     makeHandler().getterValue(overrideObj[key]),
                 );
             } catch (e) {
-                console.error(`Could not override property: ${key} on ${instance}. Reason: ${e.message} `);
+                return false;
+                // console.error(`Could not override property: ${key} on ${instance}. Reason: ${e.message} `); // some fingerprinting services can be listening
             }
         }
     });
@@ -285,11 +286,13 @@ function overrideBattery(batteryInfo) {
         },
     };
 
-    overridePropertyWithProxy(
-        Object.getPrototypeOf(navigator),
-        'getBattery',
-        getBattery,
-    );
+    if(navigator.getBattery) { // Firefox does not have this method - to be fixed
+        overridePropertyWithProxy(
+            Object.getPrototypeOf(navigator),
+            'getBattery',
+            getBattery,
+        );
+    }
 }
 
 function overrideIntlAPI(language){
@@ -385,13 +388,15 @@ function overrideUserAgentData(userAgentData) {
         },
     };
 
-    overridePropertyWithProxy(
-        Object.getPrototypeOf(window.navigator.userAgentData),
-        'getHighEntropyValues',
-        getHighEntropyValues,
-    );
-
-    overrideInstancePrototype(window.navigator.userAgentData, { brands, mobile, platform });
+    if(window.navigator.userAgentData){ // Firefox does not contain this property - to be fixed 
+        overridePropertyWithProxy(
+            Object.getPrototypeOf(window.navigator.userAgentData),
+            'getHighEntropyValues',
+            getHighEntropyValues,
+        );
+    
+        overrideInstancePrototype(window.navigator.userAgentData, { brands, mobile, platform });
+    }
 };
 
 function overrideStatic(){
