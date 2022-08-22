@@ -69,7 +69,6 @@ function redirectToString(proxyObj, originalObj) {
 
             // `toString` targeted at our proxied Object detected
             if (ctx === proxyObj) {
-                console.log(`Redirecting toString for ${proxyObj.name}`);
                 // Return the toString representation of our original object if possible
                 return makeNativeString(proxyObj.name);
             }
