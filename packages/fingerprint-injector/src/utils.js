@@ -69,12 +69,9 @@ function redirectToString(proxyObj, originalObj) {
 
             // `toString` targeted at our proxied Object detected
             if (ctx === proxyObj) {
-                const fallback = () => (originalObj && originalObj.name
-                    ? makeNativeString(originalObj.name)
-                    : makeNativeString(proxyObj.name));
-
+                console.log(`Redirecting toString for ${proxyObj.name}`);
                 // Return the toString representation of our original object if possible
-                return `${originalObj}` || fallback();
+                return makeNativeString(proxyObj.name);
             }
 
             // Check if the toString prototype of the context is the same as the global prototype,
@@ -244,12 +241,21 @@ const overrideCodecs = (audioCodecs, videoCodecs) => {
         ...Object.fromEntries(Object.entries(audioCodecs).map(([key, value]) => [`audio/${key}`, value])),
         ...Object.fromEntries(Object.entries(videoCodecs).map(([key, value]) => [`video/${key}`, value])),
     };
+
     const findCodec = (codecString) => {
-        const codec = Object.entries(codecs).find(([key]) => key === codecString);
+        const [mime, codecSpec] = codecString.split(';');
+        if (mime === 'video/mp4') {
+            if (codecSpec.includes('avc1.42E01E')) { // codec is missing from Chromium
+                return {name: mime, state: 'probably'};
+            }
+        }
+
+        const codec = Object.entries(codecs).find(([key]) => key === codecString.split(';')[0]);
         if(codec) {
             return {name: codec[0], state: codec[1]};
         }
-        throw new Error(`Codec ${codecString} not found in ${JSON.stringify(codecs)}`);
+
+        return undefined;
     };
 
     const canPlayType = {
