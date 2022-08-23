@@ -17,10 +17,8 @@ module.exports = {
       repoUrl: 'https://github.com/apify/fingerprint-suite',
   },
   trailingSlash: true,
-  onBrokenLinks:
-  /** @type {import('@docusaurus/types').ReportingSeverity} */ ('error'),
-  onBrokenMarkdownLinks:
-  /** @type {import('@docusaurus/types').ReportingSeverity} */ ('error'),
+  onBrokenLinks: 'warn',
+  onBrokenMarkdownLinks: 'warn',
   presets: /** @type {import('@docusaurus/types').PresetConfig[]} */ ([
     [
         '@docusaurus/preset-classic',
