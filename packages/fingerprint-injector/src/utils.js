@@ -474,6 +474,180 @@ function overrideUserAgentData(userAgentData) {
     }
 };
 
+function fixWindowChrome(){
+    if (!window.chrome) {
+        Object.defineProperty(window, 'chrome', {
+            writable: true,
+            enumerable: true,
+            configurable: false, 
+            value: {} // incomplete, todo!
+        })
+    }
+}
+
+// heavily inspired by https://github.com/berstend/puppeteer-extra/, check it out!
+function fixPermissions(){
+    const isSecure = document.location.protocol.startsWith('https')
+      
+    if (isSecure) {
+        overrideGetterWithProxy(Notification, 'permission', {
+            apply() {
+                return 'default'
+            }
+        });
+    }
+
+    if (!isSecure) {
+        const handler = {
+            apply(target, ctx, args) {
+                const param = (args || [])[0]
+
+                const isNotifications =
+                param && param.name && param.name === 'notifications'
+                if (!isNotifications) {
+                return utils.cache.Reflect.apply(...arguments)
+                }
+
+                return Promise.resolve(
+                Object.setPrototypeOf(
+                    {
+                    state: 'denied',
+                    onchange: null
+                    },
+                    PermissionStatus.prototype
+                )
+                )
+            }
+        };
+
+        overridePropertyWithProxy(Permissions.prototype, 'query', handler)
+    }
+}
+
+function fixIframeContentWindow(){
+    try {
+        // Adds a contentWindow proxy to the provided iframe element
+        const addContentWindowProxy = iframe => {
+          const contentWindowProxy = {
+            get(target, key) {
+              if (key === 'self') {
+                return this
+              }
+              if (key === 'frameElement') {
+                return iframe
+              }
+
+              if (key === '0') {
+                return undefined
+              }
+              return Reflect.get(target, key)
+            }
+          }
+
+          if (!iframe.contentWindow) {
+            const proxy = new Proxy(window, contentWindowProxy)
+            Object.defineProperty(iframe, 'contentWindow', {
+              get() {
+                return proxy
+              },
+              set(newValue) {
+                return newValue // contentWindow is immutable
+              },
+              enumerable: true,
+              configurable: false
+            })
+          }
+        }
+
+        // Handles iframe element creation, augments `srcdoc` property so we can intercept further
+        const handleIframeCreation = (target, thisArg, args) => {
+          const iframe = target.apply(thisArg, args)
+
+          // We need to keep the originals around
+          const _iframe = iframe
+          const _srcdoc = _iframe.srcdoc
+
+          // Add hook for the srcdoc property
+          // We need to be very surgical here to not break other iframes by accident
+          Object.defineProperty(iframe, 'srcdoc', {
+            configurable: true, // Important, so we can reset this later
+            get: function() {
+              return _srcdoc
+            },
+            set: function(newValue) {
+              addContentWindowProxy(this)
+              // Reset property, the hook is only needed once
+              Object.defineProperty(iframe, 'srcdoc', {
+                configurable: false,
+                writable: false,
+                value: _srcdoc
+              })
+              _iframe.srcdoc = newValue
+            }
+          })
+          return iframe
+        }
+
+        // Adds a hook to intercept iframe creation events
+        const addIframeCreationSniffer = () => {
+          /* global document */
+            const createElementHandler = {
+                // Make toString() native
+                get(target, key) {
+                return Reflect.get(target, key)
+                },
+                apply: function(target, thisArg, args) {
+                    if (`${args[0]}`.toLowerCase() === 'iframe') {
+                        // Everything as usual
+                        return handleIframeCreation(target, thisArg, args)
+                    }
+                    return target.apply(thisArg, args)
+                }
+            }
+
+            // All this just due to iframes with srcdoc bug
+            overridePropertyWithProxy(
+                document,
+                'createElement',
+                createElementHandler
+            )
+        }
+
+        // Let's go
+        addIframeCreationSniffer()
+      } catch (err) {
+        console.warn(err)
+      }
+}
+
+function fixPluginArray() {
+    if(window.navigator.plugins.length !== 0){
+        return;
+    }
+
+    Object.defineProperty(navigator, 'plugins', {
+        get: () => {
+            const ChromiumPDFPlugin = Object.create(Plugin.prototype, {
+                description: { value: 'Portable Document Format', enumerable: false },
+                filename: { value: 'internal-pdf-viewer', enumerable: false },
+                name: { value: 'Chromium PDF Plugin', enumerable: false },
+            });
+            
+            return Object.create(PluginArray.prototype, {
+                length: { value: 1 },
+                0: { value: ChromiumPDFPlugin },
+            });
+        },
+    });
+}
+
+function runHeadlessFixes(){
+    fixWindowChrome();
+    fixPermissions();
+    fixIframeContentWindow();   
+    fixPluginArray();
+}
+
 function overrideStatic(){
     window.SharedArrayBuffer = undefined;
 }

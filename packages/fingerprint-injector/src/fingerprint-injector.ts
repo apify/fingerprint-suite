@@ -21,6 +21,7 @@ declare function overrideCodecs(audioCodecs: Record<string, string>, videoCodecs
 declare function overrideWebGl(webGlInfo: Record<string, string>) : void;
 declare function overrideIntlAPI(language: string) : void;
 declare function overrideStatic() : void;
+declare function runHeadlessFixes() : void;
 
 /**
  * Fingerprint injector class.
@@ -159,6 +160,8 @@ export class FingerprintInjector {
                 clientHeight,
                 clientWidth,
             };
+
+            runHeadlessFixes();
             // override internationalization API
             overrideIntlAPI(navigatorProps.language);
             overrideStatic();
