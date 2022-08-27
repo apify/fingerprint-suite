@@ -16,7 +16,7 @@
         }
     },
     "dependencies": {
-        "@apify/log": "^1.0.5",
+        "@apify/log": "^2.0.0",
         "fingerprint-generator": "^2.0.7",
         "tslib": "^2.4.0"
     },
