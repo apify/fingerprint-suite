@@ -19,7 +19,7 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             -   name: Checkout Source code
-                uses: actions/checkout@v2
+                uses: actions/checkout@v3
                 with:
                     token: ${{ secrets.GH_TOKEN }}
 
@@ -41,7 +41,7 @@ jobs:
         runs-on: ubuntu-latest
 
         steps:
-            - uses: actions/checkout@v2
+            - uses: actions/checkout@v3
             - name: Use Node.js 16 
               uses: actions/setup-node@v1 
               with:
@@ -70,7 +70,7 @@ jobs:
                 node-version: [ 16, 18 ]
 
         steps:
-            - uses: actions/checkout@v2
+            - uses: actions/checkout@v3
             - name: Use Node.js ${{ matrix.node-version }}
               uses: actions/setup-node@v1
               with:
@@ -232,7 +232,7 @@ jobs:
         needs: [ lint, build_and_test ]
         steps:
             -   name: Checkout Source code
-                uses: actions/checkout@v2
+                uses: actions/checkout@v3
                 with:
                     token: ${{ secrets.GH_TOKEN }}
 
