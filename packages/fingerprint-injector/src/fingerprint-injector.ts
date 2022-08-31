@@ -1,8 +1,6 @@
 import path from 'path';
-import log from '@apify/log';
 import { readFileSync } from 'fs';
 import { BrowserFingerprintWithHeaders, Fingerprint } from 'fingerprint-generator';
-
 import { Page } from 'puppeteer';
 import { BrowserContext } from 'playwright';
 import { UTILS_FILE_NAME } from './constants';
@@ -28,7 +26,6 @@ declare function runHeadlessFixes() : void;
  * @class
  */
 export class FingerprintInjector {
-    private log = log.child({ prefix: 'FingerprintInjector' });
     private utilsJs = this._loadUtils();
 
     /**
@@ -42,7 +39,6 @@ export class FingerprintInjector {
         const { fingerprint, headers } = browserFingerprintWithHeaders;
         const enhancedFingerprint = this._enhanceFingerprint(fingerprint);
 
-        this.log.debug(`Using fingerprint`, { fingerprint: enhancedFingerprint });
         const content = this.getInjectableFingerprintFunction(enhancedFingerprint);
 
         // Override the language properly
@@ -71,7 +67,6 @@ export class FingerprintInjector {
         const enhancedFingerprint = this._enhanceFingerprint(fingerprint);
         const { screen: { width, height }, userAgent } = enhancedFingerprint;
 
-        this.log.debug(`Using fingerprint`, { fingerprint: enhancedFingerprint });
         await page.setUserAgent(userAgent);
 
         await page.setViewport({
@@ -97,7 +92,6 @@ export class FingerprintInjector {
         const { fingerprint } = browserFingerprintWithHeaders;
         const enhancedFingerprint = this._enhanceFingerprint(fingerprint);
 
-        this.log.debug(`Using fingerprint`, { fingerprint: enhancedFingerprint });
         return this.getInjectableFingerprintFunction(enhancedFingerprint);
     }
 
