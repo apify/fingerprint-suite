@@ -1,6 +1,6 @@
 import { BayesianNetwork } from 'generative-bayesian-network';
-
 import ow from 'ow';
+import { readFileSync } from 'fs';
 import {
     getBrowser,
     getUserAgent,
@@ -20,9 +20,6 @@ import {
     HTTP1_SEC_FETCH_ATTRIBUTES,
     HTTP2_SEC_FETCH_ATTRIBUTES,
 } from './constants';
-
-import headersOrder from './data_files/headers-order.json';
-import uniqueBrowserStrings from './data_files/browser-helper-file.json';
 
 const browserSpecificationShape = {
     name: ow.string,
@@ -156,6 +153,8 @@ export class HeaderGenerator {
 
     private uniqueBrowsers: HttpBrowserObject[];
 
+    private headersOrder: string[];
+
     /**
     * @param options Default header generation options used - unless overridden.
     */
@@ -179,6 +178,9 @@ export class HeaderGenerator {
             browserListQuery,
         };
         this.uniqueBrowsers = [];
+
+        this.headersOrder = JSON.parse(readFileSync(`${__dirname}/data_files/headers-order.json`).toString());
+        const uniqueBrowserStrings = JSON.parse(readFileSync(`${__dirname}/data_files/browser-helper-file.json`, 'utf8').toString());
 
         for (const browserString of uniqueBrowserStrings) {
             // There are headers without user agents in the datasets we used to configure the generator. They should be disregarded.
@@ -247,7 +249,7 @@ export class HeaderGenerator {
         return this.orderHeaders({
             ...generatedSample,
             ...requestDependentHeaders,
-        }, (headersOrder as Record<string, any>)[generatedHttpAndBrowser.name]);
+        }, (this.headersOrder as Record<string, any>)[generatedHttpAndBrowser.name]);
     }
 
     /**
@@ -427,7 +429,7 @@ export class HeaderGenerator {
             return [];
         }
 
-        return (headersOrder as Record<string, any>)[browser];
+        return (this.headersOrder as Record<string, any>)[browser];
     }
 
     private _browserVersionIsLesserOrEquals(browserVersionL: number[], browserVersionR: number[]) {

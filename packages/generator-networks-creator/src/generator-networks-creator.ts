@@ -194,7 +194,7 @@ export class GeneratorNetworksCreator {
                 }
             }
 
-            record.pluginsData = pluginCharacteristics !== {} ? pluginCharacteristics : missingValueDatasetToken;
+            record.pluginsData = Object.keys(pluginCharacteristics).length !== 0 ? pluginCharacteristics : missingValueDatasetToken;
 
             for (const attribute of Object.keys(record)) {
                 if ([null, '', undefined].includes(record[attribute])) {

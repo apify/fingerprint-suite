@@ -64,7 +64,6 @@
         "gen-esm-wrapper": "^1.1.3",
         "globby": "^13.1.1",
         "husky": "^8.0.1",
-        "jest": "^28.1.0",
         "lerna": "^5.0.0",
         "playwright": "^1.25.0",
         "puppeteer": "~15.1.1",
