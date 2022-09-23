@@ -1,5 +1,5 @@
 import { HeaderGenerator, HeaderGeneratorOptions, Headers } from 'header-generator';
-import { BayesianNetwork } from 'generative-bayesian-network';
+import { BayesianNetwork, utils } from 'generative-bayesian-network';
 import { MISSING_VALUE_DATASET_TOKEN, STRINGIFIED_PREFIX } from './constants';
 
 export type ScreenFingerprint = {
@@ -67,6 +67,19 @@ export type BrowserFingerprintWithHeaders = {
     headers: Headers;
     fingerprint: Fingerprint;
 }
+export interface FingerprintGeneratorOptions extends HeaderGeneratorOptions {
+    /**
+     * Defines the screen dimensions of the generated fingerprint.
+     *
+     * **Note:** Using this option can lead to a substantial performance drop (~0.0007s/fingerprint -> ~0.03s/fingerprint)
+     */
+    screen: {
+        minWidth?: number;
+        maxWidth?: number;
+        minHeight?: number;
+        maxHeight?: number;
+    };
+}
 
 /**
  * Fingerprint generator - Class for realistic browser fingerprint generation.
@@ -77,7 +90,7 @@ export class FingerprintGenerator extends HeaderGenerator {
     /**
      * @param options Default header generation options used - unless overridden.
      */
-    constructor(options: Partial<HeaderGeneratorOptions> = {}) {
+    constructor(options: Partial<FingerprintGeneratorOptions> = {}) {
         super(options);
         this.fingerprintGeneratorNetwork = new BayesianNetwork({ path: `${__dirname}/data_files/fingerprint-network-definition.zip` });
     }
@@ -89,41 +102,67 @@ export class FingerprintGenerator extends HeaderGenerator {
      * @param requestDependentHeaders Specifies known values of headers dependent on the particular request.
      */
     getFingerprint(
-        options: Partial<HeaderGeneratorOptions> = {},
+        options: Partial<FingerprintGeneratorOptions> = {},
         requestDependentHeaders: Headers = {},
     ): BrowserFingerprintWithHeaders {
-        // Generate headers consistent with the inputs to get input-compatible user-agent and accept-language headers needed later
-        const headers = super.getHeaders(options, requestDependentHeaders);
-        const userAgent = 'User-Agent' in headers ? headers['User-Agent'] : headers['user-agent'];
+        const filteredValues: Record<string, string[]> = {};
 
-        // Generate fingerprint consistent with the generated user agent
-        const fingerprint: Record<string, any> = this.fingerprintGeneratorNetwork.generateSample({
-            userAgent,
-        });
+        const partialCSP = (() => {
+            const extensiveScreen = options.screen && Object.keys(options.screen).length !== 0;
+            const shouldUseExtensiveConstraints = extensiveScreen;
 
-        /* Delete any missing attributes and unpack any object/array-like attributes
-         * that have been packed together to make the underlying network simpler
-         */
-        for (const attribute of Object.keys(fingerprint)) {
-            if (fingerprint[attribute] === MISSING_VALUE_DATASET_TOKEN) {
-                fingerprint[attribute] = null;
-            } else if (fingerprint[attribute].startsWith(STRINGIFIED_PREFIX)) {
-                fingerprint[attribute] = JSON.parse(fingerprint[attribute].slice(STRINGIFIED_PREFIX.length));
+            if (!shouldUseExtensiveConstraints) return undefined;
+
+            filteredValues.screen = extensiveScreen
+                ? this.fingerprintGeneratorNetwork.nodesByName.screen.possibleValues.filter((screenString: string) => {
+                    const screen = JSON.parse(screenString.split(STRINGIFIED_PREFIX)[1]);
+                    return (screen.width >= (options.screen?.minWidth ?? 0)
+            && screen.width <= (options.screen?.maxWidth ?? 1e5)
+            && screen.height >= (options.screen?.minHeight ?? 0)
+            && screen.height <= (options.screen?.maxHeight ?? 1e5));
+                })
+                : undefined;
+
+            return utils.getPossibleValues(this.fingerprintGeneratorNetwork, filteredValues);
+        })();
+
+        while (true) {
+            // Generate headers consistent with the inputs to get input-compatible user-agent and accept-language headers needed later
+            const headers = super.getHeaders(options, requestDependentHeaders, partialCSP?.userAgent);
+            const userAgent = 'User-Agent' in headers ? headers['User-Agent'] : headers['user-agent'];
+
+            // Generate fingerprint consistent with the generated user agent
+            const fingerprint: Record<string, any> = this.fingerprintGeneratorNetwork.generateConsistentSampleWhenPossible({
+                ...filteredValues,
+                userAgent: [userAgent],
+            });
+
+            /* Delete any missing attributes and unpack any object/array-like attributes
+             * that have been packed together to make the underlying network simpler
+             */
+            for (const attribute of Object.keys(fingerprint)) {
+                if (fingerprint[attribute] === MISSING_VALUE_DATASET_TOKEN) {
+                    fingerprint[attribute] = null;
+                } else if (fingerprint[attribute].startsWith(STRINGIFIED_PREFIX)) {
+                    fingerprint[attribute] = JSON.parse(fingerprint[attribute].slice(STRINGIFIED_PREFIX.length));
+                }
             }
-        }
 
-        // Manually add the set of accepted languages required by the input
-        const acceptLanguageHeaderValue = 'Accept-Language' in headers ? headers['Accept-Language'] : headers['accept-language'];
-        const acceptedLanguages = [];
-        for (const locale of acceptLanguageHeaderValue.split(',')) {
-            acceptedLanguages.push(locale.split(';')[0]);
-        }
-        fingerprint.languages = acceptedLanguages;
+            if (!fingerprint.screen) continue; // fix? sometimes, fingerprints are generated 90% empty/null. This is just a workaround.
 
-        return {
-            fingerprint: this.transformFingerprint(fingerprint),
-            headers,
-        };
+            // Manually add the set of accepted languages required by the input
+            const acceptLanguageHeaderValue = 'Accept-Language' in headers ? headers['Accept-Language'] : headers['accept-language'];
+            const acceptedLanguages = [];
+            for (const locale of acceptLanguageHeaderValue.split(',')) {
+                acceptedLanguages.push(locale.split(';')[0]);
+            }
+            fingerprint.languages = acceptedLanguages;
+
+            return {
+                fingerprint: this.transformFingerprint(fingerprint),
+                headers,
+            };
+        }
     }
 
     /**

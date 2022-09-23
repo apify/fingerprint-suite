@@ -59,7 +59,17 @@ function getNextVersion(bump: typeof options['bump']) {
         return `${pkgJson.version}-${preid}.${lastPrereleaseNumber + 1}`;
     }
     const [_, major, minor, patch] = pkgJson.version.match(/(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(-.+\.\d+)?/);
-    return `${Number(major) + (bump === 'major' ? 1 : 0)}.${Number(minor) + (bump === 'minor' ? 1 : 0)}.${Number(patch) + (bump === 'patch' ? 1 : 0)}`;
+
+    switch (bump) {
+        case 'major':
+            return `${Number(major) + 1}.0.0`;
+        case 'minor':
+            return `${major}.${Number(minor) + 1}.0`;
+        case 'patch':
+            return `${major}.${minor}.${Number(patch) + 1}`;
+        default:
+            throw new Error(`Unknown bump type: ${bump}`);
+    }
 }
 
 // as we publish only the dist folder, we need to copy some meta files inside (readme/license/package.json)

@@ -1,4 +1,4 @@
-import { BayesianNetwork } from 'generative-bayesian-network';
+import { BayesianNetwork, utils } from 'generative-bayesian-network';
 import ow from 'ow';
 import { readFileSync } from 'fs';
 import {
@@ -29,11 +29,11 @@ const browserSpecificationShape = {
 };
 
 export const headerGeneratorOptionsShape = {
-    browsers: ow.optional.array.ofType(ow.any(ow.object.exactShape(browserSpecificationShape), ow.string)),
-    operatingSystems: ow.optional.array.ofType(ow.string),
-    devices: ow.optional.array.ofType(ow.string),
+    browsers: ow.optional.array.ofType(ow.any(ow.object.exactShape(browserSpecificationShape), ow.string.oneOf(SUPPORTED_BROWSERS))),
+    operatingSystems: ow.optional.array.ofType(ow.string.oneOf(SUPPORTED_OPERATING_SYSTEMS)),
+    devices: ow.optional.array.ofType(ow.string.oneOf(SUPPORTED_DEVICES)),
     locales: ow.optional.array.ofType(ow.string),
-    httpVersion: ow.optional.string,
+    httpVersion: ow.optional.string.oneOf(SUPPORTED_HTTP_VERSIONS),
     browserListQuery: ow.optional.string,
 };
 
@@ -199,13 +199,29 @@ export class HeaderGenerator {
     * @param options Specifies options that should be overridden for this one call.
     * @param requestDependentHeaders Specifies known values of headers dependent on the particular request.
     */
-    getHeaders(options: Partial<HeaderGeneratorOptions> = {}, requestDependentHeaders: Headers = {}): Headers {
-        ow(options, 'HeaderGeneratorOptions', ow.object.exactShape(headerGeneratorOptionsShape));
+    getHeaders(options: Partial<HeaderGeneratorOptions> = {}, requestDependentHeaders: Headers = {}, userAgentValues?: string[]): Headers {
+        ow(options, 'HeaderGeneratorOptions', ow.object.partialShape(headerGeneratorOptionsShape));
         const headerOptions = { ...this.globalOptions, ...options };
         const possibleAttributeValues = this._getPossibleAttributeValues(headerOptions);
 
+        const [http1Values, http2Values] = userAgentValues ? [
+            utils.getPossibleValues(this.headerGeneratorNetwork, { 'User-Agent': userAgentValues }),
+            utils.getPossibleValues(this.headerGeneratorNetwork, { 'user-agent': userAgentValues }),
+        ] : [null, null];
+
         // Generate a sample of input attributes consistent with the data used to create the definition files if possible.
-        const inputSample = this.inputGeneratorNetwork.generateConsistentSampleWhenPossible(possibleAttributeValues);
+        const inputSample = this.inputGeneratorNetwork.generateConsistentSampleWhenPossible(
+            Object.entries(possibleAttributeValues).reduce((acc, [key, value]) => {
+                if (key === '*BROWSER_HTTP') {
+                    acc[key] = value.filter((x: string) => {
+                        const [browserName, httpVersion] = x.split('|');
+                        return (httpVersion === '1' ? http1Values : http2Values)?.['*BROWSER'].includes(browserName) ?? true;
+                    });
+                    return acc;
+                }
+                acc[key] = value.filter((x: string) => (http1Values?.[key]?.includes(x) || http2Values?.[key]?.includes(x)) ?? true);
+                return acc;
+            }, {} as typeof possibleAttributeValues));
 
         if (Object.keys(inputSample).length === 0) {
             throw new Error('No headers based on this input can be generated. Please relax or change some of the requirements you specified.');
