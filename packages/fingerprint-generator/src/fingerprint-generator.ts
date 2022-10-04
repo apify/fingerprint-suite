@@ -86,12 +86,16 @@ export interface FingerprintGeneratorOptions extends HeaderGeneratorOptions {
  */
 export class FingerprintGenerator extends HeaderGenerator {
     fingerprintGeneratorNetwork: any;
+    fingerprintGlobalOptions: Partial<Omit<FingerprintGeneratorOptions, keyof HeaderGeneratorOptions>>;
 
     /**
      * @param options Default header generation options used - unless overridden.
      */
     constructor(options: Partial<FingerprintGeneratorOptions> = {}) {
         super(options);
+        this.fingerprintGlobalOptions = {
+            screen: options.screen,
+        };
         this.fingerprintGeneratorNetwork = new BayesianNetwork({ path: `${__dirname}/data_files/fingerprint-network-definition.zip` });
     }
 
@@ -106,6 +110,11 @@ export class FingerprintGenerator extends HeaderGenerator {
         requestDependentHeaders: Headers = {},
     ): BrowserFingerprintWithHeaders {
         const filteredValues: Record<string, string[]> = {};
+
+        options = {
+            ...this.fingerprintGlobalOptions,
+            ...options,
+        };
 
         const partialCSP = (() => {
             const extensiveScreen = options.screen && Object.keys(options.screen).length !== 0;
