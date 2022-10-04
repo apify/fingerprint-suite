@@ -159,12 +159,12 @@ export class HeaderGenerator {
     * @param options Default header generation options used - unless overridden.
     */
     constructor(options: Partial<HeaderGeneratorOptions> = {}) {
-        ow(options, 'HeaderGeneratorOptions', ow.object.exactShape(headerGeneratorOptionsShape));
+        ow(options, 'HeaderGeneratorOptions', ow.object.partialShape(headerGeneratorOptionsShape));
         // Use a default setup when the necessary values are not provided
         const {
             browsers = SUPPORTED_BROWSERS,
             operatingSystems = SUPPORTED_OPERATING_SYSTEMS as unknown as OperatingSystem[],
-            devices = [SUPPORTED_DEVICES[0]],
+            devices = ['desktop'],
             locales = ['en-US'],
             httpVersion = '2',
             browserListQuery = '',
