@@ -224,6 +224,46 @@ export class HeaderGenerator {
             }, {} as typeof possibleAttributeValues));
 
         if (Object.keys(inputSample).length === 0) {
+            // Try to convert HTTP/2 headers to HTTP/1 headers
+            if (headerOptions.httpVersion === '1') {
+                const headers2 = this.getHeaders({
+                    ...options,
+                    httpVersion: '2',
+                }, requestDependentHeaders, userAgentValues);
+
+                for (const name of Object.keys(headers2)) {
+                    if (name.startsWith('sec-ch-ua')) {
+                        continue;
+                    }
+
+                    let fullCaps = false;
+
+                    for (const caps of ['dnt', 'rtt', 'ect']) {
+                        if (name === caps) {
+                            const value = headers2[caps];
+                            delete headers2[caps];
+
+                            fullCaps = true;
+
+                            headers2[caps.toUpperCase()] = value;
+                        }
+                    }
+
+                    if (!fullCaps) {
+                        const value = headers2[name];
+                        delete headers2[name];
+
+                        const pascalCaseName = name.split('-').map((part) => {
+                            return part[0]!.toUpperCase() + part.slice(1).toLowerCase();
+                        }).join('-');
+
+                        headers2[pascalCaseName] = value;
+                    }
+                }
+
+                return this.orderHeaders(headers2);
+            }
+
             throw new Error('No headers based on this input can be generated. Please relax or change some of the requirements you specified.');
         }
 
