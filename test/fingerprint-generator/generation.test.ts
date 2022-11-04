@@ -21,7 +21,7 @@ describe('Generation tests', () => {
     });
 
     test('Generates fingerprints without errors', () => {
-        for (let x = 0; x < 10000; x++) {
+        for (let x = 0; x < 1000; x++) {
             const { fingerprint } = fingerprintGenerator.getFingerprint({
                 locales: ['en', 'es', 'en-US'],
             });
@@ -66,5 +66,49 @@ describe('Generation tests', () => {
         for (const field of fields) {
             expect(field).toBeDefined();
         }
+    });
+});
+
+describe('Generate fingerprints with basic constraints', () => {
+    test('Browsers', () => {
+        const fingerprintGenerator = new FingerprintGenerator();
+        const browsers = ['chrome', 'firefox', 'safari', 'edge'] as const;
+
+        for (const browser of browsers) {
+            expect(fingerprintGenerator.getFingerprint({
+                browsers: [browser as any],
+            })).toBeDefined();
+        }
+    });
+
+    test('Mobile devices', () => {
+        const fingerprintGenerator = new FingerprintGenerator();
+        const oses = ['android', 'ios'] as const;
+
+        for (const os of oses) {
+            expect(fingerprintGenerator.getFingerprint({
+                devices: ['mobile'],
+                operatingSystems: [os],
+            })).toBeDefined();
+        }
+    });
+
+    test('Screen sizes', () => {
+        const fingerprintGenerator = new FingerprintGenerator();
+
+        expect(fingerprintGenerator.getFingerprint({
+            screen: {
+                minHeight: 1080,
+                minWidth: 1920,
+            },
+        })).toBeDefined();
+
+        expect(fingerprintGenerator.getFingerprint({
+            devices: ['mobile'],
+            screen: { // can generate a vertical screen
+                minHeight: 1080,
+                maxWidth: 1080,
+            },
+        })).toBeDefined();
     });
 });
