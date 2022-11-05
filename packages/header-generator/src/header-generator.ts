@@ -231,39 +231,26 @@ export class HeaderGenerator {
                     httpVersion: '2',
                 }, requestDependentHeaders, userAgentValues);
 
-                for (const name of Object.keys(headers2)) {
-                    if (name.startsWith('sec-ch-ua')) {
-                        continue;
-                    }
+                const pascalize = (name: string) => {
+                    return name.split('-').map((part) => {
+                        return part[0]!.toUpperCase() + part.slice(1).toLowerCase();
+                    }).join('-');
+                };
 
-                    let fullCaps = false;
-
-                    for (const caps of ['dnt', 'rtt', 'ect']) {
-                        if (name === caps) {
-                            const value = headers2[caps];
-                            delete headers2[caps];
-
-                            fullCaps = true;
-
-                            headers2[caps.toUpperCase()] = value;
+                const converted2to1 = Object.fromEntries(
+                    Object.entries(headers2).map(([name, value]) => {
+                        if (name.startsWith('sec-ch-ua')) {
+                            return [name, value];
                         }
-                    }
+                        if (['dnt', 'rtt', 'ect'].includes(name)) {
+                            return [name.toUpperCase(), value];
+                        }
+                        return [pascalize(name), value];
+                    },
+                    ));
 
-                    if (!fullCaps) {
-                        const value = headers2[name];
-                        delete headers2[name];
-
-                        const pascalCaseName = name.split('-').map((part) => {
-                            return part[0]!.toUpperCase() + part.slice(1).toLowerCase();
-                        }).join('-');
-
-                        headers2[pascalCaseName] = value;
-                    }
-                }
-
-                return this.orderHeaders(headers2);
+                return this.orderHeaders(converted2to1);
             }
-
             throw new Error('No headers based on this input can be generated. Please relax or change some of the requirements you specified.');
         }
 
