@@ -43,11 +43,26 @@ function getNextVersion(bump: typeof options['bump']) {
         // the package might not have been published yet
     }
 
+    if (bump) {
+        const [_, major, minor, patch] = pkgJson.version.match(/(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(-.+\.\d+)?/);
+
+        switch (bump) {
+            case 'major':
+                return `${Number(major) + 1}.0.0`;
+            case 'minor':
+                return `${major}.${Number(minor) + 1}.0`;
+            case 'patch':
+                return `${major}.${minor}.${Number(patch) + 1}`;
+            default:
+                throw new Error(`Unknown bump type: ${bump}`);
+        }
+    }
+
     if (options.canary) {
         if (versions.some((v) => v === pkgJson.version)) {
             // eslint-disable-next-line no-console
-            console.error(`before-deploy: A release with version ${pkgJson.version} already exists. Please increment version accordingly.`);
-            process.exit(1);
+            console.warn(`Version ${pkgJson.version} already exists on npm. Bumping patch version.`);
+            pkgJson.version = getNextVersion('patch');
         }
 
         const preid = options.preid ?? 'alpha';
@@ -57,18 +72,6 @@ function getNextVersion(bump: typeof options['bump']) {
         const lastPrereleaseNumber = Math.max(-1, ...prereleaseNumbers);
 
         return `${pkgJson.version}-${preid}.${lastPrereleaseNumber + 1}`;
-    }
-    const [_, major, minor, patch] = pkgJson.version.match(/(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(-.+\.\d+)?/);
-
-    switch (bump) {
-        case 'major':
-            return `${Number(major) + 1}.0.0`;
-        case 'minor':
-            return `${major}.${Number(minor) + 1}.0`;
-        case 'patch':
-            return `${major}.${minor}.${Number(patch) + 1}`;
-        default:
-            throw new Error(`Unknown bump type: ${bump}`);
     }
 }
 
