@@ -24,11 +24,11 @@ jobs:
             -   name: Build & deploy docs
                 run: |
                     # install project deps
-                    npm install --force
+                    npm install
                     # go to website dir
                     cd website
                     # install website deps
-                    npm install --force
+                    npm install
                     # build and deploy the docs
                     npm run deploy
                 env:

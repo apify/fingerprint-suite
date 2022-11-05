@@ -1,8 +1,6 @@
 const { parse } = require('url');
 
 const visit = import('unist-util-visit').then((m) => m.visit);
-
-// TODO documentation domain?
 const internalUrls = ['sdk.apify.com'];
 
 /**
