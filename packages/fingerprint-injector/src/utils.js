@@ -616,7 +616,8 @@ function fixIframeContentWindow(){
         // Let's go
         addIframeCreationSniffer()
       } catch (err) {
-        console.warn(err)
+        // warning message supressed (see https://github.com/apify/fingerprint-suite/issues/61).
+        // console.warn(err)
       }
 }
 
