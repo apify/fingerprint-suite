@@ -1,8 +1,8 @@
 name: Publish
 on:
   push:
-    tags:  # trigger the deploy job on tag creation
-    - v*
+    tags: 
+    - 'v*'
 
 jobs:
     test_and_sync: 
