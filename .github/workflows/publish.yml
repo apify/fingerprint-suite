@@ -6,11 +6,7 @@ on:
 
 jobs:
     test_and_sync: 
-        name: Test and sync
-        runs-on: ubuntu-latest
-        steps:
-            - name: Test and sync
-            - uses: apify/fingerprint-suite/.github/workflows/test-and-sync.yml
+        uses: apify/fingerprint-suite/.github/workflows/test-and-sync.yml@master
 
     publish_prerelease:
         name: Publish prerelease
@@ -123,7 +119,8 @@ jobs:
 
             -   name: Build
                 if: steps.changed_packages.outputs.changed_packages != '0'
-                run: npm run build
+                run: |
+                    npm run build
 
             -   name: Create a GH release from tag
                 uses: "marvinpinto/action-automatic-releases@latest"
