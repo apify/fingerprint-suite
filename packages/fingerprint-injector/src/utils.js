@@ -258,21 +258,21 @@ function overrideWebGl(webGl) {
     try {
         const getParameterProxyHandler = {
             apply: function (target, ctx, args) {
-                const param = (args || [])[0]
-                const result = cache.Reflect.apply(target, ctx, args)
+                const param = (args || [])[0];
+                const result = cache.Reflect.apply(target, ctx, args);
                 // UNMASKED_VENDOR_WEBGL
                 if (param === 37445) {
-                    return webGl.vendor
+                    return webGl.vendor;
                 }
                 // UNMASKED_RENDERER_WEBGL
                 if (param === 37446) {
-                    return webGl.renderer
+                    return webGl.renderer;
                 }
-                return result
+                return result;
             }
         }
         const addProxy = (obj, propName) => {
-            overridePropertyWithProxy(obj, propName, getParameterProxyHandler)
+            overridePropertyWithProxy(obj, propName, getParameterProxyHandler);
         }
         // For whatever weird reason loops don't play nice with Object.defineProperty, here's the next best thing:
         addProxy(WebGLRenderingContext.prototype, 'getParameter');
