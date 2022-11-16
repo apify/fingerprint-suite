@@ -256,25 +256,10 @@ function stripProxyFromErrors(handler) {
 function overrideWebGl(webGl) {
     // try to override WebGl
     try {
-        // Remove traces of our Proxy
-        const stripErrorStack = (stack) => stack
-            .split('\n')
-            .filter((line) => !line.includes('at Object.apply'))
-            .filter((line) => !line.includes('at Object.get'))
-            .join('\n');
-
         const getParameterProxyHandler = {
-            ...prototypeProxyHandler,
-            get(target, key) {
-                try {
-                    return Reflect.get(target, key);
-                } catch (err) {
-                    err.stack = stripErrorStack(err.stack);
-                    throw err;
-                }
-            },
-            apply(target, thisArg, args) {
+            apply: function (target, ctx, args) {
                 const param = (args || [])[0];
+                const result = cache.Reflect.apply(target, ctx, args);
                 // UNMASKED_VENDOR_WEBGL
                 if (param === 37445) {
                     return webGl.vendor;
@@ -283,19 +268,13 @@ function overrideWebGl(webGl) {
                 if (param === 37446) {
                     return webGl.renderer;
                 }
-                try {
-                    return cache.Reflect.apply(target, thisArg, args);
-                } catch (err) {
-                    err.stack = stripErrorStack(err.stack);
-                    throw err;
-                }
-            },
-        };
-
+                return result;
+            }
+        }
         const addProxy = (obj, propName) => {
             overridePropertyWithProxy(obj, propName, getParameterProxyHandler);
-        };
-
+        }
+        // For whatever weird reason loops don't play nice with Object.defineProperty, here's the next best thing:
         addProxy(WebGLRenderingContext.prototype, 'getParameter');
         addProxy(WebGL2RenderingContext.prototype, 'getParameter');
     } catch (err) {
