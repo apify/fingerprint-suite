@@ -105,54 +105,54 @@ jobs:
               run: xvfb-run --auto-servernum -- npm test
               if: ${{ matrix.os == 'ubuntu-latest'}}
 
-    test_antibot:
-        name: Test antibot services (with badges)
-        if: ((github.ref == 'refs/heads/master') && (github.event_name == 'push'))
-        runs-on: ubuntu-latest
-        needs: [ build_and_test ]
-        steps:
-        - name: Checkout Source code
-          uses: actions/checkout@v3
+    # test_antibot:
+    #     name: Test antibot services (with badges)
+    #     if: ((github.ref == 'refs/heads/master') && (github.event_name == 'push'))
+    #     runs-on: ubuntu-latest
+    #     needs: [ build_and_test ]
+    #     steps:
+    #     - name: Checkout Source code
+    #       uses: actions/checkout@v3
 
-        - name: Cache Node Modules
-          uses: actions/cache@v3
-          with:
-            path: |
-                node_modules
-            key: cache-${{ github.run_id }}
+    #     - name: Cache Node Modules
+    #       uses: actions/cache@v3
+    #       with:
+    #         path: |
+    #             node_modules
+    #         key: cache-${{ github.run_id }}
 
-        - name: Turbo cache
-          id: turbo-cache
-          uses: actions/cache@v3
-          with:
-            path: .turbo
-            key: turbo-${{ github.job }}-${{ github.ref_name }}-${{ github.sha }}
-            restore-keys: |
-              turbo-${{ github.job }}-${{ github.ref_name }}-
+    #     - name: Turbo cache
+    #       id: turbo-cache
+    #       uses: actions/cache@v3
+    #       with:
+    #         path: .turbo
+    #         key: turbo-${{ github.job }}-${{ github.ref_name }}-${{ github.sha }}
+    #         restore-keys: |
+    #           turbo-${{ github.job }}-${{ github.ref_name }}-
 
-        - name: Build
-          run: npm run ci:build
+    #     - name: Build
+    #       run: npm run ci:build
         
-        - name: Install Playwright
-          run: npx playwright install --with-deps
+    #     - name: Install Playwright
+    #       run: npx playwright install --with-deps
 
-        - id: tests
-          run: | 
-              echo "::set-output name=botd::$(xvfb-run --auto-servernum -- node $GITHUB_WORKSPACE/test/antibot-services/antibot.js botd)"
-              echo "::set-output name=creepjs::$(xvfb-run --auto-servernum -- node $GITHUB_WORKSPACE/test/antibot-services/antibot.js creepjs)"
-        - name: CreepJS badge
-          uses: RubbaBoy/BYOB@v1.3.0
-          with:
-            NAME: CreepJS
-            LABEL: 'CreepJS (chromium, linux)'
-            STATUS: ${{ steps.tests.outputs.creepjs }}
-            COLOR: 7900aa
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        - name: BotD badge
-          uses: RubbaBoy/BYOB@v1.3.0
-          with:
-            NAME: BotD
-            LABEL: 'BotD (chromium, linux)'
-            STATUS: ${{ steps.tests.outputs.botd }}
-            COLOR: 0079AA
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    #     - id: tests
+    #       run: | 
+    #           echo "::set-output name=botd::$(xvfb-run --auto-servernum -- node $GITHUB_WORKSPACE/test/antibot-services/antibot.js botd)"
+    #           echo "::set-output name=creepjs::$(xvfb-run --auto-servernum -- node $GITHUB_WORKSPACE/test/antibot-services/antibot.js creepjs)"
+    #     - name: CreepJS badge
+    #       uses: RubbaBoy/BYOB@v1.3.0
+    #       with:
+    #         NAME: CreepJS
+    #         LABEL: 'CreepJS (chromium, linux)'
+    #         STATUS: ${{ steps.tests.outputs.creepjs }}
+    #         COLOR: 7900aa
+    #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    #     - name: BotD badge
+    #       uses: RubbaBoy/BYOB@v1.3.0
+    #       with:
+    #         NAME: BotD
+    #         LABEL: 'BotD (chromium, linux)'
+    #         STATUS: ${{ steps.tests.outputs.botd }}
+    #         COLOR: 0079AA
+    #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

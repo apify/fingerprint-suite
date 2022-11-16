@@ -36,31 +36,40 @@ With the help of `fingerprint-suite` you can generate and inject browser fingerp
 
 The following example shows how to use the fingerprinting tools to camouflage your Playwright-managed Chromium instance.
 
-```javascript
-const { chromium } = require('playwright');
+```typescript
+const { firefox } = require('playwright');
 const { FingerprintGenerator } = require('fingerprint-generator');
-const { FingerprintInjector } = require('fingerprint-injector');
+const { FingerprintInjector }  = require('fingerprint-injector');
 
 (async () => {
-    const b = await chromium.launch({headless: false});
-    const ctx = await b.newContext();
-
     const fingerprintGenerator = new FingerprintGenerator();
-    const fingerprintInjector = new FingerprintInjector();
 
-    const fingerprint = fingerprintGenerator.getFingerprint({
-        'locales': ['cs-CZ'],           // setup your desired fingerprint features
-        'operatingSystems': ['linux'],
+    const browserFingerprintWithHeaders = fingerprintGenerator.getFingerprint({
+        devices: ['desktop'],
+        browsers: ['chrome'],
     });
-    await fingerprintInjector.attachFingerprintToPlaywright(ctx, fingerprint);
 
-    // ...and enjoy your undercover browser while using the browser context as usual!
-    const page = await ctx.newPage();
-    await page.goto("https://apify.com");
+    const fingerprintInjector = new FingerprintInjector();
+    const { fingerprint } = browserFingerprintWithHeaders;
+
+    const browser = await firefox.launch({ headless: false });
+
+    // With certain properties, we need to inject the props into the context initialization
+    const context = await browser.newContext({
+        userAgent: fingerprint.userAgent,
+        locale: fingerprint.navigator.language,
+        viewport: fingerprint.screen,
+    });
+   
+    // Attach the rest of the fingerprint
+   await fingerprintInjector.attachFingerprintToPlaywright(context, browserFingerprintWithHeaders);
+
+   const page = await context.newPage();
+   // ... your code using `page` here
 })();
 ```
 
-## Performance
+<!-- ## Performance
 With ever-improving performance of antibot fingerprinting services, we use some of the industry-leading services to benchmark our performance.
 The following table shows how is the latest build of `fingerprint-suite` doing in tests provided by various open-source fingerprinting services.
 
@@ -68,7 +77,7 @@ The performace is evaluated using school-like grades (A being the best, F being 
 |Service|Grade|
 |---|---|
 |BotD    |![](https://byob.yarr.is/apify/fingerprint-suite/BotD) |
-|CreepJS |![](https://byob.yarr.is/apify/fingerprint-suite/CreepJS)|
+|CreepJS |![](https://byob.yarr.is/apify/fingerprint-suite/CreepJS)| -->
 
 ## Support
 
@@ -77,7 +86,7 @@ For questions, you can ask on [Stack Overflow](https://stackoverflow.com/questio
 
 ## Contributing
 
-Your code contributions are welcome and you'll be praised to eternity!
+Your code contributions are welcome and you'll be praised for eternity!
 If you have any ideas for improvements, either submit an issue or create a pull request.
 For contribution guidelines and the code of conduct,
 see [CONTRIBUTING.md](https://github.com/apify/fingerprint-suite/blob/master/CONTRIBUTING.md).
