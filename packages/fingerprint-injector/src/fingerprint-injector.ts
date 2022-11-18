@@ -30,16 +30,18 @@ export class FingerprintInjector {
 
     /**
      * Adds init script to the browser context, so the fingerprint is changed before every document creation.
-     * DISCLAIMER: Since the playwright does not support changing viewport and User-agent after the context is created,
-     * you have to set it manually when the context is created. Check the playwright usage example.
+     * DISCLAIMER: Since Playwright does not support changing viewport and `user-agent` after the context is created,
+     * you have to set it manually when the context is created. Check the Playwright usage example for more details.
      * @param browserContext Playwright browser context to be injected with the fingerprint.
-     * @param fingerprint Fingerprint from [`fingerprint-generator`](https://github.com/apify/fingerprint-generator).
+     * @param fingerprint Browser fingerprint from [`fingerprint-generator`](https://github.com/apify/fingerprint-generator).
      */
     async attachFingerprintToPlaywright(browserContext: BrowserContext, browserFingerprintWithHeaders: BrowserFingerprintWithHeaders): Promise<void> {
         const { fingerprint, headers } = browserFingerprintWithHeaders;
         const enhancedFingerprint = this._enhanceFingerprint(fingerprint);
 
-        const content = this.getInjectableFingerprintFunction(enhancedFingerprint);
+        const content = this.getInjectableFingerprintFunction(
+            enhancedFingerprint,
+        );
 
         // Override the language properly
         await browserContext.setExtraHTTPHeaders({
@@ -100,7 +102,9 @@ export class FingerprintInjector {
      * @param fingerprint Enhanced fingerprint.
      * @returns Script overriding browser fingerprint.
      */
-    private getInjectableFingerprintFunction(fingerprint: EnhancedFingerprint): string {
+    private getInjectableFingerprintFunction(
+        fingerprint: EnhancedFingerprint,
+    ): string {
         function inject() {
             const {
                 battery,
@@ -156,7 +160,7 @@ export class FingerprintInjector {
             };
 
             runHeadlessFixes();
-            // override internationalization API
+
             overrideIntlAPI(navigatorProps.language);
             overrideStatic();
 

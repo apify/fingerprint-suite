@@ -52,11 +52,11 @@ jobs:
                 if: steps.changed_packages.outputs.changed_packages != '0'
                 run: npm run build
               
-            # -   name: Create a GH release from tag
-            #     uses: "marvinpinto/action-automatic-releases@latest"
-            #     with:
-            #         repo_token: "${{ secrets.GH_TOKEN }}"
-            #         prerelease: true
+            -   name: Create a GH release from tag
+                uses: "marvinpinto/action-automatic-releases@latest"
+                with:
+                    repo_token: "${{ secrets.GH_TOKEN }}"
+                    prerelease: true
 
             -   name: Release dev version for testing
                 if: steps.changed_packages.outputs.changed_packages != '0'
