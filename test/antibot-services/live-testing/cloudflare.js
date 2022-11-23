@@ -7,17 +7,21 @@ const fingerprintInjector = new FingerprintInjector();
 
 const method = "fs";
 
-const pages = [
-    "https://www.alphr.com/",
-    "https://putlocker.tl/",
-    "https://www.collinsdictionary.com/",
-    "https://www.airportia.com/",
-    "https://altadefinizione.casino/shingeki-no-bahamut-manaria-friends-sub-ita/",
-    "https://bernstein-badshop.de/",
-    "https://www.sonono.de/",
-    "https://www.emero.de/",
-    "https://www.reuter.com/",
-];
+// const pages = [
+//     "https://www.alphr.com/",
+//     "https://putlocker.tl/",
+//     "https://www.collinsdictionary.com/",
+//     "https://www.airportia.com/",
+//     "https://altadefinizione.casino/shingeki-no-bahamut-manaria-friends-sub-ita/",
+//     "https://bernstein-badshop.de/",
+//     "https://www.sonono.de/",
+//     "https://www.emero.de/",
+//     "https://www.reuter.com/",
+// ];
+
+const source = fs.readFileSync(path.join(__dirname, "cloudflare-websites.csv"), "utf8");
+const pages = source.split("\n");
+
 (async () => {
     let totalPass = 0;
     for(const baseUrl of pages) {
