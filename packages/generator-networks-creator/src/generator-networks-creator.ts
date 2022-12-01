@@ -181,6 +181,7 @@ export class GeneratorNetworksCreator {
         const datasetText = fs.readFileSync(datasetPath, { encoding: 'utf8' }).replace(/^\ufeff/, '');
         const records = await prepareRecords(JSON.parse(datasetText), 'fingerprints');
         for (let x = 0; x < records.length; x++) {
+            if (x % 1000 === 0) console.log(`Processing record ${x} of ${records.length}`);
             const record = records[x];
             const pluginCharacteristics = {} as { [key: string]: string };
             for (const pluginCharacteristicsAttribute of PLUGIN_CHARACTERISTICS_ATTRIBUTES) {
@@ -220,6 +221,7 @@ export class GeneratorNetworksCreator {
 
         const fingerprintNetworkDefinitionPath = path.join(resultsPath, 'fingerprint-network-definition.zip');
 
+        console.log('Building the fingerprint network...');
         await fingerprintGeneratorNetwork.setProbabilitiesAccordingToData(selectedRecords);
         fingerprintGeneratorNetwork.saveNetworkDefinition({ path: fingerprintNetworkDefinitionPath });
     }

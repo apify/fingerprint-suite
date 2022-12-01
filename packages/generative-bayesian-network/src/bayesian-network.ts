@@ -87,7 +87,8 @@ export class BayesianNetwork {
      * @param dataframe A Danfo.js dataframe containing the data.
      */
     setProbabilitiesAccordingToData(data: RecordList) {
-        this.nodesInSamplingOrder.forEach((node) => {
+        this.nodesInSamplingOrder.forEach((node, i) => {
+            console.log(`${i}/${this.nodesInSamplingOrder.length} Setting probabilities for node ${node.name}`);
             const possibleParentValues: Record<string, string[]> = {};
             for (const parentName of node.parentNames) {
                 possibleParentValues[parentName] = this.nodesByName[parentName].possibleValues;

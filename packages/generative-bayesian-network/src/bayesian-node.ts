@@ -132,7 +132,7 @@ export class BayesianNode {
 
     /**
      * Sets the conditional probability distribution for this node to match the given data.
-     * @param dataframe A Danfo.js dataframe containing the data.
+     * @param data A RecordList containing the data.
      * @param possibleParentValues A dictionary of lists of possible values for parent nodes.
      */
     setProbabilitiesAccordingToData(data: RecordList, possibleParentValues: Record<string, string[]> = {}) {
