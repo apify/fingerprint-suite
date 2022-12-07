@@ -67,13 +67,19 @@ export class FingerprintInjector {
     async attachFingerprintToPuppeteer(page: Page, browserFingerprintWithHeaders: BrowserFingerprintWithHeaders): Promise<void> {
         const { fingerprint, headers } = browserFingerprintWithHeaders;
         const enhancedFingerprint = this._enhanceFingerprint(fingerprint);
-        const { screen: { width, height }, userAgent } = enhancedFingerprint;
+        const { screen, userAgent } = enhancedFingerprint;
 
         await page.setUserAgent(userAgent);
 
-        await page.setViewport({
-            width,
-            height,
+        await (await page.target().createCDPSession()).send('Page.setDeviceMetricsOverride', {
+            screenHeight: screen.height,
+            screenWidth: screen.width,
+            width: screen.width,
+            height: screen.height,
+            mobile: !!(/phone|android|mobile/.test(userAgent)),
+            screenOrientation: screen.height > screen.width ? { angle: 0, type: 'portraitPrimary' } : { angle: 90, type: 'landscapePrimary' },
+            deviceScaleFactor: screen.devicePixelRatio,
+
         });
         // Override the language properly
         await page.setExtraHTTPHeaders({
