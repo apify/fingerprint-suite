@@ -43,7 +43,7 @@ jobs:
           commit_message: "[auto] fingerprint/header model update"
           branch: stable
 
-          file_pattern: packages
+          file_pattern: ./packages
 
           commit_user_name: "modelmaker[bot] ⚒️"
           commit_user_email: modelmaker[bot]@users.noreply.github.com 
