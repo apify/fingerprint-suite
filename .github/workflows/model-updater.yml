@@ -41,9 +41,9 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
           commit_message: "[auto] fingerprint/header model update"
-          branch: stable
+          branch: master
 
-          file_pattern: ./packages
+          file_pattern: ./packages/
 
           commit_user_name: "modelmaker[bot] ⚒️"
           commit_user_email: modelmaker[bot]@users.noreply.github.com 
