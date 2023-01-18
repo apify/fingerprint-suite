@@ -1,5 +1,5 @@
 import { copyFileSync, readFileSync, writeFileSync, readdirSync } from 'fs';
-import { resolve } from 'path';
+import { join } from 'path';
 import { execSync } from 'node:child_process';
 
 const options: {
@@ -14,7 +14,7 @@ const options: {
 }, {} as any);
 
 function copy(filename: string, from: string, to: string): void {
-    copyFileSync(resolve(from, filename), resolve(to, filename));
+    copyFileSync(join(from, filename), join(to, filename));
 }
 
 function rewrite(path: string, replacer: (from: string) => string): void {
@@ -33,7 +33,7 @@ function rewrite(path: string, replacer: (from: string) => string): void {
 function getNextVersion(bump: typeof options['bump']) {
     const versions: string[] = [];
     // eslint-disable-next-line @typescript-eslint/no-var-requires,import/no-dynamic-require,global-require
-    const pkgJson = require(resolve('package.json'));
+    const pkgJson = require(join(process.cwd(), 'package.json'));
 
     try {
         const versionString = execSync(`npm show ${pkgJson.name} versions --json`, { encoding: 'utf8', stdio: 'pipe' });
@@ -77,9 +77,9 @@ function getNextVersion(bump: typeof options['bump']) {
 
 // as we publish only the dist folder, we need to copy some meta files inside (readme/license/package.json)
 // also changes paths inside the copied `package.json` (`dist/index.js` -> `index.js`)
-const root = resolve(__dirname, '..');
-const target = resolve(process.cwd(), 'dist');
-const pkgPath = resolve(process.cwd(), 'package.json');
+const root = join(__dirname, '..');
+const target = join(process.cwd(), 'dist');
+const pkgPath = join(process.cwd(), 'package.json');
 
 if (options.canary || options.bump) {
     // eslint-disable-next-line @typescript-eslint/no-var-requires,import/no-dynamic-require,global-require
@@ -92,7 +92,7 @@ if (options.canary || options.bump) {
         if (packageNames.includes(dep)) {
             // We can read the new version of the dependency package because of turborepo (that builds a build graph).
             // eslint-disable-next-line @typescript-eslint/no-var-requires,import/no-dynamic-require,global-require
-            const pkgJsonDep = require(resolve(`../${dep}`, 'package.json'));
+            const pkgJsonDep = require(join(process.cwd(), `../${dep}`, 'package.json'));
             const prefix = pkgJson.dependencies[dep].startsWith('^') ? '^' : '';
             pkgJson.dependencies[dep] = prefix + pkgJsonDep.version;
         }
@@ -107,5 +107,5 @@ if (options.canary || options.bump) {
 copy('README.md', root, target);
 copy('LICENSE.md', root, target);
 copy('package.json', process.cwd(), target);
-rewrite(resolve(target, 'package.json'), (pkg) => pkg.replace(/dist\//g, ''));
-rewrite(resolve(target, 'utils.js'), (pkg) => pkg.replace('../package.json', './package.json'));
+rewrite(join(target, 'package.json'), (pkg) => pkg.replace(/dist\//g, ''));
+rewrite(join(target, 'utils.js'), (pkg) => pkg.replace('../package.json', './package.json'));

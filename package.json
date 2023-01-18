@@ -45,7 +45,7 @@
         "coverage": "jest --coverage",
         "lint": "eslint packages/*/src test",
         "lint:fix": "eslint packages/*/src test --fix",
-        "buildNetwork": "turbo run build --filter=generator-networks-creator && ./scripts/netgen.sh && npx turbo run copy --filter=*-generator --no-deps -- -- --bump=patch"
+        "buildNetwork": "turbo run build && ./scripts/netgen.sh && npx turbo run copy --filter=*-generator --no-deps -- -- --bump=patch"
     },
     "devDependencies": {
         "@apify/eslint-config-ts": "^0.2.3",
