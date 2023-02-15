@@ -37,11 +37,17 @@ jobs:
         env:
           APIFY_DATASET_URL: ${{ secrets.APIFY_DATASET_URL }}
 
+      - name: Get the new version number
+        id: get_version
+        run: |
+          echo "::set-output name=version::$(node -p "require('./packages/fingerprint-generator/package.json').version")"
+
       - name: Push new model
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
           commit_message: "[auto] fingerprint/header model update"
           branch: master
+          tagging_message: "v${{ steps.get_version.outputs.version }}"
 
           file_pattern: ./packages/
 
