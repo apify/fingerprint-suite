@@ -1,9 +1,7 @@
-import path from 'path';
 import { readFileSync } from 'fs';
 import { BrowserFingerprintWithHeaders, Fingerprint } from 'fingerprint-generator';
 import { Page } from 'puppeteer';
 import { BrowserContext } from 'playwright';
-import { UTILS_FILE_NAME } from './constants';
 
 interface EnhancedFingerprint extends Fingerprint {
     userAgent: string;
@@ -210,10 +208,15 @@ export class FingerprintInjector {
         };
     }
 
+    /**
+     * Loads the contents of the `utils.js` file, which contains the helper functions for the fingerprinting script.
+     *
+     * Loading this file dynamically bypasses the TypeScript compiler, which would otherwise mangle the code,
+     * causing errors when executing it in the browser.
+     */
     private _loadUtils(): string {
-        const utilsJs = readFileSync(path.join(__dirname, UTILS_FILE_NAME));
-
-        // we need to add the new lines because of typescript initial a final comment causing issues.
+        // path.join would be better here, but Vercel's build system doesn't like it (https://github.com/apify/fingerprint-suite/issues/135)
+        const utilsJs = readFileSync(`${__dirname}/utils.js`);
         return `\n${utilsJs}\n`;
     }
 
