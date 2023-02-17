@@ -1,7 +1,7 @@
 import { readFileSync } from 'fs';
-import { BrowserFingerprintWithHeaders, Fingerprint } from 'fingerprint-generator';
-import { Page } from 'puppeteer';
-import { BrowserContext } from 'playwright';
+import { BrowserFingerprintWithHeaders, Fingerprint, FingerprintGenerator, FingerprintGeneratorOptions } from 'fingerprint-generator';
+import { Page, Browser as PPBrowser } from 'puppeteer';
+import { BrowserContext, Browser as PWBrowser, BrowserContextOptions } from 'playwright';
 
 interface EnhancedFingerprint extends Fingerprint {
     userAgent: string;
@@ -225,4 +225,61 @@ export class FingerprintInjector {
             Math.random() * (max - min) + min,
         );
     };
+}
+
+/**
+ * Creates a new Playwright BrowserContext preinjected with a generated fingerprint.
+ * @param browser Playwright Browser instance.
+ * @param options.fingerprintOptions Options for the underlying FingerprintGenerator instance.
+ * @param options.newContextOptions Options for the new context creation.
+ *  > Note: The `userAgent`, `viewport` and some HTTP headers will be overwritten with the values from the generated fingerprint.
+ * @returns BrowserContext with injected fingerprint.
+ */
+export async function newInjectedContext(
+    browser: PWBrowser,
+    options? : Partial<{
+        fingerprintOptions: Partial<FingerprintGeneratorOptions>;
+        newContextOptions: BrowserContextOptions;
+    }>,
+): Promise<BrowserContext> {
+    const generator = new FingerprintGenerator();
+    const fingerprintWithHeaders = generator.getFingerprint(options?.fingerprintOptions ?? {});
+
+    const { fingerprint, headers } = fingerprintWithHeaders;
+    const context = await browser.newContext({
+        ...options?.newContextOptions,
+        userAgent: fingerprint.navigator.userAgent,
+        viewport: {
+            ...options?.newContextOptions?.viewport,
+            width: fingerprint.screen.width,
+            height: fingerprint.screen.height,
+        },
+        extraHTTPHeaders: {
+            ...options?.newContextOptions?.extraHTTPHeaders,
+            'accept-language': headers['accept-language'],
+        },
+        colorScheme: 'dark',
+    });
+
+    const injector = new FingerprintInjector();
+    await injector.attachFingerprintToPlaywright(context, fingerprintWithHeaders);
+
+    return context;
+}
+
+export async function newInjectedPage(
+    browser: PPBrowser,
+    options? : Partial<{
+        fingerprintOptions: Partial<FingerprintGeneratorOptions>;
+    }>,
+): Promise<Page> {
+    const generator = new FingerprintGenerator();
+    const fingerprintWithHeaders = generator.getFingerprint(options?.fingerprintOptions ?? {});
+
+    const page = await browser.newPage();
+
+    const injector = new FingerprintInjector();
+    await injector.attachFingerprintToPuppeteer(page, fingerprintWithHeaders);
+
+    return page;
 }
