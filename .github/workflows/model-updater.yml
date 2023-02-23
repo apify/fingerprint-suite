@@ -33,14 +33,19 @@ jobs:
         run: npm ci
 
       - name: Generate model and update versions
-        run: npm run buildNetwork
+        run: |
+          npm version patch --no-git-tag-version
+          export GIT_TAG=$(node -p "require('./package.json').version")
+
+          npm run prerelease
+          npm run buildNetwork
         env:
           APIFY_DATASET_URL: ${{ secrets.APIFY_DATASET_URL }}
 
       - name: Get the new version number
         id: get_version
         run: |
-          echo "::set-output name=version::$(node -p "require('./packages/fingerprint-generator/package.json').version")"
+          echo "::set-output name=version::$(node -p "require('./package.json').version")"
 
       - name: Push new model
         uses: stefanzweifel/git-auto-commit-action@v4
@@ -53,3 +58,15 @@ jobs:
 
           commit_user_name: "modelmaker[bot] ⚒️"
           commit_user_email: modelmaker[bot]@users.noreply.github.com 
+
+      - name: Create release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+        with:
+          tag_name: ${{ steps.get_version.outputs.version }}
+          release_name: ${{ steps.get_version.outputs.version }}
+          body: |
+            This is an automated release of the model used by the `fingerprint-suite`.
+
+            The only difference between this release and the previous one is the model used to generate fingerprints.

@@ -1,0 +1,61 @@
+name: Publish
+on:
+    release:
+        types: [published]
+
+jobs:
+    test_and_sync: 
+        uses: apify/fingerprint-suite/.github/workflows/test-and-sync.yml@master
+
+    publish_latest:
+        name: Publish latest
+        runs-on: ubuntu-latest
+        needs: [ test_and_sync ]
+        steps:
+            -   name: Checkout Source code
+                uses: actions/checkout@v3
+                with:
+                    token: ${{ secrets.GH_TOKEN }}
+
+            -   name: Use Node.js 16
+                uses: actions/setup-node@v3
+                with:
+                    node-version: 16
+                    cache: 'npm'
+                    cache-dependency-path: 'package-lock.json'
+
+            -   name: Turbo cache
+                id: turbo-cache
+                uses: actions/cache@v3
+                with:
+                    path: .turbo
+                    key: turbo-${{ github.job }}-${{ github.ref_name }}-${{ github.sha }}
+                    restore-keys: |
+                        turbo-${{ github.job }}-${{ github.ref_name }}-
+
+            -   name: Install Dependencies
+                run: npm ci
+
+            -   name: Release latest versions
+                run: |
+                    git config --global user.name 'Apify Release Bot'
+                    git config --global user.email 'noreply@apify.com'
+
+                    echo "access=public" >> .npmrc
+                    echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" >> .npmrc
+
+                    export GIT_TAG=$(echo $GITHUB_REF | sed 's/refs\/tags\///g')
+                    npm run release 
+                env:
+                    NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+                    GIT_USER: "noreply@apify.com:${{ secrets.GH_TOKEN }}"
+                    GH_TOKEN: ${{ secrets.GH_TOKEN }}
+
+            - name: Commit the version bump
+              uses: stefanzweifel/git-auto-commit-action@v4
+              with:
+                commit_message: 'chore: publish new version of @apify/docs-theme [skip ci]'
+                file_pattern: 'package*.json'
+                commit_user_name: Apify Bot
+                commit_user_email: my-github-actions-bot@example.org
+                commit_author: Apify Bot <apify@apify.com>
