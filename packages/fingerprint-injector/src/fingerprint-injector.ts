@@ -232,33 +232,33 @@ export class FingerprintInjector {
  * @param browser Playwright Browser instance.
  * @param options.fingerprintOptions Options for the underlying FingerprintGenerator instance.
  * @param options.newContextOptions Options for the new context creation.
- *  > Note: The `userAgent`, `viewport` and some HTTP headers will be overwritten with the values from the generated fingerprint.
+ *  > Note: Setting `userAgent` or `viewport` in `newContextOptions` will override the values from the generated fingerprint.
  * @returns BrowserContext with injected fingerprint.
  */
 export async function newInjectedContext(
     browser: PWBrowser,
-    options? : Partial<{
-        fingerprintOptions: Partial<FingerprintGeneratorOptions>;
-        newContextOptions: BrowserContextOptions;
-    }>,
+    options? : {
+        fingerprintOptions?: Partial<FingerprintGeneratorOptions>;
+        newContextOptions?: BrowserContextOptions;
+    },
 ): Promise<BrowserContext> {
     const generator = new FingerprintGenerator();
     const fingerprintWithHeaders = generator.getFingerprint(options?.fingerprintOptions ?? {});
 
     const { fingerprint, headers } = fingerprintWithHeaders;
     const context = await browser.newContext({
-        ...options?.newContextOptions,
         userAgent: fingerprint.navigator.userAgent,
+        colorScheme: 'dark',
+        ...options?.newContextOptions,
         viewport: {
-            ...options?.newContextOptions?.viewport,
             width: fingerprint.screen.width,
             height: fingerprint.screen.height,
+            ...options?.newContextOptions?.viewport,
         },
         extraHTTPHeaders: {
-            ...options?.newContextOptions?.extraHTTPHeaders,
             'accept-language': headers['accept-language'],
+            ...options?.newContextOptions?.extraHTTPHeaders,
         },
-        colorScheme: 'dark',
     });
 
     const injector = new FingerprintInjector();
@@ -269,9 +269,9 @@ export async function newInjectedContext(
 
 export async function newInjectedPage(
     browser: PPBrowser,
-    options? : Partial<{
-        fingerprintOptions: Partial<FingerprintGeneratorOptions>;
-    }>,
+    options? : {
+        fingerprintOptions?: Partial<FingerprintGeneratorOptions>;
+    },
 ): Promise<Page> {
     const generator = new FingerprintGenerator();
     const fingerprintWithHeaders = generator.getFingerprint(options?.fingerprintOptions ?? {});
