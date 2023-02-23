@@ -15,10 +15,10 @@
     },
     "packageRules": [
         {
-            "matchUpdateTypes": ["patch", "minor"],
+            "matchUpdateTypes": ["minor"],
             "matchCurrentVersion": "!/^0/",
-            "groupName": "patch/minor dependencies",
-            "groupSlug": "all-non-major",
+            "groupName": "minor dependencies",
+            "groupSlug": "minor-deps",
             "automerge": true,
             "automergeType": "branch"
         }
