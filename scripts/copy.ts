@@ -1,108 +1,65 @@
 import { copyFileSync, readFileSync, writeFileSync, readdirSync } from 'fs';
-import { join } from 'path';
+import path, { join } from 'path';
 import { execSync } from 'node:child_process';
-
-const options: {
-    preid?: string;
-    canary?: boolean;
-    bump: 'patch'|'minor'|'major';
-} = process.argv.slice(2).reduce((args, arg) => {
-    const [key, value] = arg.split('=');
-    args[key.substring(2)] = value ?? true;
-
-    return args;
-}, {} as any);
+import semver from 'semver';
 
 function copy(filename: string, from: string, to: string): void {
     copyFileSync(join(from, filename), join(to, filename));
 }
 
-function rewrite(path: string, replacer: (from: string) => string): void {
+function rewrite(p: string, replacer: (from: string) => string): void {
     try {
-        const file = readFileSync(path).toString();
+        const file = readFileSync(p).toString();
         const replaced = replacer(file);
-        writeFileSync(path, replaced);
+        writeFileSync(p, replaced);
     } catch {
         // not found
     }
 }
 
-/**
- * Checks next dev version number based on the local package via `npm show`.
- */
-function getNextVersion(bump: typeof options['bump']) {
-    const versions: string[] = [];
-    // eslint-disable-next-line @typescript-eslint/no-var-requires,import/no-dynamic-require,global-require
-    const pkgJson = require(join(process.cwd(), 'package.json'));
-
-    try {
-        const versionString = execSync(`npm show ${pkgJson.name} versions --json`, { encoding: 'utf8', stdio: 'pipe' });
-        const parsed = JSON.parse(versionString) as string[];
-        versions.push(...parsed);
-    } catch {
-        // the package might not have been published yet
-    }
-
-    if (bump) {
-        const [_, major, minor, patch] = pkgJson.version.match(/(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(-.+\.\d+)?/);
-
-        switch (bump) {
-            case 'major':
-                return `${Number(major) + 1}.0.0`;
-            case 'minor':
-                return `${major}.${Number(minor) + 1}.0`;
-            case 'patch':
-                return `${major}.${minor}.${Number(patch) + 1}`;
-            default:
-                throw new Error(`Unknown bump type: ${bump}`);
-        }
-    }
-
-    if (options.canary) {
-        if (versions.some((v) => v === pkgJson.version)) {
-            // eslint-disable-next-line no-console
-            console.warn(`Version ${pkgJson.version} already exists on npm. Bumping patch version.`);
-            pkgJson.version = getNextVersion('patch');
-        }
-
-        const preid = options.preid ?? 'alpha';
-        const prereleaseNumbers = versions
-            .filter((v) => v.startsWith(`${pkgJson.version}-${preid}.`))
-            .map((v) => Number(v.match(/\.(\d+)$/)?.[1]));
-        const lastPrereleaseNumber = Math.max(-1, ...prereleaseNumbers);
-
-        return `${pkgJson.version}-${preid}.${lastPrereleaseNumber + 1}`;
-    }
+function getProjectVersion(packageName: string) {
+    const version = execSync(`npm show ${packageName} version`).toString().trim();
+    return version;
 }
+
+const localPackages = readdirSync(join(__dirname, '../packages'));
+
+if (!process.env.GIT_TAG || semver.valid(process.env.GIT_TAG) === null) {
+    throw new Error('GIT_TAG environment variable is not set or is not a valid semver tag!');
+};
+
+const targetVersion = semver.valid(process.env.GIT_TAG);
+
+const rootVersion = getProjectVersion(`${__dirname}/../`);
+const currentLocalVersion = getProjectVersion(process.cwd());
+
+if (semver.gt(targetVersion!, rootVersion)) {
+    execSync(`cd ${__dirname}/../ && npm version ${targetVersion} --git-tag-version=false`, {
+        encoding: 'utf-8',
+    });
+}
+
+if (
+    semver.valid(rootVersion)
+    && semver.valid(currentLocalVersion)
+    && semver.gt(rootVersion, currentLocalVersion)
+) {
+    execSync(`cd ${process.cwd()} && npm version ${rootVersion} --git-tag-version=false`, {
+        encoding: 'utf-8',
+    });
+}
+
+// eslint-disable-next-line
+const localDependencies = Object.keys(require(join(process.cwd(), 'package.json')).dependencies).filter((dep: string) => localPackages.includes(dep));
+
+execSync(`cd ${process.cwd()} && npm install ${localDependencies.join(' ')}`, {
+    encoding: 'utf-8',
+});
 
 // as we publish only the dist folder, we need to copy some meta files inside (readme/license/package.json)
 // also changes paths inside the copied `package.json` (`dist/index.js` -> `index.js`)
 const root = join(__dirname, '..');
 const target = join(process.cwd(), 'dist');
-const pkgPath = join(process.cwd(), 'package.json');
-
-if (options.canary || options.bump) {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires,import/no-dynamic-require,global-require
-    const pkgJson = require(pkgPath);
-    const nextVersion = getNextVersion(options.bump);
-    pkgJson.version = nextVersion;
-
-    const packageNames = readdirSync(`${__dirname}/../packages/`);
-    for (const dep of Object.keys(pkgJson.dependencies)) {
-        if (packageNames.includes(dep)) {
-            // We can read the new version of the dependency package because of turborepo (that builds a build graph).
-            // eslint-disable-next-line @typescript-eslint/no-var-requires,import/no-dynamic-require,global-require
-            const pkgJsonDep = require(join(process.cwd(), `../${dep}`, 'package.json'));
-            const prefix = pkgJson.dependencies[dep].startsWith('^') ? '^' : '';
-            pkgJson.dependencies[dep] = prefix + pkgJsonDep.version;
-        }
-    }
-
-    // eslint-disable-next-line no-console
-    console.info(`canary: setting version to ${nextVersion}`);
-
-    writeFileSync(pkgPath, `${JSON.stringify(pkgJson, null, 4)}\n`);
-}
 
 copy('README.md', root, target);
 copy('LICENSE.md', root, target);

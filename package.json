@@ -34,18 +34,15 @@
     },
     "homepage": "https://sdk.apify.com/",
     "scripts": {
-        "postinstall": "npx husky install",
-        "prepublishOnly": "turbo run copy",
-        "publish:next": "lerna publish from-package --contents dist --dist-tag next --force-publish",
         "clean": "turbo run clean",
         "build": "turbo run build",
         "postbuild": "node ./scripts/typescript_fixes.mjs",
-        "ci:build": "turbo run build --cache-dir=\".turbo\"",
+        "prerelease": "npm run build -- --force && turbo run copy --force --concurrency=1",
+        "release": "./scripts/publish.sh",
         "test": "jest --silent",
-        "coverage": "jest --coverage",
         "lint": "eslint packages/*/src test",
         "lint:fix": "eslint packages/*/src test --fix",
-        "buildNetwork": "turbo run build && ./scripts/netgen.sh && npx turbo run copy --filter=*-generator --no-deps -- -- --bump=patch"
+        "buildNetwork": "turbo run build && ./scripts/netgen.sh"
     },
     "devDependencies": {
         "@apify/eslint-config-ts": "^0.2.3",
@@ -68,6 +65,7 @@
         "playwright": "^1.25.1",
         "puppeteer": "^17.1.3",
         "rimraf": "^3.0.2",
+        "semver": "^7.3.8",
         "ts-jest": "^28.0.3",
         "ts-node": "^10.8.0",
         "turbo": "^1.2.14",
