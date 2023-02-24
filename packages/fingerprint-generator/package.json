@@ -33,7 +33,7 @@
         "url": "https://github.com/apify/fingerprint-suite/issues"
     },
     "dependencies": {
-        "generative-bayesian-network": "^2.1.10",
+        "generative-bayesian-network": "^2.1.13",
         "header-generator": "^2.1.13",
         "tslib": "^2.4.0"
     }

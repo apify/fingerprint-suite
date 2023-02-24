@@ -16,7 +16,7 @@
         }
     },
     "dependencies": {
-        "generative-bayesian-network": "^2.1.10",
+        "generative-bayesian-network": "^2.1.13",
         "node-fetch": "^2.6.7",
         "tslib": "^2.4.0"
     },
