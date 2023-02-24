@@ -54,7 +54,8 @@ jobs:
             - name: Commit the version bump
               uses: stefanzweifel/git-auto-commit-action@v4
               with:
-                commit_message: 'chore: publish new version of @apify/docs-theme [skip ci]'
+                branch: master
+                commit_message: 'chore: sync new package.json versions'
                 file_pattern: 'package*.json'
                 commit_user_name: Apify Bot
                 commit_user_email: my-github-actions-bot@example.org

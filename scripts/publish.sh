@@ -8,7 +8,7 @@ for FOLDER in $SCRIPT_DIR/../packages/*; do
     PACKAGE_NAME=$(basename $FOLDER)
     if [[ " ${PACKAGES_TO_PUBLISH[@]} " =~ " ${PACKAGE_NAME} " ]]; then
       echo "Publishing $PACKAGE_NAME"
-      cd $FOLDER
+      cd $FOLDER/dist
       npm publish
       cd ../../
     fi
