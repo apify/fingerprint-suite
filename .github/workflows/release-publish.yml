@@ -41,8 +41,8 @@ jobs:
                     git config --global user.name 'Apify Release Bot'
                     git config --global user.email 'noreply@apify.com'
 
-                    echo "access=public" >> .npmrc
-                    echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" >> .npmrc
+                    echo "access=public" >> ~/.npmrc
+                    echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" >> ~/.npmrc
 
                     export GIT_TAG=$(echo $GITHUB_REF | sed 's/refs\/tags\///g')
                     npm run release 
@@ -55,7 +55,7 @@ jobs:
               uses: stefanzweifel/git-auto-commit-action@v4
               with:
                 branch: master
-                commit_message: 'chore: sync new package.json versions'
+                commit_message: 'chore: [skip ci] sync new package.json versions'
                 file_pattern: 'package*.json'
                 commit_user_name: Apify Bot
                 commit_user_email: my-github-actions-bot@example.org
