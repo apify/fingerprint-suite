@@ -9,8 +9,6 @@ for FOLDER in $SCRIPT_DIR/../packages/*; do
     if [[ " ${PACKAGES_TO_PUBLISH[@]} " =~ " ${PACKAGE_NAME} " ]]; then
       echo "Publishing $PACKAGE_NAME"
       cd $FOLDER/dist
-
-      npm owner add jindrich.bar
       npm publish
 
       cd $SCRIPT_DIR/../

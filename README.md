@@ -37,35 +37,55 @@ With the help of `fingerprint-suite` you can generate and inject browser fingerp
 The following example shows how to use the fingerprinting tools to camouflage your Playwright-managed Chromium instance.
 
 ```typescript
-const { chromium } = require('playwright');
-const { FingerprintGenerator } = require('fingerprint-generator');
-const { FingerprintInjector }  = require('fingerprint-injector');
+import { chromium } from 'playwright';
+import { newInjectedContext } from 'fingerprint-injector';
 
 (async () => {
-    const fingerprintGenerator = new FingerprintGenerator();
-
-    const browserFingerprintWithHeaders = fingerprintGenerator.getFingerprint({
-        devices: ['desktop'],
-        browsers: ['chrome'],
-    });
-
-    const fingerprintInjector = new FingerprintInjector();
-    const { fingerprint } = browserFingerprintWithHeaders;
-
     const browser = await chromium.launch({ headless: false });
+    const context = await newInjectedContext(
+        browser,
+        {
+            // Constraints for the generated fingerprint (optional)
+            fingerprintOptions: {
+                devices: ['mobile'],
+                operatingSystems: ['ios'],
+            },
+            // Playwright's newContext() options (optional, random example for illustration)
+            newContextOptions: {
+                geolocation: {
+                    latitude: 51.50853,
+                    longitude: -0.12574,
+                }
+            }
+        },
+    );
 
-    // With certain properties, we need to inject the props into the context initialization
-    const context = await browser.newContext({
-        userAgent: fingerprint.userAgent,
-        locale: fingerprint.navigator.language,
-        viewport: fingerprint.screen,
-    });
-   
-    // Attach the rest of the fingerprint
-   await fingerprintInjector.attachFingerprintToPlaywright(context, browserFingerprintWithHeaders);
-
-   const page = await context.newPage();
+    const page = await context.newPage();
    // ... your code using `page` here
+})();
+```
+
+Here is the same example using Puppeteer:
+
+```typescript
+import puppeteer from 'puppeteer';
+import { newInjectedPage } from 'fingerprint-injector';
+
+(async () => {
+    const browser = await puppeteer.launch({ headless: false });
+    const page = await newInjectedPage(
+        browser,
+        {
+            // constraints for the generated fingerprint
+            fingerprintOptions: {
+                devices: ['mobile'],
+                operatingSystems: ['ios'],
+            },
+        },
+    );
+
+    // ... your code using `page` here
+    await page.goto('https://example.com');
 })();
 ```
 

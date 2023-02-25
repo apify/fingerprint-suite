@@ -1,7 +1,7 @@
-import playwright from 'playwright';
+import playwright, { chromium } from 'playwright';
 import puppeteer from 'puppeteer';
 import { BrowserFingerprintWithHeaders, Fingerprint, FingerprintGenerator } from 'fingerprint-generator';
-import { FingerprintInjector } from 'fingerprint-injector';
+import { FingerprintInjector, newInjectedContext, newInjectedPage } from 'fingerprint-injector';
 
 const cases = [
     ['Playwright',
@@ -282,6 +282,64 @@ describe('FingerprintInjector', () => {
 
                 expect(intlLocale).toBe(language);
             });
+        });
+    });
+
+    describe('helpers', () => {
+        test('Playwright helpers', async () => {
+            const browser = await chromium.launch();
+            const context = await newInjectedContext(
+                browser,
+                {
+                    fingerprintOptions: {
+                        devices: ['mobile'],
+                        operatingSystems: ['ios'],
+                    },
+                },
+            );
+
+            const page = await context.newPage();
+
+            // test whether the injection worked
+            const isiPhone = await page.evaluate(() => {
+                return navigator.userAgent.toLowerCase().includes('iphone');
+            });
+
+            const screenSize = await page.evaluate(() => {
+                return { w: window.screen.width, h: window.screen.height };
+            });
+
+            expect(isiPhone).toBe(true);
+            expect(screenSize.h).toBeGreaterThan(screenSize.w);
+
+            await page.close();
+            await context.close();
+            await browser.close();
+        });
+
+        test('Puppeteer helpers', async () => {
+            const browser = await puppeteer.launch();
+            const page = await newInjectedPage(browser, {
+                fingerprintOptions: {
+                    devices: ['mobile'],
+                    operatingSystems: ['ios'],
+                },
+            });
+
+            // test whether the injection worked
+            const isiPhone = await page.evaluate(() => {
+                return navigator.userAgent.toLowerCase().includes('iphone');
+            });
+
+            const screenSize = await page.evaluate(() => {
+                return { w: window.screen.width, h: window.screen.height };
+            });
+
+            expect(isiPhone).toBe(true);
+            expect(screenSize.h).toBeGreaterThan(screenSize.w);
+
+            await page.close();
+            await browser.close();
         });
     });
 });
