@@ -49,7 +49,7 @@ async function runWith(engine: FingeprintingEngine): Promise<TestResult> {
         const page = await context.newPage();
 
         const start = Date.now();
-        if (await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 5000 }).catch(async () => {
+        if (await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 10000 }).catch(async () => {
             return page.goto(url, { waitUntil: 'domcontentloaded', timeout: 10000 }).catch((x) => {
                 console.log(`[${engine.getEngineName()}] ❌ ${x.message}`);
                 unreachable++;

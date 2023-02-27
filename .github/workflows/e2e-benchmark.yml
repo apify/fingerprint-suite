@@ -1,9 +1,9 @@
 name: Run Benchmarks
 
 on:
-  # Triggers the workflow every month
+  # Triggers the workflow every Monday at 5am
   schedule:
-    - cron: "0 0 * * 1"
+    - cron: "0 5 * * 1"
   workflow_dispatch:
 
 
@@ -29,6 +29,9 @@ jobs:
 
       - name: Install Dependencies
         run: npm ci
+      
+      - name: Build the project
+        run: npm run build
 
       - name: Run benchmarks
         run: npm run benchmark 
@@ -38,6 +41,6 @@ jobs:
         with:
           commit_message: "chore: [skip-ci] update benchmark results"
           branch: master
-          file_pattern: report.png
+          file_pattern: '**/report.png'
           commit_user_name: "Mark Bench[bot] 💪🏼"
           commit_user_email: markbench[bot]@users.noreply.github.com 
