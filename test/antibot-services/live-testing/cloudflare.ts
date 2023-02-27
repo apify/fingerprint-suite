@@ -18,7 +18,7 @@ async function waitForCompletion<T>(promises: (() => Promise<T>)[], maxConcurren
 }
 
 const source = fs.readFileSync(path.join(__dirname, 'cloudflare-websites.csv'), 'utf8');
-const pages = source.split('\n').slice(0, 20);
+const pages = source.split('\n');
 
 async function runWith(engine: FingeprintingEngine): Promise<TestResult> {
     let passed = 0;

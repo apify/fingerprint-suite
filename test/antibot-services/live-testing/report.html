@@ -1,0 +1,87 @@
+
+<html>
+<style>
+    body {
+        font-family: sans-serif;
+    }
+    #content {
+        display: flex;
+        justify-content: center;
+        flex-direction: column;
+        margin-left: 35%;
+        width: 30%;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        background-color: #eee;
+    }
+    table {
+        border-collapse: collapse;
+        width: 100%;
+        border-top: 1px solid #ccc;
+        border-bottom: 1px solid #ccc;
+        padding: 10px;
+    }
+    th {
+        border-bottom: 1px solid #ccc;
+        padding: 10px;
+        text-align: right;
+    }
+    td {
+        padding: 10px;
+        text-align: right;
+    }
+    tr {
+        border-bottom: 1px solid #ddd;
+    }
+    tr:last-child {
+        background-color: #ccefef;
+    }
+</style>
+<body>
+    <div id="content">
+        <div style="width: 100%; text-align: right">
+            <p>(Mon Feb 27 2023)</p>
+        </div>
+        
+<table>
+    <thead>
+        <tr>
+            <th style="text-align: left">Test suite</th>
+            <th>Passed</th>
+            <th>Blocked</th>
+            <th>Unreachable</th>
+            <th>Mean time to pass</th>
+        </tr>
+    </thead>
+    <tbody>
+        
+        <tr>
+            <td style="text-align: left"><b>🎭️ Vanilla Playwright</b></td>
+            <td>10 ✅</td>
+            <td>8 ❌</td>
+            <td>2 🟡</td>
+            <td>2103 ms</td>
+        </tr>
+        
+        <tr>
+            <td style="text-align: left"><b>🍪 Playwright Extra</b></td>
+            <td>13 ✅</td>
+            <td>5 ❌</td>
+            <td>2 🟡</td>
+            <td>1865 ms</td>
+        </tr>
+        
+        <tr>
+            <td style="text-align: left"><b>🕵️ Fingerprint Suite</b></td>
+            <td>11 ✅</td>
+            <td>6 ❌</td>
+            <td>3 🟡</td>
+            <td>1140 ms</td>
+        </tr>
+        
+    </tbody>
+</table>
+
+    </div>
+</body>
+</html>    
