@@ -18,6 +18,7 @@ declare function overrideWebGl(webGlInfo: Record<string, string>) : void;
 declare function overrideIntlAPI(language: string) : void;
 declare function overrideStatic() : void;
 declare function runHeadlessFixes() : void;
+declare function blockWebRTC() : void;
 
 /**
  * Fingerprint injector class.
@@ -197,6 +198,8 @@ export class FingerprintInjector {
             };
 
             runHeadlessFixes();
+
+            blockWebRTC();
 
             overrideIntlAPI(navigatorProps.language);
             overrideStatic();

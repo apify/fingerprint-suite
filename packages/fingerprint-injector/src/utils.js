@@ -451,6 +451,32 @@ function overrideDocumentDimensionsProps(props) {
     }
 }
 
+// Replaces all the WebRTC related methods with a recursive ES6 Proxy 
+// This way, we don't have to model a mock WebRTC API and we still don't get any exceptions.
+function blockWebRTC() {
+    const handler = {
+        get: () => {
+            return new Proxy(() => {}, handler);
+        },
+        apply: () => {
+            return new Proxy(() => {}, handler);
+        },
+        construct: () => {
+            return new Proxy(() => {}, handler);
+        },
+    };
+    
+    const ConstrProxy = new Proxy(Object, handler);
+
+    navigator.mediaDevices.getUserMedia =
+    navigator.webkitGetUserMedia =
+    navigator.mozGetUserMedia =
+    navigator.getUserMedia =
+    window.webkitRTCPeerConnection = new Proxy(() => {}, handler);
+    MediaStreamTrack =
+    RTCPeerConnection = ConstrProxy;
+}
+
 // eslint-disable-next-line no-unused-vars
 function overrideUserAgentData(userAgentData) {
     try {
