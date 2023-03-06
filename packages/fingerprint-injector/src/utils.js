@@ -53,10 +53,16 @@ const prototypeProxyHandler = {
     },
 }
 
+function useStrictModeExceptions(prop) {
+    if (['caller', 'callee', 'arguments'].includes(prop)) {
+        throw TypeError(`'caller', 'callee', and 'arguments' properties may not be accessed on strict mode functions or the arguments objects for calls to them`);
+    }
+}
+
 /**
  * @param masterObject Object to override.
  * @param propertyName Property to override.
- * @param proxyHandler Proxy handled with getter handler.
+ * @param proxyHandler ES6 Proxy handler object with a get handle only.
  */
 function overrideGetterWithProxy(masterObject, propertyName, proxyHandler) {
     const fn = Object.getOwnPropertyDescriptor(masterObject, propertyName).get;
@@ -157,6 +163,7 @@ function redirectToString(proxyObj, originalObj) {
                 }
               });
             }
+            useStrictModeExceptions(prop);
             return Reflect.get(...arguments);
           }
     };
@@ -274,7 +281,11 @@ function overrideWebGl(webGl) {
                     return webGl.renderer;
                 }
                 return result;
-            }
+            },
+            get: function (target, prop, receiver) {
+                useStrictModeExceptions(prop);
+                return Reflect.get(...arguments);
+            },
         }
         const addProxy = (obj, propName) => {
             overridePropertyWithProxy(obj, propName, getParameterProxyHandler);
@@ -387,6 +398,10 @@ function makeHandler() {
                     return value;
                 }
                 return ret;
+            },
+            get: function (target, prop, receiver) {
+                useStrictModeExceptions(prop);
+                return Reflect.get(...arguments);
             },
         }),
     };
