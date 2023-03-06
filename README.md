@@ -1,5 +1,5 @@
 <h1 align="center">
-    <a href="https://apify.github.io/fingerprint-suite/">
+    <a href="https://github.com/apify/fingerprint-suite/">
         <picture>
           <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/apify/fingerprint-suite/master/static/logo_big_light.svg">
           <img alt="Fingerprinting suite" src="https://raw.githubusercontent.com/apify/fingerprint-suite/master/static/logo_big_dark.svg" width="500">
@@ -18,8 +18,6 @@
 `fingerprint-suite` is a handcrafted assembly of tools for browser fingerprint generation and injection.
 Today's websites are increasingly using fingerprinting to track users and identify them.
 With the help of `fingerprint-suite` you can generate and inject browser fingerprints into your browser, allowing you to fly your scrapers under the radar.
-
-**View full documentation, guides and examples on the [fingerprint-suite website](https://apify.github.io/fingerprint-suite/)**
 
 > Would you like to work with us on our fingerprinting tools or similar projects? [We are hiring!](https://apify.com/jobs#senior-node.js-engineer)
 
