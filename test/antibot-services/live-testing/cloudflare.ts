@@ -6,6 +6,7 @@ import { FingeprintingEngine, VanillaPlaywright } from './engine/vanilla-playwri
 import { FingerprintSuite } from './engine/fingerprint-suite';
 import { generateReport, TestResult } from './utils/generateReport';
 import { PlaywrightExtra } from './engine/playwright-extra';
+import { FingerprintSuiteExtra } from './engine/combo';
 
 async function waitForCompletion<T>(promises: (() => Promise<T>)[], maxConcurrency: number): Promise<void> {
     async function worker() {
@@ -99,18 +100,20 @@ async function runWith(engine: FingeprintingEngine): Promise<TestResult> {
         runWith(new VanillaPlaywright()),
         runWith(new FingerprintSuite()),
         runWith(new PlaywrightExtra()),
+        runWith(new FingerprintSuiteExtra()),
     ]);
 
     fs.writeFileSync(path.join(__dirname, 'report.html'), generateReport({
         '🎭️ Vanilla Playwright': results[0],
         '🍪 Playwright Extra': results[2],
         '🕵️ Fingerprint Suite': results[1],
+        '🍪 + 🕵️ Fingerprint Suite Extra': results[3],
     }));
 
     const b = await chromium.launch();
     const c = await b.newContext({
         viewport: {
-            width: 2160,
+            width: 3000,
             height: 1440,
         },
     });
