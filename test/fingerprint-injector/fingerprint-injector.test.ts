@@ -35,7 +35,7 @@ const cases = [
                 options: {
                     args: [
                         '--no-sandbox',
-                        '--use-gl=egl',
+                        '--use-gl=desktop',
                     ],
                     channel: 'chrome',
                 },
@@ -49,7 +49,7 @@ const cases = [
                 options: {
                     args: [
                         '--no-sandbox',
-                        '--use-gl=egl',
+                        '--use-gl=desktop',
                     ],
                 },
                 fingerprintGeneratorOptions: {
@@ -250,6 +250,14 @@ describe('FingerprintInjector', () => {
                         return [null, null];
                     }
                 });
+
+                if (!browserVendor || !browserRenderer) {
+                    // this can happen with headless browsers / systems without hardware graphical accelerators - e.g. CI
+                    expect(browserVendor).toBeNull();
+                    expect(browserRenderer).toBeNull();
+
+                    return;
+                }
 
                 expect(browserVendor).toBe(vendor);
                 expect(browserRenderer).toBe(renderer);
