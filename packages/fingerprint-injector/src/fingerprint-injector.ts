@@ -41,10 +41,7 @@ export class FingerprintInjector {
             enhancedFingerprint,
         );
 
-        // Override the language properly
-        await browserContext.setExtraHTTPHeaders({
-            'accept-language': headers['accept-language'],
-        });
+        await browserContext.setExtraHTTPHeaders(headers);
 
         await browserContext.on('page', (page) => {
             page.emulateMedia({ colorScheme: 'dark' })
@@ -79,10 +76,7 @@ export class FingerprintInjector {
             deviceScaleFactor: screen.devicePixelRatio,
 
         });
-        // Override the language properly
-        await page.setExtraHTTPHeaders({
-            'accept-language': headers['accept-language'],
-        });
+        await page.setExtraHTTPHeaders(headers);
 
         await page.emulateMediaFeatures([
             { name: 'prefers-color-scheme', value: 'dark' },
