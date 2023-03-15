@@ -9,9 +9,7 @@ const cases = [
             {
                 name: 'Firefox',
                 launcher: playwright.firefox,
-                options: {
-
-                },
+                options: {},
                 fingerprintGeneratorOptions: {
                     browsers: [{ name: 'firefox', minVersion: 96 }],
                 },
@@ -35,6 +33,10 @@ const cases = [
                 name: 'Chrome',
                 launcher: puppeteer,
                 options: {
+                    args: [
+                        '--no-sandbox',
+                        '--use-gl=egl',
+                    ],
                     channel: 'chrome',
                 },
                 fingerprintGeneratorOptions: {
@@ -44,7 +46,12 @@ const cases = [
             {
                 name: 'Chromium',
                 launcher: puppeteer,
-                options: {},
+                options: {
+                    args: [
+                        '--no-sandbox',
+                        '--use-gl=egl',
+                    ],
+                },
                 fingerprintGeneratorOptions: {
                     browsers: [{ name: 'chrome', minVersion: 90 }],
                 },
@@ -281,6 +288,29 @@ describe('FingerprintInjector', () => {
                 });
 
                 expect(intlLocale).toBe(language);
+            });
+
+            test('should override other browser headers', async () => {
+                response = await page.goto(`https://example.org`);
+                const requestObject = await response.request();
+                const requestHeaders = await requestObject.allHeaders?.() ?? requestObject.headers?.();
+                const { headers } = fingerprintWithHeaders;
+
+                function isHeaderInjectable(headerName: string) {
+                    return ![
+                        'accept',
+                        'accept-encoding',
+                        'sec-fetch-site',
+                        'sec-fetch-mode',
+                        'sec-fetch-dest',
+                    ].includes(headerName.toLowerCase());
+                }
+
+                for (const [header, value] of Object.entries(headers)) {
+                    if (isHeaderInjectable(header)) {
+                        expect(requestHeaders[header]).toBe(value);
+                    }
+                }
             });
         });
     });

@@ -82,20 +82,24 @@ function overrideGetterWithProxy(masterObject, propertyName, proxyHandler) {
  */
 // eslint-disable-next-line no-unused-vars
 function overrideInstancePrototype(instance, overrideObj) {
-    Object.keys(overrideObj).forEach((key) => {
-        if (!(overrideObj[key] === null)) {
-            try {
-                overrideGetterWithProxy(
-                    Object.getPrototypeOf(instance),
-                    key,
-                    makeHandler().getterValue(overrideObj[key]),
-                );
-            } catch (e) {
-                return false;
-                // console.error(`Could not override property: ${key} on ${instance}. Reason: ${e.message} `); // some fingerprinting services can be listening
+    try {
+        Object.keys(overrideObj).forEach((key) => {
+            if (!(overrideObj[key] === null)) {
+                try {
+                    overrideGetterWithProxy(
+                        Object.getPrototypeOf(instance),
+                        key,
+                        makeHandler().getterValue(overrideObj[key]),
+                    );
+                } catch (e) {
+                    return false;
+                    // console.error(`Could not override property: ${key} on ${instance}. Reason: ${e.message} `); // some fingerprinting services can be listening
+                }
             }
-        }
-    });
+        });
+    } catch (e) {
+        console.error(e);
+    }
 }
 
 function redirectToString(proxyObj, originalObj) {
@@ -300,90 +304,102 @@ function overrideWebGl(webGl) {
 
 // eslint-disable-next-line no-unused-vars
 const overrideCodecs = (audioCodecs, videoCodecs) => {
-    const codecs = {
-        ...Object.fromEntries(Object.entries(audioCodecs).map(([key, value]) => [`audio/${key}`, value])),
-        ...Object.fromEntries(Object.entries(videoCodecs).map(([key, value]) => [`video/${key}`, value])),
-    };
-
-    const findCodec = (codecString) => {
-        const [mime, codecSpec] = codecString.split(';');
-        if (mime === 'video/mp4') {
-            if (codecSpec.includes('avc1.42E01E')) { // codec is missing from Chromium
-                return {name: mime, state: 'probably'};
+    try {
+        const codecs = {
+            ...Object.fromEntries(Object.entries(audioCodecs).map(([key, value]) => [`audio/${key}`, value])),
+            ...Object.fromEntries(Object.entries(videoCodecs).map(([key, value]) => [`video/${key}`, value])),
+        };
+    
+        const findCodec = (codecString) => {
+            const [mime, codecSpec] = codecString.split(';');
+            if (mime === 'video/mp4') {
+                if (codecSpec.includes('avc1.42E01E')) { // codec is missing from Chromium
+                    return {name: mime, state: 'probably'};
+                }
             }
-        }
-
-        const codec = Object.entries(codecs).find(([key]) => key === codecString.split(';')[0]);
-        if(codec) {
-            return {name: codec[0], state: codec[1]};
-        }
-
-        return undefined;
-    };
-
-    const canPlayType = {
-        // eslint-disable-next-line
-        apply: function (target, ctx, args) {
-            if (!args || !args.length) {
+    
+            const codec = Object.entries(codecs).find(([key]) => key === codecString.split(';')[0]);
+            if(codec) {
+                return {name: codec[0], state: codec[1]};
+            }
+    
+            return undefined;
+        };
+    
+        const canPlayType = {
+            // eslint-disable-next-line
+            apply: function (target, ctx, args) {
+                if (!args || !args.length) {
+                    return target.apply(ctx, args);
+                }
+                const [codecString] = args;
+                const codec = findCodec(codecString);
+    
+                if (codec) {
+                    return codec.state;
+                }
+    
+                // If the codec is not in our collected data use
                 return target.apply(ctx, args);
-            }
-            const [codecString] = args;
-            const codec = findCodec(codecString);
-
-            if (codec) {
-                return codec.state;
-            }
-
-            // If the codec is not in our collected data use
-            return target.apply(ctx, args);
-        },
-    };
-
-    overridePropertyWithProxy(
-        HTMLMediaElement.prototype,
-        'canPlayType',
-        canPlayType,
-    );
+            },
+        };
+    
+        overridePropertyWithProxy(
+            HTMLMediaElement.prototype,
+            'canPlayType',
+            canPlayType,
+        );
+    } catch (e) {
+        console.warn(e);
+    }
 };
 
 // eslint-disable-next-line no-unused-vars
 function overrideBattery(batteryInfo) {
-    const getBattery = {
-        ...prototypeProxyHandler,
-        // eslint-disable-next-line
-        apply: async function () {
-            return batteryInfo;
-        },
-    };
-
-    if(navigator.getBattery) { // Firefox does not have this method - to be fixed
-        overridePropertyWithProxy(
-            Object.getPrototypeOf(navigator),
-            'getBattery',
-            getBattery,
-        );
+    try {
+        const getBattery = {
+            ...prototypeProxyHandler,
+            // eslint-disable-next-line
+            apply: async function () {
+                return batteryInfo;
+            },
+        };
+    
+        if(navigator.getBattery) { // Firefox does not have this method - to be fixed
+            overridePropertyWithProxy(
+                Object.getPrototypeOf(navigator),
+                'getBattery',
+                getBattery,
+            );
+        }
+    } catch (e) {
+        console.warn(e);
     }
 }
 
 function overrideIntlAPI(language){
-    const innerHandler = {
-        construct(target, [locales, options]) {  
-          return new target(locales ?? language, options);
-        },
-        apply(target, _, [locales, options]) {
-            return target(locales ?? language, options);
-        }
-      };
-
-    overridePropertyWithProxy(window, 'Intl', {
-        get(target, key){
-            if(key[0].toLowerCase() === key[0]) return target[key];
-            return new Proxy(
-                target[key],
-                innerHandler
-            );
-        }
-    });
+    try {
+        const innerHandler = {
+            construct(target, [locales, options]) {  
+              return new target(locales ?? language, options);
+            },
+            apply(target, _, [locales, options]) {
+                return target(locales ?? language, options);
+            }
+          };
+    
+        overridePropertyWithProxy(window, 'Intl', {
+            get(target, key){
+                if(key[0].toLowerCase() === key[0]) return target[key];
+                return new Proxy(
+                    target[key],
+                    innerHandler
+                );
+            }
+        });
+    } catch (e) {
+        console.warn(e);
+    }
 }
 
 function makeHandler() {
@@ -418,58 +434,70 @@ function overrideScreenByReassigning(target, newProperties) {
 
 // eslint-disable-next-line no-unused-vars
 function overrideWindowDimensionsProps(props) {
-    overrideScreenByReassigning(window, props);
+    try {
+        overrideScreenByReassigning(window, props);
+    } catch (e) {
+        console.warn(e);
+    }
 }
 
 // eslint-disable-next-line no-unused-vars
 function overrideDocumentDimensionsProps(props) {
-    // FIX THIS = non-zero values here block the injecting process?
-    // overrideScreenByReassigning(window.document.body, props);
+    try {
+        // FIX THIS = non-zero values here block the injecting process?
+        // overrideScreenByReassigning(window.document.body, props);
+    } catch (e) {
+        console.warn(e);
+    }
 }
 
 // eslint-disable-next-line no-unused-vars
 function overrideUserAgentData(userAgentData) {
-    const { brands, mobile, platform, ...highEntropyValues } = userAgentData;
-    // Override basic properties
-    const getHighEntropyValues = {
-        // eslint-disable-next-line
-        apply: async function (target, ctx, args) {
-            // Just to throw original validation error
-            // Remove traces of our Proxy
-            const stripErrorStack = (stack) => stack
-                .split('\n')
-                .filter((line) => !line.includes('at Object.apply'))
-                .filter((line) => !line.includes('at Object.get'))
-                .join('\n');
+    try {
+        const { brands, mobile, platform, ...highEntropyValues } = userAgentData;
+        // Override basic properties
+        const getHighEntropyValues = {
+            // eslint-disable-next-line
+            apply: async function (target, ctx, args) {
+                // Just to throw original validation error
+                // Remove traces of our Proxy
+                const stripErrorStack = (stack) => stack
+                    .split('\n')
+                    .filter((line) => !line.includes('at Object.apply'))
+                    .filter((line) => !line.includes('at Object.get'))
+                    .join('\n');
 
-            try {
-                if (!args || !args.length) {
-                    return target.apply(ctx, args);
+                try {
+                    if (!args || !args.length) {
+                        return target.apply(ctx, args);
+                    }
+                    const [hints] = args;
+                    await target.apply(ctx, args);
+
+                    // If the codec is not in our collected data use
+                    const data = {};
+                    hints.forEach((hint) => {
+                        data[hint] = highEntropyValues[hint];
+                    });
+                    return data;
+                } catch (err) {
+                    err.stack = stripErrorStack(err.stack);
+                    throw err;
                 }
-                const [hints] = args;
-                await target.apply(ctx, args);
+            },
+        };
 
-                // If the codec is not in our collected data use
-                const data = {};
-                hints.forEach((hint) => {
-                    data[hint] = highEntropyValues[hint];
-                });
-                return data;
-            } catch (err) {
-                err.stack = stripErrorStack(err.stack);
-                throw err;
-            }
-        },
-    };
-
-    if(window.navigator.userAgentData){ // Firefox does not contain this property - to be fixed 
-        overridePropertyWithProxy(
-            Object.getPrototypeOf(window.navigator.userAgentData),
-            'getHighEntropyValues',
-            getHighEntropyValues,
-        );
-    
-        overrideInstancePrototype(window.navigator.userAgentData, { brands, mobile, platform });
+        if(window.navigator.userAgentData){ // Firefox does not contain this property - to be fixed 
+            overridePropertyWithProxy(
+                Object.getPrototypeOf(window.navigator.userAgentData),
+                'getHighEntropyValues',
+                getHighEntropyValues,
+            );
+        
+            overrideInstancePrototype(window.navigator.userAgentData, { brands, mobile, platform });
+        }
+    } catch (e) {
+        console.warn(e);
     }
 };
 
@@ -642,14 +670,22 @@ function fixPluginArray() {
 }
 
 function runHeadlessFixes(){
-    if( isHeadlessChromium() ){
-        fixWindowChrome();
-        fixPermissions();
-        fixIframeContentWindow();
-        fixPluginArray();
+    try {
+        if( isHeadlessChromium() ){
+            fixWindowChrome();
+            fixPermissions();
+            fixIframeContentWindow();
+            fixPluginArray();
+        }
+    } catch (e) {
+        console.error(e);
     }
 }
 
 function overrideStatic(){
-    window.SharedArrayBuffer = undefined;
+    try {
+        window.SharedArrayBuffer = undefined;
+    } catch (e) {
+        console.error(e);
+    }
 }
