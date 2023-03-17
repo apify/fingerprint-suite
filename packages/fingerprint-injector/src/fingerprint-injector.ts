@@ -158,6 +158,7 @@ export class FingerprintInjector {
                 historyLength,
                 audioCodecs,
                 videoCodecs,
+                webrtc,
                 // @ts-expect-error internal browser code
             } = fp as EnhancedFingerprint;
 
@@ -199,7 +200,9 @@ export class FingerprintInjector {
 
             runHeadlessFixes();
 
-            blockWebRTC();
+            if (webrtc === 'disabled') {
+                blockWebRTC();
+            }
 
             overrideIntlAPI(navigatorProps.language);
             overrideStatic();

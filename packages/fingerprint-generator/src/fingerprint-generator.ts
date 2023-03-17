@@ -51,6 +51,8 @@ export type VideoCard = {
     vendor: string;
 }
 
+type WebRTC = 'enabled' | 'disabled';
+
 export type Fingerprint = {
     screen: ScreenFingerprint;
     navigator: NavigatorFingerprint;
@@ -61,6 +63,7 @@ export type Fingerprint = {
     videoCard: VideoCard;
     multimediaDevices: string[];
     fonts: string[];
+    webrtc: WebRTC;
 }
 
 export type BrowserFingerprintWithHeaders = {
@@ -79,6 +82,7 @@ export interface FingerprintGeneratorOptions extends HeaderGeneratorOptions {
         minHeight?: number;
         maxHeight?: number;
     };
+    webrtc?: WebRTC;
 }
 
 /**
@@ -95,6 +99,7 @@ export class FingerprintGenerator extends HeaderGenerator {
         super(options);
         this.fingerprintGlobalOptions = {
             screen: options.screen,
+            webrtc: options.webrtc,
         };
         this.fingerprintGeneratorNetwork = new BayesianNetwork({ path: `${__dirname}/data_files/fingerprint-network-definition.zip` });
     }
@@ -174,7 +179,10 @@ export class FingerprintGenerator extends HeaderGenerator {
             fingerprint.languages = acceptedLanguages;
 
             return {
-                fingerprint: this.transformFingerprint(fingerprint),
+                fingerprint: {
+                    ...this.transformFingerprint(fingerprint),
+                    webrtc: options.webrtc ?? this.fingerprintGlobalOptions.webrtc ?? 'enabled',
+                },
                 headers,
             };
         }
