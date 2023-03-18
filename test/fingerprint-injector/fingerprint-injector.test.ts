@@ -339,15 +339,16 @@ describe('FingerprintInjector', () => {
             const page = await context.newPage();
 
             // test whether the injection worked
-            const isiPhone = await page.evaluate(() => {
-                return navigator.userAgent.toLowerCase().includes('iphone');
+            const isApple = await page.evaluate(() => {
+                const ua = navigator.userAgent.toLowerCase();
+                return ['iphone', 'ipad'].some((x) => ua.includes(x));
             });
 
             const screenSize = await page.evaluate(() => {
                 return { w: window.screen.width, h: window.screen.height };
             });
 
-            expect(isiPhone).toBe(true);
+            expect(isApple).toBe(true);
             expect(screenSize.h).toBeGreaterThan(screenSize.w);
 
             await page.close();
@@ -365,15 +366,16 @@ describe('FingerprintInjector', () => {
             });
 
             // test whether the injection worked
-            const isiPhone = await page.evaluate(() => {
-                return navigator.userAgent.toLowerCase().includes('iphone');
+            const isApple = await page.evaluate(() => {
+                const ua = navigator.userAgent.toLowerCase();
+                return ['iphone', 'ipad'].some((x) => ua.includes(x));
             });
 
             const screenSize = await page.evaluate(() => {
                 return { w: window.screen.width, h: window.screen.height };
             });
 
-            expect(isiPhone).toBe(true);
+            expect(isApple).toBe(true);
             expect(screenSize.h).toBeGreaterThan(screenSize.w);
 
             await page.close();
