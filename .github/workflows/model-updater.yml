@@ -32,6 +32,13 @@ jobs:
       - name: Install Dependencies
         run: npm ci
 
+      - name: Install Playwright browsers and collect HTTP header orders
+        run: |
+          npx playwright install
+          RUN npx playwright install chrome
+          RUN npx playwright install msedge
+          node ./packages/header-order-collector/collector.js > ./packages/header-generator/src/data_files/headers_order.json
+
       - name: Generate model and update versions
         run: |
           npm version patch --git-tag-version=false
