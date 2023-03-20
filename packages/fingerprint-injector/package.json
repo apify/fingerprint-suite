@@ -1,6 +1,6 @@
 {
     "name": "fingerprint-injector",
-    "version": "2.1.16",
+    "version": "2.1.17",
     "description": "Browser fingerprint injection library for Playwright and Puppeteer.",
     "engines": {
         "node": ">=16.0.0"
@@ -16,7 +16,7 @@
         }
     },
     "dependencies": {
-        "fingerprint-generator": "^2.1.16",
+        "fingerprint-generator": "^2.1.17",
         "tslib": "^2.4.0"
     },
     "peerDependencies": {
