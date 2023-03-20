@@ -304,20 +304,11 @@ describe('FingerprintInjector', () => {
                 const requestHeaders = await requestObject.allHeaders?.() ?? requestObject.headers?.();
                 const { headers } = fingerprintWithHeaders;
 
-                function isHeaderInjectable(headerName: string) {
-                    return ![
-                        'accept',
-                        'accept-encoding',
-                        'sec-fetch-site',
-                        'sec-fetch-mode',
-                        'sec-fetch-dest',
-                    ].includes(headerName.toLowerCase());
-                }
+                // eslint-disable-next-line dot-notation
+                const onlyInjectable = (new FingerprintInjector())['onlyInjectableHeaders'];
 
-                for (const [header, value] of Object.entries(headers)) {
-                    if (isHeaderInjectable(header)) {
-                        expect(requestHeaders[header]).toBe(value);
-                    }
+                for (const header of Object.keys(onlyInjectable(headers))) {
+                    expect(requestHeaders[header]).toBe(headers[header]);
                 }
             });
         });
