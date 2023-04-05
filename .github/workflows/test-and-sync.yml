@@ -60,8 +60,11 @@ jobs:
                       node_modules
                   key: cache-${{ github.run_id }}
             
-            - name: Install playwright deps
+            - name: Install Playwright deps
               run : npx playwright install --with-deps 
+            
+            - name: Install Puppeteer deps
+              run : cd node_modules/puppeteer && PUPPETEER_PRODUCT=firefox node install.js && cd ../..
 
             - name: Turbo cache
               id: turbo-cache
