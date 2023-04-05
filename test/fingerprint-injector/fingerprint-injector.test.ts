@@ -251,7 +251,7 @@ describe('FingerprintInjector', () => {
                     }
                 });
 
-                if (!browserVendor || !browserRenderer) {
+                if (browserVendor === null || browserRenderer === null) {
                     // this can happen with headless browsers / systems without hardware graphical accelerators - e.g. CI
                     expect(browserVendor).toBeNull();
                     expect(browserRenderer).toBeNull();
