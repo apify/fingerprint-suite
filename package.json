@@ -41,7 +41,7 @@
         "test": "jest --silent",
         "lint": "eslint packages/*/src test",
         "lint:fix": "eslint packages/*/src test --fix",
-        "buildNetwork": "turbo run build && ./scripts/netgen.sh",
+        "buildNetwork": "turbo run build && ./scripts/netgen.sh && turbo run build",
         "benchmark": "ts-node ./test/antibot-services/live-testing/cloudflare.ts"
     },
     "devDependencies": {
