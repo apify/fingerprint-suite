@@ -34,22 +34,26 @@ async function getHeadersFor(launcher, httpVersion) {
         v2(HTTP2port);
 
         const browserTypes = {
-            // safari: () => playwright.webkit.launch(),
+            safari: () => playwright.webkit.launch(),
             chrome: (p) => playwright.chromium.launch(p),
             firefox: (p) => playwright.firefox.launch(p),
-            // edge: () => playwright.chromium.launch({ channel: 'msedge' }),
+            edge: () => playwright.chromium.launch({ channel: 'msedge' }),
         };
 
-        const x = await Promise.all(
-            Object.entries(browserTypes)
-                .map(async ([name, launcher]) => {
-                    return [name, [...await getHeadersFor(launcher, 1), ...await getHeadersFor(launcher, 2)]];
-                })
-        );
-
-        console.log(JSON.stringify(Object.fromEntries(x), null, 4));
-        
-        process.exit(0);
+        try {
+            const x = await Promise.all(
+                Object.entries(browserTypes)
+                    .map(async ([name, launcher]) => {
+                        return [name, [...await getHeadersFor(launcher, 1), ...await getHeadersFor(launcher, 2)]];
+                    })
+            );
+            console.log(JSON.stringify(Object.fromEntries(x), null, 4));
+            process.exit(0);
+            
+        } catch (e) {
+            console.error(e);
+            process.exit(1);
+        }
     }
 )();
 
