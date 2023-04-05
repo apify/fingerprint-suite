@@ -1,6 +1,6 @@
 const express = require('express');
 const app = express();
-const port = 3000;
+const port = 3001;
 
 function extractHeaderNames(rawHeaders) {
     return rawHeaders.filter((_, i) => i % 2 === 0);
@@ -20,9 +20,9 @@ app.get('/headers', (req, res) => {
 });
 
 
-function runServer() {
+function runServer(p) {
     return new Promise(r => {
-        const inst = app.listen(port, (err) => {
+        const inst = app.listen(p ?? port, (err) => {
                 if (err) {
                     throw new Error(err);
                 }
@@ -35,4 +35,4 @@ function runServer() {
 module.exports = {
     runServer,
     app,
-}
+};

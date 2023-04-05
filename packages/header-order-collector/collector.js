@@ -1,51 +1,55 @@
 const playwright = require('playwright');
-const { runServer } = require('./server');
+const { runServer: v1 } = require('./server');
+const { runServer: v2 } = require('./serverv2');
 
-async function getHeadersFor(launcher) {
-    const browser = await launcher();
+const HTTP1port = 3001;
+const HTTP2port = 3002;
+
+async function getHeadersFor(launcher, httpVersion) {
+    const browser = await launcher({
+        headless: false,
+    });
     
-    const context = await browser.newContext();
+    const context = await browser.newContext({
+        ignoreHTTPSErrors: true,
+    });
     const page = await context.newPage();
 
-    await page.goto('http://localhost:3000/');
+    if ( httpVersion === 1 ) {
+        await page.goto(`http://localhost:${HTTP1port}/`);
+    } else {
+        await page.goto(`https://localhost:${HTTP2port}/`);
+    }
     await page.click('a');
+
     const headerNames = await page.evaluate(() => {
-        return fetch('/headers').then(res => res.json());
+        return JSON.parse(document.body.innerText);
     });
     await browser.close();
     return headerNames;
 }
 
-function extendWithLowercaseHeaders(headers) {
-    const out = [];
-    for ( h of headers ) {
-        out.push(h.toLowerCase());
-        out.push(h);
-    }
-
-    return out;
-}
-
 (async () => {
-        const server = await runServer();
+        v1(HTTP1port);
+        v2(HTTP2port);
 
         const browserTypes = {
-            safari: () => playwright.webkit.launch(),
-            chrome: () => playwright.chromium.launch({ channel: 'chrome' }),
-            firefox: () => playwright.firefox.launch(),
-            edge: () => playwright.chromium.launch({ channel: 'msedge' }),
+            // safari: () => playwright.webkit.launch(),
+            chrome: (p) => playwright.chromium.launch(p),
+            firefox: (p) => playwright.firefox.launch(p),
+            // edge: () => playwright.chromium.launch({ channel: 'msedge' }),
         };
 
         const x = await Promise.all(
             Object.entries(browserTypes)
                 .map(async ([name, launcher]) => {
-                    return [name, extendWithLowercaseHeaders(await getHeadersFor(launcher))]
+                    return [name, [...await getHeadersFor(launcher, 1), ...await getHeadersFor(launcher, 2)]];
                 })
         );
 
         console.log(JSON.stringify(Object.fromEntries(x), null, 4));
         
-        server.close();
+        process.exit(0);
     }
 )();
 
