@@ -64,7 +64,7 @@ jobs:
               run : npx playwright install --with-deps 
             
             - name: Install Puppeteer deps
-              run : cd node_modules/puppeteer && PUPPETEER_PRODUCT=firefox node install.js && cd ../..
+              run : cd node_modules/puppeteer && PUPPETEER_PRODUCT=firefox node install.js && PUPPETEER_PRODUCT=chrome node install.js && cd ../..
 
             - name: Turbo cache
               id: turbo-cache
