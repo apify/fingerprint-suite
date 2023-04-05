@@ -37,7 +37,7 @@ jobs:
           npx playwright install
           npx playwright install chrome
           npx playwright install msedge
-          node ./packages/header-order-collector/collector.js > ./packages/header-generator/src/data_files/headers_order.json
+          xvfb-run --auto-servernum -- node ./packages/header-order-collector/collector.js > ./packages/header-generator/src/data_files/headers_order.json
 
       - name: Generate model and update versions
         run: |
