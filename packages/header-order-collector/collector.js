@@ -20,13 +20,19 @@ async function getHeadersFor(launcher, httpVersion) {
     } else {
         await page.goto(`https://localhost:${HTTP2port}/`);
     }
-    await page.click('a');
 
-    const headerNames = await page.evaluate(() => {
-        return JSON.parse(document.body.innerText);
-    });
-    await browser.close();
-    return headerNames;
+    try {
+        await page.click('a', { timeout: 1000 });
+    
+        const headerNames = await page.evaluate(() => {
+            return JSON.parse(document.body.innerText);
+        });
+        await browser.close();
+        return headerNames;
+    } catch (e) {
+        // Webkit on Linux does not support http2
+        return [];
+    }
 }
 
 (async () => {
@@ -34,10 +40,10 @@ async function getHeadersFor(launcher, httpVersion) {
         v2(HTTP2port);
 
         const browserTypes = {
-            safari: () => playwright.webkit.launch(),
+            safari: (p) => playwright.webkit.launch(p),
             chrome: (p) => playwright.chromium.launch(p),
             firefox: (p) => playwright.firefox.launch(p),
-            edge: () => playwright.chromium.launch({ channel: 'msedge' }),
+            edge: (p) => playwright.chromium.launch({...p, channel: 'msedge' }),
         };
 
         try {

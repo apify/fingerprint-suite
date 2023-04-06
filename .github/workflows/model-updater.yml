@@ -22,31 +22,39 @@ jobs:
         with:
           node-version: 16
 
-      - name: Cache Node Modules and browers
-        id: cache
+      - name: Cache node modules + browsers
         uses: actions/cache@v3
         with:
-            path: |
-                node_modules
-                ~/.cache/ms-playwright
-            key: cache-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
+          path: |
+            ~/.npm
+            ~/.cache/ms-playwright
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
 
       - name: Install Dependencies
         run: npm ci
 
-      - name: Install Playwright browsers and xvfb
-        run: |
+      - name: Install Playwright deps
+        run: npx playwright install
+
+      - name: Install xvfb
+        run: | 
           sudo apt-get update
           sudo apt-get -y install xvfb
-          npx playwright install
+
+      - name: Install Playwright browsers
+        run: |
           npx playwright install webkit
           npx playwright install chrome
           npx playwright install msedge
-          npx playwright install-deps
+
+      - name: Install Playwright deps v2
+        run: npx playwright install-deps
           
       - name: Collect HTTP header orders
         run: |
-          xvfb-run -- node ./packages/header-order-collector/collector.js | tee ./packages/header-generator/src/data_files/headers_order.json
+          xvfb-run -- node ./packages/header-order-collector/collector.js | tee ./packages/header-generator/src/data_files/headers-order.json
 
       - name: Generate model and update versions
         run: |
