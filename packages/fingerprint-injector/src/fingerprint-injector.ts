@@ -271,12 +271,13 @@ export class FingerprintInjector {
 export async function newInjectedContext(
     browser: PWBrowser,
     options? : {
+        fingerprint?: BrowserFingerprintWithHeaders;
         fingerprintOptions?: Partial<FingerprintGeneratorOptions>;
         newContextOptions?: BrowserContextOptions;
     },
 ): Promise<BrowserContext> {
     const generator = new FingerprintGenerator();
-    const fingerprintWithHeaders = generator.getFingerprint(options?.fingerprintOptions ?? {});
+    const fingerprintWithHeaders = options?.fingerprint ?? generator.getFingerprint(options?.fingerprintOptions ?? {});
 
     const { fingerprint, headers } = fingerprintWithHeaders;
     const context = await browser.newContext({
@@ -303,11 +304,12 @@ export async function newInjectedContext(
 export async function newInjectedPage(
     browser: PPBrowser,
     options? : {
+        fingerprint?: BrowserFingerprintWithHeaders;
         fingerprintOptions?: Partial<FingerprintGeneratorOptions>;
     },
 ): Promise<Page> {
     const generator = new FingerprintGenerator();
-    const fingerprintWithHeaders = generator.getFingerprint(options?.fingerprintOptions ?? {});
+    const fingerprintWithHeaders = options?.fingerprint ?? generator.getFingerprint(options?.fingerprintOptions ?? {});
 
     const page = await browser.newPage();
 
