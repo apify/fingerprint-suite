@@ -7,7 +7,7 @@
         "email": "support@apify.com",
         "url": "https://apify.com"
     },
-    "homepage": "https://github.com/apify/fingeprint-suite",
+    "homepage": "https://github.com/apify/fingerprint-suite",
     "license": "Apache-2.0",
     "engines": {
         "node": ">=16.0.0"
@@ -36,10 +36,10 @@
         "copy": "ts-node -T ../../scripts/copy.ts"
     },
     "bugs": {
-        "url": "https://github.com/apify/header-generator/issues"
+        "url": "https://github.com/apify/fingerprint-suite/issues"
     },
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/apify/header-generator.git"
+        "url": "git+https://github.com/apify/fingerprint-suite.git"
     }
 }
