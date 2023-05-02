@@ -2,6 +2,7 @@
     "name": "fingerprint-injector",
     "version": "2.1.23",
     "description": "Browser fingerprint injection library for Playwright and Puppeteer.",
+    "homepage": "https://github.com/apify/fingerprint-suite",
     "engines": {
         "node": ">=16.0.0"
     },
@@ -46,6 +47,6 @@
     "license": "Apache-2.0",
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/apify/fingerprint-suite"
+        "url": "git+https://github.com/apify/fingerprint-suite.git"
     }
 }

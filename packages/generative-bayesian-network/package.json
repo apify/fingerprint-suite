@@ -22,7 +22,7 @@
         "tslib": "^2.4.0"
     },
     "description": "An fast implementation of a generative bayesian network.",
-    "homepage": "https://github.com/apify/fingerprint-suite#readme",
+    "homepage": "https://github.com/apify/fingerprint-suite",
     "license": "Apache-2.0",
     "repository": {
         "type": "git",
