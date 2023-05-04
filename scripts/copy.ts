@@ -1,4 +1,4 @@
-import { copyFileSync, readFileSync, writeFileSync } from 'fs';
+import { copyFileSync, readFileSync, writeFileSync, readdirSync } from 'fs';
 import { join } from 'path';
 import { execSync } from 'node:child_process';
 import semver from 'semver';
@@ -22,7 +22,7 @@ function getProjectVersion(packageName: string) {
     return version;
 }
 
-// const localPackages = readdirSync(join(__dirname, '../packages'));
+const localPackages = readdirSync(join(__dirname, '../packages'));
 
 if (!process.env.GIT_TAG || semver.valid(process.env.GIT_TAG) === null) {
     throw new Error('GIT_TAG environment variable is not set or is not a valid semver tag!');
@@ -50,11 +50,11 @@ if (
 }
 
 // eslint-disable-next-line
-// const localDependencies = Object.keys(require(join(process.cwd(), 'package.json')).dependencies).filter((dep: string) => localPackages.includes(dep));
+const localDependencies = Object.keys(require(join(process.cwd(), 'package.json')).dependencies).filter((dep: string) => localPackages.includes(dep));
 
-// execSync(`cd ${process.cwd()} && npm install ${localDependencies.join(' ')}`, {
-//     encoding: 'utf-8',
-// });
+execSync(`cd ${process.cwd()} && npm install ${localDependencies.join(' ')}`, {
+    encoding: 'utf-8',
+});
 
 // as we publish only the dist folder, we need to copy some meta files inside (readme/license/package.json)
 // also changes paths inside the copied `package.json` (`dist/index.js` -> `index.js`)
