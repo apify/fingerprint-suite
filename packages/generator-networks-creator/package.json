@@ -1,6 +1,6 @@
 {
     "name": "generator-networks-creator",
-    "version": "2.1.23",
+    "version": "2.1.24",
     "engines": {
         "node": ">=16.0.0"
     },
