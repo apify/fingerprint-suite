@@ -10,9 +10,7 @@
 
 <p align=center>
     <a href="https://www.npmjs.com/package/fingerprint-injector" rel="nofollow"><img src="https://img.shields.io/npm/v/fingerprint-injector/latest.svg" alt="NPM dev version" data-canonical-src="https://img.shields.io/npm/v/fingerprint-injector/next.svg" style="max-width: 100%;"></a>
-    <a href="https://www.npmjs.com/package/fingerprint-injector" rel="nofollow"><img src="https://img.shields.io/npm/dw/fingerprint-injector" alt="Downloads" data-canonical-src="https://img.shields.io/npm/dw/fingerprint-injector" style="max-width: 100%;"></a>
     <a href="https://discord.gg/jyEM2PRvMU" rel="nofollow"><img src="https://img.shields.io/discord/801163717915574323?label=discord" alt="Chat on discord" data-canonical-src="https://img.shields.io/discord/801163717915574323?label=discord" style="max-width: 100%;"></a>
-    <a href="https://github.com/apify/fingerprint-suite/actions/workflows/test-and-release.yml"><img src="https://github.com/apify/fingerprint-suite/actions/workflows/test-and-release.yml/badge.svg?branch=stable" alt="Build Status" style="max-width: 100%;"></a>
 </p>
 
 `fingerprint-suite` is a handcrafted assembly of tools for browser fingerprint generation and injection.
