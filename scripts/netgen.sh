@@ -6,7 +6,7 @@ echo "Downloading data..."
 
 curl \
     -o $(dirname $0)/dataset.json \
-    "$APIFY_DATASET_URL";
+    "https://api.apify.com/v2/datasets/${APIFY_FINGERPRINT_DATASET_ID}/items?clean=true&format=json&desc=true&limit=30000";
 
 echo "Generating network..."
 
