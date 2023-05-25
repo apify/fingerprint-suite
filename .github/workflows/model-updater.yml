@@ -62,7 +62,7 @@ jobs:
           npm run prerelease
           npm run buildNetwork
         env:
-          APIFY_DATASET_URL: ${{ secrets.APIFY_DATASET_URL }}
+          APIFY_FINGERPRINT_DATASET_ID: ${{ secrets.APIFY_FINGERPRINT_DATASET_ID }}
 
       - name: Get the new version number
         id: get_version
