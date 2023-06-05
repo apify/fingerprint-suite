@@ -24,10 +24,6 @@ const PLUGIN_CHARACTERISTICS_ATTRIBUTES = [
     'mimeTypes',
 ];
 
-function isEdge(browserAndVersion: string) {
-    return browserAndVersion.startsWith('edg');
-}
-
 async function prepareRecords(records: Record<string, any>[], preprocessingType: string) : Promise<Record<string, any>[]> {
     const cleanedRecords = records
         .filter((
@@ -101,6 +97,60 @@ async function prepareRecords(records: Record<string, any>[], preprocessingType:
     return reorganizedRecords;
 }
 export class GeneratorNetworksCreator {
+    private getDeviceOS(userAgent: string) : { device: string, operatingSystem: string } {
+        let operatingSystem = missingValueDatasetToken;
+        if (/windows/i.test(userAgent)) {
+            operatingSystem = 'windows';
+        }
+        let device = 'desktop';
+        if (/phone|android|mobile/i.test(userAgent)) {
+            device = 'mobile';
+            if (/iphone|mac/i.test(userAgent)) {
+                operatingSystem = 'ios';
+            } else if (/android/i.test(userAgent)) {
+                operatingSystem = 'android';
+            }
+        } else if (/linux/i.test(userAgent)) {
+            operatingSystem = 'linux';
+        } else if (/mac/i.test(userAgent)) {
+            operatingSystem = 'macos';
+        }
+
+        return { device, operatingSystem };
+    }
+
+    private getBrowserNameVersion(userAgent: string) : `${string}/${string}` | typeof missingValueDatasetToken {
+        const canonicalNames = {
+            'chrome': 'chrome',
+            'crios': 'chrome',
+            'firefox': 'firefox',
+            'fxios': 'firefox',
+            'safari': 'safari',
+            'edge': 'edge',
+            'edg': 'edge',
+            'edga': 'edge',
+            'edgios': 'edge',
+        } as Record<string, string>;
+    
+        const unsupportedBrowsers = /opr|yabrowser|SamsungBrowser|UCBrowser|vivaldi/ig;
+        const edge = /(edg(a|ios|e)?)\/([0-9.]*)/ig;
+        const supportedBrowsers = /(firefox|fxios|chrome|crios|safari)\/([0-9.]*)/ig;
+    
+        if (unsupportedBrowsers.test(userAgent)) {
+            return missingValueDatasetToken;
+        }
+    
+        if (edge.test(userAgent)) {
+            const match = userAgent.match(edge)![0].split('/');
+            return `edge/${match[1]}`;
+        } else if (supportedBrowsers.test(userAgent)) {
+            const match = userAgent.match(supportedBrowsers)![0].split('/');
+            return `${canonicalNames[match[0].toLowerCase()]}/${match[1]}`;
+        }
+    
+        return missingValueDatasetToken;
+    }
+
     async prepareHeaderGeneratorFiles(datasetPath: string, resultsPath: string) {
         const datasetText = fs.readFileSync(datasetPath, { encoding: 'utf8' });
         const records = await prepareRecords(JSON.parse(datasetText), 'headers');
@@ -119,40 +169,10 @@ export class GeneratorNetworksCreator {
         });
 
         selectedRecords = selectedRecords.map((record) => {
-            let userAgent = (record['user-agent'] !== missingValueDatasetToken ? record['user-agent'] : record['User-Agent']) as string;
-            userAgent = userAgent.toLowerCase();
+            const userAgent = (record['user-agent'] !== missingValueDatasetToken ? record['user-agent'] : record['User-Agent']).toLowerCase();
 
-            let operatingSystem = missingValueDatasetToken;
-            if (/windows/.test(userAgent)) {
-                operatingSystem = 'windows';
-            }
-            let device = 'desktop';
-            if (/phone|android|mobile/i.test(userAgent)) {
-                device = 'mobile';
-                if (/iphone|mac/.test(userAgent)) {
-                    operatingSystem = 'ios';
-                } else if (/android/.test(userAgent)) {
-                    operatingSystem = 'android';
-                }
-            } else if (/linux/.test(userAgent)) {
-                operatingSystem = 'linux';
-            } else if (/mac/.test(userAgent)) {
-                operatingSystem = 'macos';
-            }
-
-            let browser = missingValueDatasetToken;
-            const matches = userAgent.match(/(firefox|chrome|safari|edg(a|ios|e)?)\/([0-9.]*)/gi);
-            if (matches && !(/OPR\/[0-9.]*/.test(userAgent))) {
-                for (const match of matches) {
-                    if (isEdge(match)) {
-                        browser = `edge/${match.split('/')[1]}`;
-                        break;
-                    }
-                }
-                if (browser === missingValueDatasetToken) {
-                    browser = matches[0];
-                }
-            }
+            const browser = this.getBrowserNameVersion(userAgent);
+            const { device, operatingSystem } = this.getDeviceOS(userAgent);
 
             return {
                 ...record,
