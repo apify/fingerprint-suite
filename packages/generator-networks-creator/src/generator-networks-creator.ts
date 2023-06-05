@@ -43,7 +43,7 @@ async function prepareRecords(records: Record<string, any>[], preprocessingType:
                     screen: { width, height },
                     userAgent,
                 },
-            }) => ((width >= 1280 && width > height) || (width < height && /phone|android|mobile/.test(userAgent.toLowerCase()))),
+            }) => ((width >= 1280 && width > height) || (width < height && /phone|android|mobile/i.test(userAgent))),
         )
         .map((record) => ({ ...record, userAgent: record.browserFingerprint.userAgent } as any));
 
@@ -127,7 +127,7 @@ export class GeneratorNetworksCreator {
                 operatingSystem = 'windows';
             }
             let device = 'desktop';
-            if (/phone|android|mobile/.test(userAgent)) {
+            if (/phone|android|mobile/i.test(userAgent)) {
                 device = 'mobile';
                 if (/iphone|mac/.test(userAgent)) {
                     operatingSystem = 'ios';
