@@ -97,7 +97,7 @@ async function prepareRecords(records: Record<string, any>[], preprocessingType:
     return reorganizedRecords;
 }
 export class GeneratorNetworksCreator {
-    private getDeviceOS(userAgent: string) : { device: string, operatingSystem: string } {
+    private getDeviceOS(userAgent: string) : { device: string; operatingSystem: string } {
         let operatingSystem = missingValueDatasetToken;
         if (/windows/i.test(userAgent)) {
             operatingSystem = 'windows';
@@ -121,33 +121,33 @@ export class GeneratorNetworksCreator {
 
     private getBrowserNameVersion(userAgent: string) : `${string}/${string}` | typeof missingValueDatasetToken {
         const canonicalNames = {
-            'chrome': 'chrome',
-            'crios': 'chrome',
-            'firefox': 'firefox',
-            'fxios': 'firefox',
-            'safari': 'safari',
-            'edge': 'edge',
-            'edg': 'edge',
-            'edga': 'edge',
-            'edgios': 'edge',
+            chrome: 'chrome',
+            crios: 'chrome',
+            firefox: 'firefox',
+            fxios: 'firefox',
+            safari: 'safari',
+            edge: 'edge',
+            edg: 'edge',
+            edga: 'edge',
+            edgios: 'edge',
         } as Record<string, string>;
-    
+
         const unsupportedBrowsers = /opr|yabrowser|SamsungBrowser|UCBrowser|vivaldi/ig;
         const edge = /(edg(a|ios|e)?)\/([0-9.]*)/ig;
         const supportedBrowsers = /(firefox|fxios|chrome|crios|safari)\/([0-9.]*)/ig;
-    
+
         if (unsupportedBrowsers.test(userAgent)) {
             return missingValueDatasetToken;
         }
-    
+
         if (edge.test(userAgent)) {
             const match = userAgent.match(edge)![0].split('/');
             return `edge/${match[1]}`;
-        } else if (supportedBrowsers.test(userAgent)) {
+        } if (supportedBrowsers.test(userAgent)) {
             const match = userAgent.match(supportedBrowsers)![0].split('/');
             return `${canonicalNames[match[0].toLowerCase()]}/${match[1]}`;
         }
-    
+
         return missingValueDatasetToken;
     }
 
