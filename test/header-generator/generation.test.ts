@@ -153,7 +153,7 @@ describe('Generation tests', () => {
             httpVersion: '2',
             devices: ['mobile'],
         });
-        expect(/phone|android|mobile/.test(headers['user-agent'].toLowerCase())).toBeTruthy();
+        expect(/phone|android|mobile/i.test(headers['user-agent'])).toBeTruthy();
     });
 
     test('Throws an error when nothing can be generated', () => {

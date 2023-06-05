@@ -109,7 +109,7 @@ export class FingerprintInjector {
                 screenWidth: screen.width,
                 width: screen.width,
                 height: screen.height,
-                mobile: !!(/phone|android|mobile/.test(userAgent)),
+                mobile: /phone|android|mobile/i.test(userAgent),
                 screenOrientation: screen.height > screen.width ? { angle: 0, type: 'portraitPrimary' } : { angle: 90, type: 'landscapePrimary' },
                 deviceScaleFactor: screen.devicePixelRatio,
             });
