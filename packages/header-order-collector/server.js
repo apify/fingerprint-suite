@@ -9,11 +9,14 @@ function extractHeaderNames(rawHeaders) {
 app.get('/', (req, res) => {
     res.header('set-cookie', 'A=1; Path=/headers; HttpOnly');
     res.send(`
-<a href="/headers">Click here</a> to see the headers.
+    <form action="/headers" method="POST">
+        <input type="text" name="foo" value="bar" />
+        <input type="submit" value="Submit" />
+    </form>
 `)
 })
 
-app.get('/headers', (req, res) => {
+app.all('/headers', (req, res) => {
     const rawHeaders = req.rawHeaders;
     const headerNames = extractHeaderNames(rawHeaders);
     res.json(headerNames);
