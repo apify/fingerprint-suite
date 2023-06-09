@@ -25,7 +25,10 @@ server.on('stream', (stream, headers) => {
     ':status': 200,
   });
   stream.end(`
-  <a href="/headers">Click here</a> to see the headers.
+<form action="/headers" method="POST">
+  <input type="text" name="foo" value="bar" />
+  <input type="submit" value="Submit" />
+</form>
   `);
 });
 

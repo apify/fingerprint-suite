@@ -22,7 +22,7 @@ async function getHeadersFor(launcher, httpVersion) {
     }
 
     try {
-        await page.click('a', { timeout: 1000 });
+        await page.click('[type="submit"]', { timeout: 1000 });
     
         const headerNames = await page.evaluate(() => {
             return JSON.parse(document.body.innerText);
