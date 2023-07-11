@@ -76,7 +76,7 @@ jobs:
           branch: master
           tagging_message: "v${{ steps.get_version.outputs.version }}"
 
-          file_pattern: ./packages/
+          file_pattern: "./packages/ ./package.json ./package-lock.json"
 
           commit_user_name: "modelmaker[bot] ⚒️"
           commit_user_email: modelmaker[bot]@users.noreply.github.com 

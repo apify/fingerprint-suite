@@ -56,6 +56,7 @@ jobs:
               with:
                 branch: master
                 commit_message: 'chore: [skip ci] sync new package.json versions'
+                push_options: --force
                 file_pattern: 'package*.json'
                 commit_user_name: Apify Bot
                 commit_user_email: my-github-actions-bot@example.org
