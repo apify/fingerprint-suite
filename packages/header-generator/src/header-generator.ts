@@ -472,7 +472,7 @@ export class HeaderGenerator {
             return [];
         }
 
-        return (this.headersOrder as Record<string, any>)[browser];
+        return (this.headersOrder as Record<string, any>)[browser] ?? [];
     }
 
     private _browserVersionIsLesserOrEquals(browserVersionL: number[], browserVersionR: number[]) {
