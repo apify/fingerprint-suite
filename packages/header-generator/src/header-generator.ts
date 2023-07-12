@@ -284,15 +284,42 @@ export class HeaderGenerator {
             generatedSample[secFetchAttributeNames.dest] = 'document';
         }
 
-        for (const attribute of Object.keys(generatedSample)) {
-            if (attribute.startsWith('*') || generatedSample[attribute] === MISSING_VALUE_DATASET_TOKEN) delete generatedSample[attribute];
-        }
-
         // Order the headers in an order depending on the browser
         return this.orderHeaders({
-            ...generatedSample,
+            ...this.filterClientHeaders(generatedSample),
             ...requestDependentHeaders,
         }, (this.headersOrder as Record<string, any>)[generatedHttpAndBrowser.name]);
+    }
+
+    /**
+     * Returns a new object that contains filtered headers from the input object. Filters out headers that are
+     * technically tied either with the individual browsers or individual requests and headers that have no value.
+     */
+    private filterClientHeaders(headers: Record<string, string>): Record<string, string> {
+        const clientHeaders = [
+            'accept-encoding',
+            'accept',
+            'cache-control',
+            'connection',
+            'pragma',
+            'sec-fetch-dest',
+            'sec-fetch-mode',
+            'sec-fetch-site',
+            'sec-fetch-user',
+            'upgrade-insecure-requests',
+        ];
+
+        const filteredHeaders = { ...headers };
+
+        return Object.fromEntries(
+            Object.entries(
+                filteredHeaders,
+            ).filter(([key, value]) => {
+                return !clientHeaders.includes(key.toLowerCase())
+                && value !== MISSING_VALUE_DATASET_TOKEN
+                && !key.startsWith('*');
+            }),
+        );
     }
 
     /**

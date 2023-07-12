@@ -332,7 +332,7 @@ describe('FingerprintInjector', () => {
             // test whether the injection worked
             const isApple = await page.evaluate(() => {
                 const ua = navigator.userAgent.toLowerCase();
-                return ['iphone', 'ipad'].some((x) => ua.includes(x));
+                return ['iphone', 'ipad', 'macintosh'].some((x) => ua.includes(x));
             });
 
             const screenSize = await page.evaluate(() => {
