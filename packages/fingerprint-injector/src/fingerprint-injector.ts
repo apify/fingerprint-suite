@@ -33,7 +33,23 @@ export class FingerprintInjector {
      * @returns Filtered headers.
      */
     private onlyInjectableHeaders(headers: Record<string, string>, browserName?: string): Record<string, string> {
+        const requestHeaders = [
+            'accept-encoding',
+            'accept',
+            'cache-control',
+            'pragma',
+            'sec-fetch-dest',
+            'sec-fetch-mode',
+            'sec-fetch-site',
+            'sec-fetch-user',
+            'upgrade-insecure-requests',
+        ];
+
         const filteredHeaders = { ...headers };
+
+        requestHeaders.forEach((header) => {
+            delete filteredHeaders[header];
+        });
 
         // Chromium-based controlled browsers do not support `te` header.
         // Probably needs more investigation, but for now, we can just remove it.
