@@ -30,13 +30,15 @@ if (!process.env.GIT_TAG || semver.valid(process.env.GIT_TAG) === null) {
 
 const targetVersion = semver.valid(process.env.GIT_TAG);
 
-const rootVersion = getProjectVersion(`${__dirname}/../`);
+let rootVersion = getProjectVersion(`${__dirname}/../`);
 const currentLocalVersion = getProjectVersion(process.cwd());
 
 if (semver.gt(targetVersion!, rootVersion)) {
     execSync(`cd ${__dirname}/../ && npm version ${targetVersion} --git-tag-version=false`, {
         encoding: 'utf-8',
     });
+
+    rootVersion = getProjectVersion(`${__dirname}/../`);
 }
 
 if (
