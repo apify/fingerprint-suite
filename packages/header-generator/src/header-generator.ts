@@ -285,6 +285,7 @@ export class HeaderGenerator {
         }
 
         for (const attribute of Object.keys(generatedSample)) {
+            if (attribute.toLowerCase() === 'connection' && generatedSample[attribute] === 'close') delete generatedSample[attribute];
             if (attribute.startsWith('*') || generatedSample[attribute] === MISSING_VALUE_DATASET_TOKEN) delete generatedSample[attribute];
         }
 
