@@ -111,4 +111,36 @@ describe('Generate fingerprints with basic constraints', () => {
             },
         })).toBeDefined();
     });
+
+    test.only('[relaxation] header strict mode propagates', () => {
+        const fingerprintGenerator = new FingerprintGenerator();
+
+        expect(fingerprintGenerator.getFingerprint({
+            devices: ['mobile'],
+            operatingSystems: ['windows'],
+        })).toBeDefined();
+
+        expect(() => fingerprintGenerator.getFingerprint({
+            devices: ['mobile'],
+            operatingSystems: ['windows'],
+            strict: true,
+        })).toThrow();
+    });
+
+    test.only('[relaxation] strict mode works with fp-only features', () => {
+        const fingerprintGenerator = new FingerprintGenerator();
+
+        expect(fingerprintGenerator.getFingerprint({
+            screen: {
+                minHeight: 9999,
+            },
+        })).toBeDefined();
+
+        expect(() => fingerprintGenerator.getFingerprint({
+            screen: {
+                minHeight: 9999,
+            },
+            strict: true,
+        })).toThrow();
+    });
 });

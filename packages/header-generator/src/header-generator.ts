@@ -35,6 +35,7 @@ export const headerGeneratorOptionsShape = {
     locales: ow.optional.array.ofType(ow.string),
     httpVersion: ow.optional.string.oneOf(SUPPORTED_HTTP_VERSIONS),
     browserListQuery: ow.optional.string,
+    strict: ow.optional.boolean,
 };
 
 /**
@@ -113,6 +114,10 @@ export interface HeaderGeneratorOptions {
     *  Can be either 1 or 2. Default value is 2.
     */
     httpVersion: HttpVersion;
+    /**
+     * If true, the generator will throw an error if it cannot generate headers based on the input.
+     */
+    strict: boolean;
 }
 
 /**
@@ -155,6 +160,14 @@ export class HeaderGenerator {
 
     private headersOrder: string[];
 
+    private relaxationOrder: (keyof typeof headerGeneratorOptionsShape)[] = [
+        'locales',
+        'devices',
+        'operatingSystems',
+        'browsers',
+        'browserListQuery',
+    ];
+
     /**
     * @param options Default header generation options used - unless overridden.
     */
@@ -168,6 +181,7 @@ export class HeaderGenerator {
             locales = ['en-US'],
             httpVersion = '2',
             browserListQuery = '',
+            strict = false,
         } = options;
         this.globalOptions = {
             browsers: this._prepareBrowsersConfig(browsers as BrowsersType, browserListQuery, httpVersion),
@@ -176,6 +190,7 @@ export class HeaderGenerator {
             locales,
             httpVersion,
             browserListQuery,
+            strict,
         };
         this.uniqueBrowsers = [];
 
@@ -251,7 +266,17 @@ export class HeaderGenerator {
 
                 return this.orderHeaders(converted2to1);
             }
-            throw new Error('No headers based on this input can be generated. Please relax or change some of the requirements you specified.');
+
+            const relaxationIndex = this.relaxationOrder.findIndex((key) => options[key] !== undefined);
+            if (options.strict || relaxationIndex === -1) {
+                throw new Error('No headers based on this input can be generated. Please relax or change some of the requirements you specified.');
+            }
+
+            // Relax the requirements and try again
+            const relaxedOptions = { ...options };
+            const relaxationKey = this.relaxationOrder[relaxationIndex];
+            relaxedOptions[relaxationKey] = undefined as never;
+            return this.getHeaders(relaxedOptions, requestDependentHeaders, userAgentValues);
         }
 
         // Generate the actual headers
