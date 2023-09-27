@@ -156,12 +156,13 @@ describe('Generation tests', () => {
         expect(/phone|android|mobile/i.test(headers['user-agent'])).toBeTruthy();
     });
 
-    test('Throws an error when nothing can be generated', () => {
+    test('Strict mode throws an error when nothing can be generated', () => {
         try {
             headerGenerator.getHeaders({
                 browsers: [{
                     name: 'non-existing-browser',
                 }],
+                strict: true,
             } as unknown as HeaderGeneratorOptions);
             fail("HeaderGenerator didn't throw an error when trying to generate headers for a nonexisting browser.");
         } catch (error) {
@@ -170,6 +171,13 @@ describe('Generation tests', () => {
                     new Error('No headers based on this input can be generated. Please relax or change some of the requirements you specified.'),
                 );
         }
+    });
+
+    test('Default mode generates an approximately good header', () => {
+        expect(() => headerGenerator.getHeaders({
+            devices: ['mobile'],
+            operatingSystems: ['windows'],
+        } as unknown as HeaderGeneratorOptions)).not.toThrow();
     });
 
     test('Supports browserListQuery generation', () => {

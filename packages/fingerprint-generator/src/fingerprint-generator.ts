@@ -132,7 +132,13 @@ export class FingerprintGenerator extends HeaderGenerator {
                 })
                 : undefined;
 
-            return utils.getPossibleValues(this.fingerprintGeneratorNetwork, filteredValues);
+            try {
+                return utils.getPossibleValues(this.fingerprintGeneratorNetwork, filteredValues);
+            } catch (e) {
+                if (options?.strict) throw e;
+                delete filteredValues.screen;
+                return undefined;
+            }
         })();
 
         while (true) {
