@@ -1,5 +1,5 @@
-import playwright, { chromium } from 'playwright';
-import puppeteer from 'puppeteer';
+import playwright, { chromium, type Browser as PWBrowser } from 'playwright';
+import puppeteer, { Browser as PPBrowser } from 'puppeteer';
 import { BrowserFingerprintWithHeaders, Fingerprint, FingerprintGenerator } from 'fingerprint-generator';
 import { FingerprintInjector, newInjectedContext, newInjectedPage } from 'fingerprint-injector';
 
@@ -310,6 +310,74 @@ describe('FingerprintInjector', () => {
                 for (const header of Object.keys(onlyInjectable(headers))) {
                     expect(requestHeaders[header]).toBe(headers[header]);
                 }
+            });
+        });
+    });
+
+    // @ts-expect-error test only
+    describe.each(cases)('%s', (frameworkName, testCases) => {
+        // @ts-expect-error test only
+        describe.each(testCases)('$name', ({ name, launcher, options, fingerprintGeneratorOptions }) => {
+            const fpg = new FingerprintGenerator(fingerprintGeneratorOptions);
+
+            const getNewPage = async (browser: PPBrowser | PWBrowser, fp: any): Promise<any> => {
+                if (frameworkName === 'Playwright') {
+                    const context = await (browser as PWBrowser).newContext();
+                    await fpInjector.attachFingerprintToPlaywright(context, fp);
+                    return context.newPage();
+                }
+                if (frameworkName === 'Puppeteer') {
+                    const page = await (browser as PPBrowser).newPage();
+                    await fpInjector.attachFingerprintToPuppeteer(page, fp);
+                    return page;
+                }
+                throw new Error(`Unknown framework name ${frameworkName}`);
+            };
+
+            test('WebRTC not blocked by default', async () => {
+                const fp = fpg.getFingerprint();
+
+                const browser = await launcher.launch({ ...options });
+                const page = await getNewPage(browser, fp);
+
+                await page.goto('https://hide.me/en/webrtc-leak-test');
+                await page.waitForTimeout(5000);
+                const ok = await page.$('.o-pagecheck__alert--ok');
+                expect(ok).toBeFalsy();
+
+                browser.close();
+            });
+
+            test('WebRTC not blocked if `mockWebRTC: false`', async () => {
+                const fp = fpg.getFingerprint({
+                    mockWebRTC: false,
+                });
+
+                const browser = await launcher.launch({ headless: false, ...options });
+                const page = await getNewPage(browser, fp);
+
+                await page.goto('https://hide.me/en/webrtc-leak-test');
+                await page.waitForTimeout(5000);
+                const ok = await page.$('.o-pagecheck__alert--ok');
+                expect(ok).toBeFalsy();
+
+                browser.close();
+            });
+
+            test('WebRTC blocked if `mockWebRTC: true`', async () => {
+                const fp = fpg.getFingerprint({
+                    mockWebRTC: true,
+                });
+
+                const browser = await launcher.launch({ headless: false, ...options });
+                const page = await getNewPage(browser, fp);
+
+                await page.goto('https://hide.me/en/webrtc-leak-test');
+                await page.waitForTimeout(5000);
+                const ok = await page.$('.o-pagecheck__alert--ok');
+                expect(ok).toBeTruthy();
+
+                browser.close();
             });
         });
     });
