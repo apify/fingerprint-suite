@@ -18,6 +18,7 @@ declare function overrideWebGl(webGlInfo: Record<string, string>) : void;
 declare function overrideIntlAPI(language: string) : void;
 declare function overrideStatic() : void;
 declare function runHeadlessFixes() : void;
+declare function blockWebRTC() : void;
 
 /**
  * Fingerprint injector class.
@@ -157,6 +158,7 @@ export class FingerprintInjector {
                 historyLength,
                 audioCodecs,
                 videoCodecs,
+                mockWebRTC,
                 // @ts-expect-error internal browser code
             } = fp as EnhancedFingerprint;
 
@@ -197,6 +199,8 @@ export class FingerprintInjector {
             };
 
             runHeadlessFixes();
+
+            if (mockWebRTC) blockWebRTC();
 
             overrideIntlAPI(navigatorProps.language);
             overrideStatic();

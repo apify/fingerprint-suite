@@ -61,6 +61,7 @@ export type Fingerprint = {
     videoCard: VideoCard;
     multimediaDevices: string[];
     fonts: string[];
+    mockWebRTC: boolean;
 }
 
 export type BrowserFingerprintWithHeaders = {
@@ -79,6 +80,7 @@ export interface FingerprintGeneratorOptions extends HeaderGeneratorOptions {
         minHeight?: number;
         maxHeight?: number;
     };
+    mockWebRTC?: boolean;
 }
 
 /**
@@ -95,6 +97,7 @@ export class FingerprintGenerator extends HeaderGenerator {
         super(options);
         this.fingerprintGlobalOptions = {
             screen: options.screen,
+            mockWebRTC: options.mockWebRTC,
         };
         this.fingerprintGeneratorNetwork = new BayesianNetwork({ path: `${__dirname}/data_files/fingerprint-network-definition.zip` });
     }
@@ -174,7 +177,10 @@ export class FingerprintGenerator extends HeaderGenerator {
             fingerprint.languages = acceptedLanguages;
 
             return {
-                fingerprint: this.transformFingerprint(fingerprint),
+                fingerprint: {
+                    ...this.transformFingerprint(fingerprint),
+                    mockWebRTC: options.mockWebRTC ?? this.fingerprintGlobalOptions.mockWebRTC ?? false,
+                },
                 headers,
             };
         }
