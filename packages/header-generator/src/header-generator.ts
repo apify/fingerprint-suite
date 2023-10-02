@@ -275,7 +275,7 @@ export class HeaderGenerator {
             // Relax the requirements and try again
             const relaxedOptions = { ...options };
             const relaxationKey = this.relaxationOrder[relaxationIndex];
-            relaxedOptions[relaxationKey] = undefined as never;
+            delete relaxedOptions[relaxationKey];
             return this.getHeaders(relaxedOptions, requestDependentHeaders, userAgentValues);
         }
 
