@@ -65,6 +65,7 @@
         "playwright-extra": "^4.3.5",
         "puppeteer": "^21.0.0",
         "puppeteer-extra-plugin-stealth": "^2.11.1",
+        "puppeteer-extra-plugin-user-preferences": "^2.4.1",
         "rimraf": "^5.0.0",
         "semver": "^7.3.8",
         "ts-jest": "^28.0.3",
