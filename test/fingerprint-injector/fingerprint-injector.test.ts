@@ -311,6 +311,20 @@ describe('FingerprintInjector', () => {
                     expect(requestHeaders[header]).toBe(headers[header]);
                 }
             });
+
+            test('highEntropyValues contain default values', async () => {
+                // @ts-expect-error internal browser code
+                const result = await page.evaluate(() => navigator.userAgentData?.getHighEntropyValues([]));
+
+                if (name === 'Chrome') {
+                    expect(result).toHaveProperty('brands');
+                    expect(result.brands).toBeInstanceOf(Array);
+                    expect(result).toHaveProperty('mobile');
+                    expect([true, false]).toContain(result.mobile);
+                } else if (name === 'Firefox') {
+                    expect(result).toBeFalsy();
+                }
+            });
         });
     });
 
