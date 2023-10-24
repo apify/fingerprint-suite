@@ -500,8 +500,7 @@ function overrideUserAgentData(userAgentData) {
                     const [hints] = args;
                     await target.apply(ctx, args);
 
-                    // If the codec is not in our collected data use
-                    const data = {};
+                    const data = { brands, mobile, platform };
                     hints.forEach((hint) => {
                         data[hint] = highEntropyValues[hint];
                     });
