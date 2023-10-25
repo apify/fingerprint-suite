@@ -45,7 +45,7 @@
         "benchmark": "ts-node ./test/antibot-services/live-testing/cloudflare.ts"
     },
     "devDependencies": {
-        "@apify/eslint-config-ts": "^0.3.0",
+        "@apify/eslint-config-ts": "^0.4.0",
         "@apify/tsconfig": "^0.1.0",
         "@types/adm-zip": "^0.5.0",
         "@types/jest": "^27.4.1",
