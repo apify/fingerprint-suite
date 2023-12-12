@@ -24,9 +24,34 @@ export type ScreenFingerprint = {
     hasHDR: boolean;
 }
 
+export type Brand = {
+    brand:   string;
+    version: string;
+}
+
+export type UserAgentData = {
+    brands:          Brand[];
+    mobile:          boolean;
+    platform:        string;
+    architecture:    string;
+    bitness:         string;
+    fullVersionList: Brand[];
+    model:           string;
+    platformVersion: string;
+    uaFullVersion:   string;
+}
+
+export interface ExtraProperties {
+    vendorFlavors:        string[];
+    isBluetoothSupported: boolean;
+    globalPrivacyControl: null;
+    pdfViewerEnabled:     boolean;
+    installedApps:        any[];
+}
+
 export type NavigatorFingerprint = {
     userAgent: string;
-    userAgentData: Record<string, string>;
+    userAgentData: UserAgentData;
     doNotTrack: string;
     appCodeName: string;
     appName: string;
@@ -36,15 +61,15 @@ export type NavigatorFingerprint = {
     language: string;
     languages: string[];
     platform: string;
-    deviceMemory?: number; // Firefox does not have deviceMemory available
+    deviceMemory?: number;
     hardwareConcurrency: number;
     product: string;
     productSub: string;
     vendor: string;
     vendorSub: string;
     maxTouchPoints?: number;
-    extraProperties: Record<string, string>;
-}
+    extraProperties: ExtraProperties;
+};
 
 export type VideoCard = {
     renderer: string;
