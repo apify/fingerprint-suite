@@ -25,28 +25,28 @@ export type ScreenFingerprint = {
 }
 
 export type Brand = {
-    brand:   string;
+    brand: string;
     version: string;
 }
 
 export type UserAgentData = {
-    brands:          Brand[];
-    mobile:          boolean;
-    platform:        string;
-    architecture:    string;
-    bitness:         string;
+    brands: Brand[];
+    mobile: boolean;
+    platform: string;
+    architecture: string;
+    bitness: string;
     fullVersionList: Brand[];
-    model:           string;
+    model: string;
     platformVersion: string;
-    uaFullVersion:   string;
+    uaFullVersion: string;
 }
 
 export interface ExtraProperties {
-    vendorFlavors:        string[];
+    vendorFlavors: string[];
     isBluetoothSupported: boolean;
     globalPrivacyControl: null;
-    pdfViewerEnabled:     boolean;
-    installedApps:        any[];
+    pdfViewerEnabled: boolean;
+    installedApps: any[];
 }
 
 export type NavigatorFingerprint = {
@@ -61,7 +61,7 @@ export type NavigatorFingerprint = {
     language: string;
     languages: string[];
     platform: string;
-    deviceMemory?: number;
+    deviceMemory?: number; // Firefox does not have deviceMemory available
     hardwareConcurrency: number;
     product: string;
     productSub: string;
