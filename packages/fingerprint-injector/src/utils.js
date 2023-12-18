@@ -138,7 +138,7 @@ function redirectToString(proxyObj, originalObj) {
 
             if (Object.getPrototypeOf(ctx) === proxyObj){
                 try {
-                    return target.call(ctx);    
+                    return target.call(ctx);
                 } catch (err) {
                     err.stack = err.stack.replace(
                         'at Object.toString (',
@@ -250,7 +250,7 @@ function stripProxyFromErrors(handler) {
                 const oldStackLines = err.stack.split('\n');
                 Error.captureStackTrace(err);
                 const newStackLines = err.stack.split('\n');
-                
+
                 err.stack = [newStackLines[0],oldStackLines[1],...newStackLines.slice(1)].join('\n');
 
                 if ((err.stack || '').includes('toString (')) {
@@ -309,23 +309,23 @@ const overrideCodecs = (audioCodecs, videoCodecs) => {
             ...Object.fromEntries(Object.entries(audioCodecs).map(([key, value]) => [`audio/${key}`, value])),
             ...Object.fromEntries(Object.entries(videoCodecs).map(([key, value]) => [`video/${key}`, value])),
         };
-    
+
         const findCodec = (codecString) => {
             const [mime, codecSpec] = codecString.split(';');
             if (mime === 'video/mp4') {
-                if (codecSpec.includes('avc1.42E01E')) { // codec is missing from Chromium
+                if (codecSpec && codecSpec.includes('avc1.42E01E')) { // codec is missing from Chromium
                     return {name: mime, state: 'probably'};
                 }
             }
-    
+
             const codec = Object.entries(codecs).find(([key]) => key === codecString.split(';')[0]);
             if(codec) {
                 return {name: codec[0], state: codec[1]};
             }
-    
+
             return undefined;
         };
-    
+
         const canPlayType = {
             // eslint-disable-next-line
             apply: function (target, ctx, args) {
@@ -334,16 +334,16 @@ const overrideCodecs = (audioCodecs, videoCodecs) => {
                 }
                 const [codecString] = args;
                 const codec = findCodec(codecString);
-    
+
                 if (codec) {
                     return codec.state;
                 }
-    
+
                 // If the codec is not in our collected data use
                 return target.apply(ctx, args);
             },
         };
-    
+
         overridePropertyWithProxy(
             HTMLMediaElement.prototype,
             'canPlayType',
@@ -364,7 +364,7 @@ function overrideBattery(batteryInfo) {
                 return batteryInfo;
             },
         };
-    
+
         if(navigator.getBattery) { // Firefox does not have this method - to be fixed
             overridePropertyWithProxy(
                 Object.getPrototypeOf(navigator),
@@ -380,17 +380,17 @@ function overrideBattery(batteryInfo) {
 function overrideIntlAPI(language){
     try {
         const innerHandler = {
-            construct(target, [locales, options]) {  
+            construct(target, [locales, options]) {
               return new target(locales ?? language, options);
             },
             apply(target, _, [locales, options]) {
                 return target(locales ?? language, options);
             }
           };
-    
+
         overridePropertyWithProxy(window, 'Intl', {
             get(target, key){
-                if(key[0].toLowerCase() === key[0]) return target[key];
+                if(typeof key !== 'string' || key[0].toLowerCase() === key[0]) return target[key];
                 return new Proxy(
                     target[key],
                     innerHandler
@@ -457,7 +457,7 @@ function replace(target, key, value) {
     }
 }
 
-// Replaces all the WebRTC related methods with a recursive ES6 Proxy 
+// Replaces all the WebRTC related methods with a recursive ES6 Proxy
 // This way, we don't have to model a mock WebRTC API and we still don't get any exceptions.
 function blockWebRTC() {
     const handler = {
@@ -471,7 +471,7 @@ function blockWebRTC() {
             return new Proxy(() => {}, handler);
         },
     };
-    
+
     const ConstrProxy = new Proxy(Object, handler);
     const proxy = new Proxy(() => {}, handler);
 
@@ -520,13 +520,13 @@ function overrideUserAgentData(userAgentData) {
             },
         };
 
-        if(window.navigator.userAgentData){ // Firefox does not contain this property - to be fixed 
+        if(window.navigator.userAgentData){ // Firefox does not contain this property - to be fixed
             overridePropertyWithProxy(
                 Object.getPrototypeOf(window.navigator.userAgentData),
                 'getHighEntropyValues',
                 getHighEntropyValues,
             );
-        
+
             overrideInstancePrototype(window.navigator.userAgentData, { brands, mobile, platform });
         }
     } catch (e) {
@@ -539,7 +539,7 @@ function fixWindowChrome(){
         Object.defineProperty(window, 'chrome', {
             writable: true,
             enumerable: true,
-            configurable: false, 
+            configurable: false,
             value: {} // incomplete, todo!
         })
     }
@@ -548,7 +548,7 @@ function fixWindowChrome(){
 // heavily inspired by https://github.com/berstend/puppeteer-extra/, check it out!
 function fixPermissions(){
     const isSecure = document.location.protocol.startsWith('https')
-      
+
     if (isSecure) {
         overrideGetterWithProxy(Notification, 'permission', {
             apply() {
@@ -693,7 +693,7 @@ function fixPluginArray() {
                 filename: { value: 'internal-pdf-viewer', enumerable: false },
                 name: { value: 'Chromium PDF Plugin', enumerable: false },
             });
-            
+
             return Object.create(PluginArray.prototype, {
                 length: { value: 1 },
                 0: { value: ChromiumPDFPlugin },
