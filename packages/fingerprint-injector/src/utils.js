@@ -313,7 +313,7 @@ const overrideCodecs = (audioCodecs, videoCodecs) => {
         const findCodec = (codecString) => {
             const [mime, codecSpec] = codecString.split(';');
             if (mime === 'video/mp4') {
-                if (codecSpec.includes('avc1.42E01E')) { // codec is missing from Chromium
+                if (codecSpec && codecSpec.includes('avc1.42E01E')) { // codec is missing from Chromium
                     return {name: mime, state: 'probably'};
                 }
             }
