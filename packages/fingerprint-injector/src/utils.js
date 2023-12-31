@@ -390,7 +390,7 @@ function overrideIntlAPI(language){
     
         overridePropertyWithProxy(window, 'Intl', {
             get(target, key){
-                if(key[0].toLowerCase() === key[0]) return target[key];
+                if(typeof key !== 'string' || key[0].toLowerCase() === key[0]) return target[key];
                 return new Proxy(
                     target[key],
                     innerHandler
