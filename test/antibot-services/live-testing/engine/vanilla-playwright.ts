@@ -4,7 +4,7 @@ export interface GetContextOptions {
     browserType?: 'chromium' | 'firefox' | 'webkit';
     launchOptions?: LaunchOptions;
     contextOptions?: BrowserContextOptions;
-};
+}
 
 export interface FingeprintingEngine {
     getContext({

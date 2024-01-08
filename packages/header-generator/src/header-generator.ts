@@ -141,7 +141,7 @@ export interface HttpBrowserObject {
      * HTTP version as a string ("1" or "2").
      */
     httpVersion: HttpVersion;
-};
+}
 
 export type Headers = Record<string, string>;
 

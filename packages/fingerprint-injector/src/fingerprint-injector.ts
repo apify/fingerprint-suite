@@ -262,7 +262,7 @@ export class FingerprintInjector {
         return Math.floor(
             Math.random() * (max - min) + min,
         );
-    };
+    }
 }
 
 /**
