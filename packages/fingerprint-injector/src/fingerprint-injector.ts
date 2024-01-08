@@ -1,7 +1,8 @@
 import { readFileSync } from 'fs';
+
 import { BrowserFingerprintWithHeaders, Fingerprint, FingerprintGenerator, FingerprintGeneratorOptions } from 'fingerprint-generator';
-import { Page, Browser as PPBrowser } from 'puppeteer';
 import { BrowserContext, Browser as PWBrowser, BrowserContextOptions } from 'playwright';
+import { Page, Browser as PPBrowser } from 'puppeteer';
 
 interface EnhancedFingerprint extends Fingerprint {
     userAgent: string;
@@ -79,7 +80,7 @@ export class FingerprintInjector {
         const browserName = browserContext.browser()?.browserType().name();
         await browserContext.setExtraHTTPHeaders(this.onlyInjectableHeaders(headers, browserName));
 
-        await browserContext.on('page', (page) => {
+        browserContext.on('page', (page) => {
             page.emulateMedia({ colorScheme: 'dark' })
                 .catch(() => {});
         });
@@ -147,7 +148,7 @@ export class FingerprintInjector {
             const {
                 battery,
                 navigator: {
-                    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
                     extraProperties,
                     userAgentData,
                     webdriver,
@@ -177,7 +178,7 @@ export class FingerprintInjector {
                 clientWidth,
                 clientHeight,
                 // Ignore hdr for now.
-                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
                 hasHDR,
                 // window.screen props
                 ...newScreen

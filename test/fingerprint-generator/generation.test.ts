@@ -1,5 +1,5 @@
-import { HeaderGeneratorOptions } from 'header-generator';
 import { FingerprintGenerator, PRESETS } from 'fingerprint-generator';
+import { HeaderGeneratorOptions } from 'header-generator';
 
 describe('Generation tests', () => {
     const fingerprintGenerator = new FingerprintGenerator();

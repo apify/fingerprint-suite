@@ -1,7 +1,8 @@
-import fetch from 'node-fetch';
 import fs from 'fs';
 import path from 'path';
+
 import { BayesianNetwork } from 'generative-bayesian-network';
+import fetch from 'node-fetch';
 
 const browserHttpNodeName = '*BROWSER_HTTP';
 const httpVersionNodeName = '*HTTP_VERSION';
@@ -46,7 +47,7 @@ async function prepareRecords(records: Record<string, any>[], preprocessingType:
     // TODO this could break if the list is not there anymore
     // The robots list is available under the MIT license, for details see https://github.com/atmire/COUNTER-Robots/blob/master/LICENSE
     const robotUserAgents = await fetch('https://raw.githubusercontent.com/atmire/COUNTER-Robots/master/COUNTER_Robots_list.json')
-        .then((res) => res.json()) as {pattern: string}[];
+        .then(async (res) => res.json()) as {pattern: string}[];
 
     const deconstructedRecords = [];
     const userAgents = new Set();
@@ -183,8 +184,8 @@ export class GeneratorNetworksCreator {
             };
         });
 
-        await headerGeneratorNetwork.setProbabilitiesAccordingToData(selectedRecords);
-        await inputGeneratorNetwork.setProbabilitiesAccordingToData(selectedRecords);
+        headerGeneratorNetwork.setProbabilitiesAccordingToData(selectedRecords);
+        inputGeneratorNetwork.setProbabilitiesAccordingToData(selectedRecords);
 
         const inputNetworkDefinitionPath = path.join(resultsPath, 'input-network-definition.zip');
         const headerNetworkDefinitionPath = path.join(resultsPath, 'header-network-definition.zip');
@@ -193,7 +194,7 @@ export class GeneratorNetworksCreator {
         headerGeneratorNetwork.saveNetworkDefinition({ path: headerNetworkDefinitionPath });
         inputGeneratorNetwork.saveNetworkDefinition({ path: inputNetworkDefinitionPath });
 
-        const uniqueBrowsersAndHttps = await Array.from(new Set(selectedRecords.map((record) => record[browserHttpNodeName])));
+        const uniqueBrowsersAndHttps = Array.from(new Set(selectedRecords.map((record) => record[browserHttpNodeName])));
         fs.writeFileSync(browserHelperFilePath, JSON.stringify(uniqueBrowsersAndHttps));
     }
 
@@ -244,7 +245,7 @@ export class GeneratorNetworksCreator {
 
         // eslint-disable-next-line no-console
         console.log('Building the fingerprint network...');
-        await fingerprintGeneratorNetwork.setProbabilitiesAccordingToData(selectedRecords);
+        fingerprintGeneratorNetwork.setProbabilitiesAccordingToData(selectedRecords);
         fingerprintGeneratorNetwork.saveNetworkDefinition({ path: fingerprintNetworkDefinitionPath });
     }
 }

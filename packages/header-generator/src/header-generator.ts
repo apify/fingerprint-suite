@@ -1,12 +1,7 @@
+import { readFileSync } from 'fs';
+
 import { BayesianNetwork, utils } from 'generative-bayesian-network';
 import ow from 'ow';
-import { readFileSync } from 'fs';
-import {
-    getBrowser,
-    getUserAgent,
-    getBrowsersFromQuery,
-    shuffleArray,
-} from './utils';
 
 import {
     SUPPORTED_BROWSERS,
@@ -20,6 +15,12 @@ import {
     HTTP1_SEC_FETCH_ATTRIBUTES,
     HTTP2_SEC_FETCH_ATTRIBUTES,
 } from './constants';
+import {
+    getBrowser,
+    getUserAgent,
+    getBrowsersFromQuery,
+    shuffleArray,
+} from './utils';
 
 const browserSpecificationShape = {
     name: ow.string,

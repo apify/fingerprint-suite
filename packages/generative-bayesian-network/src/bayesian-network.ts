@@ -1,4 +1,5 @@
 import AdmZip = require('adm-zip');
+
 import { BayesianNode } from './bayesian-node';
 
 export type RecordList = Record<string, any>[];

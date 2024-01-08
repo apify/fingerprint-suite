@@ -1,6 +1,6 @@
+import { FingerprintInjector, newInjectedContext, newInjectedPage } from 'fingerprint-injector';
 import playwright from 'playwright';
 import puppeteer from 'puppeteer';
-import { FingerprintInjector, newInjectedContext, newInjectedPage } from 'fingerprint-injector';
 
 function generateCartesianMatrix(A: any, B: any) {
     const matrix = [];

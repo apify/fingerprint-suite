@@ -1,5 +1,6 @@
 import { FingerprintGenerator } from 'fingerprint-generator';
 import { FingerprintInjector } from 'fingerprint-injector';
+
 import { VanillaPlaywright } from './vanilla-playwright';
 
 export class FingerprintSuite extends VanillaPlaywright {

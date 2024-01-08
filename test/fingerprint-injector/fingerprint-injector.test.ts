@@ -1,7 +1,7 @@
-import playwright, { chromium, type Browser as PWBrowser } from 'playwright';
-import puppeteer, { Browser as PPBrowser } from 'puppeteer';
 import { BrowserFingerprintWithHeaders, Fingerprint, FingerprintGenerator } from 'fingerprint-generator';
 import { FingerprintInjector, newInjectedContext, newInjectedPage } from 'fingerprint-injector';
+import playwright, { chromium, type Browser as PWBrowser } from 'playwright';
+import puppeteer, { Browser as PPBrowser } from 'puppeteer';
 
 const cases = [
     ['Playwright',

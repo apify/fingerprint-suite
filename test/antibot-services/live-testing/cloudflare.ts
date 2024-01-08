@@ -1,12 +1,14 @@
-/* eslint-disable no-console, no-loop-func */
-import { chromium, Page } from 'playwright';
+/* eslint-disable no-console */
 import fs from 'fs';
 import path from 'path';
-import { FingeprintingEngine, VanillaPlaywright } from './engine/vanilla-playwright';
-import { FingerprintSuite } from './engine/fingerprint-suite';
-import { generateReport, TestResult } from './utils/generateReport';
-import { PlaywrightExtra } from './engine/playwright-extra';
+
+import { chromium, Page } from 'playwright';
+
 import { FingerprintSuiteExtra } from './engine/combo';
+import { FingerprintSuite } from './engine/fingerprint-suite';
+import { PlaywrightExtra } from './engine/playwright-extra';
+import { FingeprintingEngine, VanillaPlaywright } from './engine/vanilla-playwright';
+import { generateReport, TestResult } from './utils/generateReport';
 
 async function waitForCompletion<T>(promises: (() => Promise<T>)[], maxConcurrency: number): Promise<void> {
     async function worker() {
@@ -15,7 +17,7 @@ async function waitForCompletion<T>(promises: (() => Promise<T>)[], maxConcurren
         while (job = promises.shift()) await job();
     }
 
-    await Promise.all([...new Array(maxConcurrency)].map(() => worker()));
+    await Promise.all([...new Array(maxConcurrency)].map(async () => worker()));
 }
 
 const source = fs.readFileSync(path.join(__dirname, 'cloudflare-websites.csv'), 'utf8');

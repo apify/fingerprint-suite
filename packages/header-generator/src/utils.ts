@@ -1,4 +1,5 @@
 import browsersList from 'browserslist';
+
 import { SUPPORTED_BROWSERS } from './constants';
 import { BrowserName, BrowserSpecification } from './header-generator';
 
@@ -36,7 +37,6 @@ const getBrowsersWithVersions = (browserList: string[]): Record<BrowserName, num
         const browser = browserSplit as BrowserName;
         const version = parseInt(versionString, 10);
         if (!SUPPORTED_BROWSERS.includes(browser)) {
-            // eslint-disable-next-line no-continue
             continue;
         }
 
