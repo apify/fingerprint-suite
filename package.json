@@ -48,7 +48,7 @@
         "@apify/eslint-config-ts": "^0.4.1",
         "@apify/tsconfig": "^0.1.0",
         "@types/adm-zip": "^0.5.0",
-        "@types/jest": "^27.4.1",
+        "@types/jest": "^29.0.0",
         "@types/node": "^20.0.0",
         "@types/node-fetch": "^2.6.1",
         "@types/puppeteer": "^5.4.4",
@@ -68,7 +68,7 @@
         "puppeteer-extra-plugin-user-preferences": "^2.4.1",
         "rimraf": "^5.0.0",
         "semver": "^7.3.8",
-        "ts-jest": "^28.0.3",
+        "ts-jest": "^29.0.0",
         "ts-node": "^10.8.0",
         "turbo": "^1.2.14",
         "typescript": "^5.0.0"
