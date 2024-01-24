@@ -4,7 +4,7 @@ const isFirefox = navigator.userAgent.includes("Firefox");
 const isSafari = navigator.userAgent.includes("Safari") && !navigator.userAgent.includes("Chrome");
 
 let slim = null;
-function getslim() {
+function getSlim() {
     if(slim === null) {
         slim = window.slim || false;
         if(typeof window.slim !== 'undefined') {
@@ -120,7 +120,7 @@ function overrideInstancePrototype(instance, overrideObj) {
  * @param {*} originalObj 
  */
 function redirectToString(proxyObj, originalObj) {
-    if(getslim()) return;
+    if(getSlim()) return;
 
     const handler = {
         setPrototypeOf: (target, newProto) => {
