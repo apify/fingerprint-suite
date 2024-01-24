@@ -1,7 +1,19 @@
-const isHeadlessChromium = () => /headless/i.test(navigator.userAgent) && navigator.plugins.length === 0;
-const isChrome = () => navigator.userAgent.includes("Chrome");
-const isFirefox = () => navigator.userAgent.includes("Firefox");
-const isSafari = () => navigator.userAgent.includes("Safari") && !navigator.userAgent.includes("Chrome");
+const isHeadlessChromium = /headless/i.test(navigator.userAgent) && navigator.plugins.length === 0;
+const isChrome = navigator.userAgent.includes("Chrome");
+const isFirefox = navigator.userAgent.includes("Firefox");
+const isSafari = navigator.userAgent.includes("Safari") && !navigator.userAgent.includes("Chrome");
+
+let slim = null;
+function getslim() {
+    if(slim === null) {
+        slim = window.slim || false;
+        if(typeof window.slim !== 'undefined') {
+            delete window.slim;
+        }
+    }
+
+    return slim;
+}
 
 // This file contains utils that are build and included on the window object with some randomized prefix.
 
@@ -102,7 +114,14 @@ function overrideInstancePrototype(instance, overrideObj) {
     }
 }
 
+/**
+ * Updates the .toString method in Function.prototype to return a native string representation of the function.
+ * @param {*} proxyObj 
+ * @param {*} originalObj 
+ */
 function redirectToString(proxyObj, originalObj) {
+    if(getslim()) return;
+
     const handler = {
         setPrototypeOf: (target, newProto) => {
             try {
@@ -131,6 +150,7 @@ function redirectToString(proxyObj, originalObj) {
             const hasSameProto = Object.getPrototypeOf(
                 Function.prototype.toString,
             ).isPrototypeOf(ctx.toString); // eslint-disable-line no-prototype-builtins
+
             if (!hasSameProto) {
                 // Pass the call on to the local Function.prototype.toString instead
                 return ctx.toString();
@@ -194,6 +214,11 @@ function redefineProperty(masterObject, propertyName, descriptorOverrides = {}) 
     });
 }
 
+/**
+ * For all the traps in the passed proxy handler, we wrap them in a try/catch and modify the error stack if they throw.
+ * @param {*} handler A proxy handler object
+ * @returns A new proxy handler object with error stack modifications
+ */
 function stripProxyFromErrors(handler) {
     const newHandler = {};
     // We wrap each trap in the handler in a try/catch and modify the error stack if they throw
@@ -535,7 +560,7 @@ function overrideUserAgentData(userAgentData) {
 };
 
 function fixWindowChrome(){
-    if( isChrome() && !window.chrome ){
+    if(isChrome && !window.chrome){
         Object.defineProperty(window, 'chrome', {
             writable: true,
             enumerable: true,
@@ -704,7 +729,7 @@ function fixPluginArray() {
 
 function runHeadlessFixes(){
     try {
-        if( isHeadlessChromium() ){
+        if( isHeadlessChromium ){
             fixWindowChrome();
             fixPermissions();
             fixIframeContentWindow();

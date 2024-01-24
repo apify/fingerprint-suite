@@ -160,6 +160,7 @@ export class FingerprintInjector {
                 audioCodecs,
                 videoCodecs,
                 mockWebRTC,
+                slim,
                 // @ts-expect-error internal browser code
             } = fp as EnhancedFingerprint;
 
@@ -202,6 +203,12 @@ export class FingerprintInjector {
             runHeadlessFixes();
 
             if (mockWebRTC) blockWebRTC();
+
+            if (slim) {
+                // @ts-expect-error internal browser code
+                // eslint-disable-next-line dot-notation
+                window['slim'] = true;
+            }
 
             overrideIntlAPI(navigatorProps.language);
             overrideStatic();
