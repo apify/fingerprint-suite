@@ -63,6 +63,7 @@ export type Fingerprint = {
     multimediaDevices: string[];
     fonts: string[];
     mockWebRTC: boolean;
+    slim?: boolean;
 }
 
 export type BrowserFingerprintWithHeaders = {
@@ -82,6 +83,13 @@ export interface FingerprintGeneratorOptions extends HeaderGeneratorOptions {
         maxHeight?: number;
     };
     mockWebRTC?: boolean;
+    /**
+     * Enables the slim mode for the fingerprint injection.
+     * This disables some performance-heavy evasions, but might decrease benchmark scores.
+     *
+     * Try enabling this if you are experiencing performance issues with the fingerprint injection.
+     */
+    slim?: boolean;
 }
 
 /**
@@ -99,6 +107,7 @@ export class FingerprintGenerator extends HeaderGenerator {
         this.fingerprintGlobalOptions = {
             screen: options.screen,
             mockWebRTC: options.mockWebRTC,
+            slim: options.slim,
         };
         this.fingerprintGeneratorNetwork = new BayesianNetwork({ path: `${__dirname}/data_files/fingerprint-network-definition.zip` });
     }
@@ -181,6 +190,7 @@ export class FingerprintGenerator extends HeaderGenerator {
                 fingerprint: {
                     ...this.transformFingerprint(fingerprint),
                     mockWebRTC: options.mockWebRTC ?? this.fingerprintGlobalOptions.mockWebRTC ?? false,
+                    slim: options.slim ?? this.fingerprintGlobalOptions.slim ?? false,
                 },
                 headers,
             };
