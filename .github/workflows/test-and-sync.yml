@@ -28,7 +28,7 @@ jobs:
               run: npm ci
 
             - name: Load Cache
-              uses: actions/cache@v3
+              uses: actions/cache@v4
               with:
                 path: |
                   node_modules
@@ -54,7 +54,7 @@ jobs:
                 node-version: ${{ matrix.node-version }}
 
             - name: Cache Node Modules
-              uses: actions/cache@v3
+              uses: actions/cache@v4
               with:
                   path: |
                       node_modules
@@ -68,7 +68,7 @@ jobs:
 
             - name: Turbo cache
               id: turbo-cache
-              uses: actions/cache@v3
+              uses: actions/cache@v4
               with:
                 path: .turbo
                 key: turbo-${{ github.job }}-${{ github.ref_name }}-${{ github.sha }}
