@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/playwright:v1.43.0-focal
+FROM mcr.microsoft.com/playwright:v1.44.0-focal
 
 # Install browsers
 RUN npx playwright install chrome
