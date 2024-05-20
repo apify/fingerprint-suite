@@ -79,7 +79,7 @@ export interface BrowserSpecification {
     httpVersion?: HttpVersion;
 }
 
-export type BrowsersType = BrowserSpecification[] | BrowserName[];
+export type BrowsersType = (BrowserSpecification | BrowserName)[];
 
 /**
  * Options for the `HeaderGenerator` class constructor.
