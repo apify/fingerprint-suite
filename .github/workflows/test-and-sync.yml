@@ -44,7 +44,7 @@ jobs:
         strategy:
             matrix:
                 os: [ ubuntu-latest ]
-                node-version: [ 16, 18 ]
+                node-version: [ 18, 20, 22 ]
 
         steps:
             - uses: actions/checkout@v4
@@ -64,7 +64,9 @@ jobs:
               run : npx playwright install --with-deps 
             
             - name: Install Puppeteer deps
-              run : cd node_modules/puppeteer && PUPPETEER_PRODUCT=firefox node install.js && PUPPETEER_PRODUCT=chrome node install.js && cd ../..
+              run : |
+                npx puppeteer browsers install chrome
+                npx puppeteer browsers install firefox
 
             - name: Turbo cache
               id: turbo-cache
