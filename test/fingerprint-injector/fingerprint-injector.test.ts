@@ -1,9 +1,9 @@
+import { setTimeout } from 'timers/promises';
+
 import { BrowserFingerprintWithHeaders, Fingerprint, FingerprintGenerator } from 'fingerprint-generator';
 import { FingerprintInjector, newInjectedContext, newInjectedPage } from 'fingerprint-injector';
 import playwright, { chromium, type Browser as PWBrowser } from 'playwright';
 import puppeteer, { Browser as PPBrowser } from 'puppeteer';
-
-import { setTimeout } from 'timers/promises';
 
 const cases = [
     ['Playwright',
