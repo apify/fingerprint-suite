@@ -62,6 +62,11 @@ jobs:
             
             - name: Install Playwright deps
               run : npx playwright install --with-deps 
+            
+            - name: Install Puppeteer deps
+              run : |
+                npx puppeteer browsers install chrome
+                npx puppeteer browsers install firefox
 
             - name: Turbo cache
               id: turbo-cache
