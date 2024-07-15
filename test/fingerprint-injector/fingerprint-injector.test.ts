@@ -3,6 +3,8 @@ import { FingerprintInjector, newInjectedContext, newInjectedPage } from 'finger
 import playwright, { chromium, type Browser as PWBrowser } from 'playwright';
 import puppeteer, { Browser as PPBrowser } from 'puppeteer';
 
+import { setTimeout } from 'timers/promises';
+
 const cases = [
     ['Playwright',
         [
@@ -112,7 +114,7 @@ describe('FingerprintInjector', () => {
 
                     response = await page.goto(`file://${__dirname}/test.html`);
                 }
-                return new Promise((resolve) => setTimeout(resolve, 2000));
+                return await setTimeout(2000);
             });
 
             afterAll(async () => {
@@ -355,7 +357,7 @@ describe('FingerprintInjector', () => {
                 const page = await getNewPage(browser, fp);
 
                 await page.goto('https://hide.me/en/webrtc-leak-test');
-                await page.waitForTimeout(5000);
+                await setTimeout(5000);
                 const ok = await page.$('.o-pagecheck__alert--ok');
                 expect(ok).toBeFalsy();
 
@@ -371,7 +373,7 @@ describe('FingerprintInjector', () => {
                 const page = await getNewPage(browser, fp);
 
                 await page.goto('https://hide.me/en/webrtc-leak-test');
-                await page.waitForTimeout(5000);
+                await setTimeout(5000);
                 const ok = await page.$('.o-pagecheck__alert--ok');
                 expect(ok).toBeFalsy();
 
@@ -387,7 +389,7 @@ describe('FingerprintInjector', () => {
                 const page = await getNewPage(browser, fp);
 
                 await page.goto('https://hide.me/en/webrtc-leak-test');
-                await page.waitForTimeout(5000);
+                await setTimeout(5000);
                 const ok = await page.$('.o-pagecheck__alert--ok');
                 expect(ok).toBeTruthy();
 
