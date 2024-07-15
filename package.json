@@ -70,7 +70,7 @@
         "semver": "^7.3.8",
         "ts-jest": "^29.0.0",
         "ts-node": "^10.8.0",
-        "turbo": "^1.2.14",
+        "turbo": "^2.0.0",
         "typescript": "^5.0.0"
     },
     "packageManager": "npm@10.8.0"
