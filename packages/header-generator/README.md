@@ -44,7 +44,7 @@ let headerGenerator = new HeaderGenerator({
 You can then get the headers using the `getHeaders` method, either with no argument, or with another `HeaderGeneratorOptions` object, this time specifying the options only for this call (overwriting the global options when in conflict) and using the global options specified beforehands for the unspecified options:
 
 ```js
-let headers = headersGenerator.getHeaders({
+let headers = headerGenerator.getHeaders({
         operatingSystems: [
             "linux"
         ],
