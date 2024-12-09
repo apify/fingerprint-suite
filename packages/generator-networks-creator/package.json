@@ -18,7 +18,7 @@
     "license": "Apache-2.0",
     "dependencies": {
         "generative-bayesian-network": "^2.1.59",
-        "node-fetch": "^2.6.7",
+        "node-fetch": "^3.0.0",
         "tslib": "^2.4.0"
     },
     "repository": {
