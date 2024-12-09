@@ -17,10 +17,10 @@ jobs:
                 with:
                     token: ${{ secrets.APIFY_SERVICE_ACCOUNT_GITHUB_TOKEN }}
 
-            -   name: Use Node.js 16
-                uses: actions/setup-node@v3
+            -   name: Use Node.js 22
+                uses: actions/setup-node@v4
                 with:
-                    node-version: 16
+                    node-version: 22
                     cache: 'npm'
                     cache-dependency-path: 'package-lock.json'
 
