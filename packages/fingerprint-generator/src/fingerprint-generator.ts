@@ -146,7 +146,7 @@ export class FingerprintGenerator extends HeaderGenerator {
                 : undefined;
 
             try {
-                return utils.getPossibleValues(this.fingerprintGeneratorNetwork, filteredValues);
+                return utils.getConstraintClosure(this.fingerprintGeneratorNetwork, filteredValues);
             } catch (e) {
                 if (options?.strict) throw e;
                 delete filteredValues.screen;
@@ -154,7 +154,7 @@ export class FingerprintGenerator extends HeaderGenerator {
             }
         })();
 
-        while (true) {
+        for (let generateRetries = 0; generateRetries < 10; generateRetries++) {
             // Generate headers consistent with the inputs to get input-compatible user-agent and accept-language headers needed later
             const headers = super.getHeaders(options, requestDependentHeaders, partialCSP?.userAgent);
             const userAgent = 'User-Agent' in headers ? headers['User-Agent'] : headers['user-agent'];
@@ -195,6 +195,8 @@ export class FingerprintGenerator extends HeaderGenerator {
                 headers,
             };
         }
+
+        throw new Error('Failed to generate a consistent fingerprint after 10 attempts');
     }
 
     /**
