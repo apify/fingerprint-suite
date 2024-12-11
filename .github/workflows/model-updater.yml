@@ -2,8 +2,8 @@ name: Model updater
 
 on:
   # Triggers the workflow every month
-  schedule:
-    - cron: "0 0 1 * *"
+  # schedule:
+  #   - cron: "0 0 1 * *"
   workflow_dispatch:
 
 jobs:
