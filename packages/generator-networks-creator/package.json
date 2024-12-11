@@ -1,6 +1,6 @@
 {
     "name": "generator-networks-creator",
-    "version": "2.1.60",
+    "version": "2.1.61",
     "engines": {
         "node": ">=16.0.0"
     },
@@ -17,7 +17,7 @@
     },
     "license": "Apache-2.0",
     "dependencies": {
-        "generative-bayesian-network": "^2.1.60",
+        "generative-bayesian-network": "^2.1.61",
         "node-fetch": "^2.6.7",
         "tslib": "^2.4.0"
     },
