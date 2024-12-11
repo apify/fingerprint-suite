@@ -112,7 +112,7 @@ describe('Generate fingerprints with basic constraints', () => {
         })).toBeDefined();
     });
 
-    test.only('[relaxation] header strict mode propagates', () => {
+    test('[relaxation] header strict mode propagates', () => {
         const fingerprintGenerator = new FingerprintGenerator();
 
         expect(fingerprintGenerator.getFingerprint({
@@ -127,7 +127,7 @@ describe('Generate fingerprints with basic constraints', () => {
         })).toThrow();
     });
 
-    test.only('[relaxation] strict mode works with fp-only features', () => {
+    test.skip('[relaxation] strict mode works with fp-only features', () => {
         const fingerprintGenerator = new FingerprintGenerator();
 
         expect(fingerprintGenerator.getFingerprint({

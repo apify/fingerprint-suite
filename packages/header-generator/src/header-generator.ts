@@ -220,24 +220,33 @@ export class HeaderGenerator {
         const headerOptions = { ...this.globalOptions, ...options };
         const possibleAttributeValues = this._getPossibleAttributeValues(headerOptions);
 
-        const [http1Values, http2Values] = userAgentValues ? [
-            utils.getPossibleValues(this.headerGeneratorNetwork, { 'User-Agent': userAgentValues }),
-            utils.getPossibleValues(this.headerGeneratorNetwork, { 'user-agent': userAgentValues }),
+        const [http1Constraints, http2Constraints] = userAgentValues ? [
+            utils.getConstraintClosure(this.headerGeneratorNetwork, { 'User-Agent': userAgentValues }),
+            utils.getConstraintClosure(this.headerGeneratorNetwork, { 'user-agent': userAgentValues }),
         ] : [null, null];
 
-        // Generate a sample of input attributes consistent with the data used to create the definition files if possible.
-        const inputSample = this.inputGeneratorNetwork.generateConsistentSampleWhenPossible(
-            Object.entries(possibleAttributeValues).reduce((acc, [key, value]) => {
+        const inputConstraints = Object.entries(possibleAttributeValues)
+            .reduce((acc, [key, value]) => {
                 if (key === '*BROWSER_HTTP') {
                     acc[key] = value.filter((x: string) => {
                         const [browserName, httpVersion] = x.split('|');
-                        return (httpVersion === '1' ? http1Values : http2Values)?.['*BROWSER'].includes(browserName) ?? true;
+                        let httpValues = http2Constraints;
+
+                        if (httpVersion === '1' || !http2Constraints || Object.keys(http2Constraints).length === 0) {
+                            httpValues = http1Constraints;
+                        }
+
+                        return httpValues?.['*BROWSER'].includes(browserName) ?? true;
                     });
                     return acc;
                 }
-                acc[key] = value.filter((x: string) => (http1Values?.[key]?.includes(x) || http2Values?.[key]?.includes(x)) ?? true);
+                acc[key] = value.filter((x: string) => (http1Constraints?.[key]?.includes(x) || http2Constraints?.[key]?.includes(x)) ?? true);
                 return acc;
-            }, {} as typeof possibleAttributeValues));
+            },
+            {} as typeof possibleAttributeValues);
+
+        // Generate a sample of input attributes consistent with the data used to create the definition files if possible.
+        const inputSample = this.inputGeneratorNetwork.generateConsistentSampleWhenPossible(inputConstraints);
 
         if (Object.keys(inputSample).length === 0) {
             // Try to convert HTTP/2 headers to HTTP/1 headers
