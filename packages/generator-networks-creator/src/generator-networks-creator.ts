@@ -25,6 +25,20 @@ const PLUGIN_CHARACTERISTICS_ATTRIBUTES = [
     'mimeTypes',
 ];
 
+function validateRecord(record: Record<string, any>): boolean {
+    const { browserFingerprint } = record;
+    if (!browserFingerprint) return false;
+
+    const { navigator } = browserFingerprint;
+    if (!navigator) return false;
+
+    if (navigator.appCodeName !== 'Mozilla') return false;
+
+    if (typeof navigator.userAgent !== 'string' || navigator.userAgent.trim() === '') return false;
+
+    return true;
+}
+
 async function prepareRecords(records: Record<string, any>[], preprocessingType: string) : Promise<Record<string, any>[]> {
     const cleanedRecords = records
         .filter((
@@ -42,7 +56,8 @@ async function prepareRecords(records: Record<string, any>[], preprocessingType:
                 },
             }) => ((width >= 1280 && width > height) || (width < height && /phone|android|mobile/i.test(userAgent))),
         )
-        .map((record) => ({ ...record, userAgent: record.browserFingerprint.userAgent } as any));
+        .map((record) => ({ ...record, userAgent: record.browserFingerprint.userAgent } as any))
+        .filter(validateRecord);
 
     // TODO this could break if the list is not there anymore
     // The robots list is available under the MIT license, for details see https://github.com/atmire/COUNTER-Robots/blob/master/LICENSE

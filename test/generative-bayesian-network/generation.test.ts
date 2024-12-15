@@ -65,4 +65,30 @@ describe('Generation tests', () => {
             }
         }
     });
+
+    test('Only processes validated data', () => {
+        const rows : string[][] = [];
+
+        await new Promise<void>((res) => {
+            parseFile(path.join(__dirname, './testDataset.csv'))
+            .on('data', r => rows.push(r))
+            .on('end', () => {
+               res();
+            })
+        });
+
+        const data = rows.slice(1).map(r => {
+            const x = {} as Record<string, any>;
+            for(let i = 0; i < r.length; i++) {
+                x[rows[0][i]] = r[i];
+            }
+            return x;
+        });
+
+        const invalidData = [...data, { browserFingerprint: { navigator: { appCodeName: 'NotMozilla', userAgent: '' } } }];
+        
+        testGeneratorNetwork.setProbabilitiesAccordingToData(invalidData);
+        testGeneratorNetwork.saveNetworkDefinition({path: testNetworkDefinitionPath});
+        expect(testGeneratorNetwork.generateSample()).toBeTruthy();
+    });
 });
