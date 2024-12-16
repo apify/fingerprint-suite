@@ -88,6 +88,7 @@ export class BayesianNetwork {
      * @param dataframe A Danfo.js dataframe containing the data.
      */
     setProbabilitiesAccordingToData(data: RecordList) {
+        const validatedData = data.filter(validateRecord);
         this.nodesInSamplingOrder.forEach((node, i) => {
             // eslint-disable-next-line no-console
             console.log(`${i}/${this.nodesInSamplingOrder.length} Setting probabilities for node ${node.name}`);
@@ -95,7 +96,7 @@ export class BayesianNetwork {
             for (const parentName of node.parentNames) {
                 possibleParentValues[parentName] = this.nodesByName[parentName].possibleValues;
             }
-            node.setProbabilitiesAccordingToData(data, possibleParentValues);
+            node.setProbabilitiesAccordingToData(validatedData, possibleParentValues);
         });
     }
 
@@ -114,4 +115,18 @@ export class BayesianNetwork {
         zip.addFile('network.json', Buffer.from(JSON.stringify(network), 'utf8'));
         zip.writeZip(path);
     }
+}
+
+function validateRecord(record: Record<string, any>): boolean {
+    const { browserFingerprint } = record;
+    if (!browserFingerprint) return false;
+
+    const { navigator } = browserFingerprint;
+    if (!navigator) return false;
+
+    if (navigator.appCodeName !== 'Mozilla') return false;
+
+    if (typeof navigator.userAgent !== 'string' || navigator.userAgent.trim() === '') return false;
+
+    return true;
 }

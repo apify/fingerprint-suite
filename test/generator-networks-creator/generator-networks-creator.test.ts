@@ -143,3 +143,82 @@ describe('Processing browser data', () => {
         }
     });
 });
+
+describe('Validation function', () => {
+    const networkGenerator = new GeneratorNetworksCreator();
+
+    test('Validates correct records', () => {
+        const validRecord = {
+            browserFingerprint: {
+                navigator: {
+                    appCodeName: 'Mozilla',
+                    userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36'
+                }
+            }
+        };
+        expect(networkGenerator['validateRecord'](validRecord)).toBe(true);
+    });
+
+    test('Invalidates incorrect records', () => {
+        const invalidRecord1 = {
+            browserFingerprint: {
+                navigator: {
+                    appCodeName: 'NotMozilla',
+                    userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36'
+                }
+            }
+        };
+        const invalidRecord2 = {
+            browserFingerprint: {
+                navigator: {
+                    appCodeName: 'Mozilla',
+                    userAgent: ''
+                }
+            }
+        };
+        expect(networkGenerator['validateRecord'](invalidRecord1)).toBe(false);
+        expect(networkGenerator['validateRecord'](invalidRecord2)).toBe(false);
+    });
+});
+
+describe('prepareRecords function', () => {
+    const networkGenerator = new GeneratorNetworksCreator();
+
+    test('Filters and processes records correctly', async () => {
+        const records = [
+            {
+                requestFingerprint: {
+                    headers: {
+                        'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36'
+                    }
+                },
+                browserFingerprint: {
+                    screen: { width: 1920, height: 1080 },
+                    userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36',
+                    navigator: {
+                        appCodeName: 'Mozilla',
+                        userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36'
+                    }
+                }
+            },
+            {
+                requestFingerprint: {
+                    headers: {
+                        'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36'
+                    }
+                },
+                browserFingerprint: {
+                    screen: { width: 800, height: 600 },
+                    userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36',
+                    navigator: {
+                        appCodeName: 'Mozilla',
+                        userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36'
+                    }
+                }
+            }
+        ];
+
+        const processedRecords = await networkGenerator['prepareRecords'](records, 'fingerprints');
+        expect(processedRecords.length).toBe(1);
+    });
+});
