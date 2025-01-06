@@ -86,19 +86,19 @@ describe('Processing browser data', () => {
         },
         {
             userAgent: "Mozilla/5.0 (iPhone; CPU iPhone OS 16_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.5 Mobile/15E148 Safari/604.1",
-            expectedBrowser: "safari/604.1",
+            expectedBrowser: "safari/16.5",
             expectedOS: "ios",
             expectedDeviceType: "mobile"
         },
         {
             userAgent: "Mozilla/5.0 (iPad; CPU OS 16_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.5 Mobile/15E148 Safari/604.1",
-            expectedBrowser: "safari/604.1",
+            expectedBrowser: "safari/16.5",
             expectedOS: "ios",
             expectedDeviceType: "mobile"
         },
         {
             userAgent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 13_4) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.5 Safari/605.1.15",
-            expectedBrowser: "safari/605.1.15",
+            expectedBrowser: "safari/16.5",
             expectedOS: "macos",
             expectedDeviceType: "desktop"
         },

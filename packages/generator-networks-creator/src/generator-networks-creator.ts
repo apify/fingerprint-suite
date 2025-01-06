@@ -133,10 +133,10 @@ export class GeneratorNetworksCreator {
             edgios: 'edge',
         } as Record<string, string>;
 
-        const unsupportedBrowsers = /opr|yabrowser|SamsungBrowser|UCBrowser|vivaldi/ig;
-        const edge = /(edg(a|ios|e)?)\/([0-9.]*)/ig;
-        const safari = /Version\/([\d.]+) Safari/i;
-        const supportedBrowsers = /(firefox|fxios|chrome|crios)\/([0-9.]*)/ig;
+        const unsupportedBrowsers = /opr|yabrowser|SamsungBrowser|UCBrowser|vivaldi/i;
+        const edge = /(edg(a|ios|e)?)\/([0-9.]*)/i;
+        const safari = /Version\/([\d.]+)( Mobile\/[a-z0-9]+)? Safari/i;
+        const supportedBrowsers = /(firefox|fxios|chrome|crios|safari)\/([0-9.]*)/i;
 
         if (unsupportedBrowsers.test(userAgent)) {
             return missingValueDatasetToken;
