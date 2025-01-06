@@ -254,7 +254,7 @@ export class HeaderGenerator {
             // Try to convert HTTP/2 headers to HTTP/1 headers
             if (headerOptions.httpVersion === '1') {
                 const headers2 = this.getHeaders({
-                    ...headerOptions,
+                    ...options,
                     httpVersion: '2',
                 }, requestDependentHeaders, userAgentValues);
 
@@ -279,13 +279,13 @@ export class HeaderGenerator {
                 return this.orderHeaders(converted2to1);
             }
 
-            const relaxationIndex = this.relaxationOrder.findIndex((key) => headerOptions[key] !== undefined);
-            if (headerOptions.strict || relaxationIndex === -1) {
+            const relaxationIndex = this.relaxationOrder.findIndex((key) => options[key] !== undefined);
+            if (options.strict || relaxationIndex === -1) {
                 throw new Error('No headers based on this input can be generated. Please relax or change some of the requirements you specified.');
             }
 
             // Relax the requirements and try again
-            const relaxedOptions = { ...headerOptions };
+            const relaxedOptions = { ...options };
             const relaxationKey = this.relaxationOrder[relaxationIndex];
             delete relaxedOptions[relaxationKey];
             return this.getHeaders(relaxedOptions, requestDependentHeaders, userAgentValues);
