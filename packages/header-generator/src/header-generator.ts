@@ -117,6 +117,8 @@ export interface HeaderGeneratorOptions {
     httpVersion: HttpVersion;
     /**
      * If true, the generator will throw an error if it cannot generate headers based on the input.
+     *
+     * By default (strict: false), the generator will try to relax some requirements and generate headers based on the relaxed input.
      */
     strict: boolean;
 }
@@ -380,8 +382,10 @@ export class HeaderGenerator {
         for (const browser of browsers) {
             for (const browserOption of this.uniqueBrowsers) {
                 if (browser.name === browserOption.name) {
-                    if ((!browser.minVersion || this._browserVersionIsLesserOrEquals([browser.minVersion], browserOption.version))
-                        && (!browser.maxVersion || this._browserVersionIsLesserOrEquals(browserOption.version, [browser.maxVersion]))
+                    const browserMajorVersion = browserOption.version[0];
+
+                    if ((!browser.minVersion || browser.minVersion <= browserMajorVersion)
+                        && (!browser.maxVersion || browser.maxVersion >= browserMajorVersion)
                         && browser.httpVersion === browserOption.httpVersion) {
                         browserHttpOptions.push(browserOption.completeString);
                     }
@@ -509,9 +513,5 @@ export class HeaderGenerator {
         }
 
         return (this.headersOrder as Record<string, any>)[browser] ?? [];
-    }
-
-    private _browserVersionIsLesserOrEquals(browserVersionL: number[], browserVersionR: number[]) {
-        return browserVersionL[0] <= browserVersionR[0];
     }
 }
