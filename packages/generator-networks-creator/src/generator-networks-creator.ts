@@ -135,7 +135,8 @@ export class GeneratorNetworksCreator {
 
         const unsupportedBrowsers = /opr|yabrowser|SamsungBrowser|UCBrowser|vivaldi/ig;
         const edge = /(edg(a|ios|e)?)\/([0-9.]*)/ig;
-        const supportedBrowsers = /(firefox|fxios|chrome|crios|safari)\/([0-9.]*)/ig;
+        const safari = /Version\/([\d.]+) Safari/i;
+        const supportedBrowsers = /(firefox|fxios|chrome|crios)\/([0-9.]*)/ig;
 
         if (unsupportedBrowsers.test(userAgent)) {
             return missingValueDatasetToken;
@@ -144,7 +145,14 @@ export class GeneratorNetworksCreator {
         if (edge.test(userAgent)) {
             const match = userAgent.match(edge)![0].split('/');
             return `edge/${match[1]}`;
-        } if (supportedBrowsers.test(userAgent)) {
+        }
+
+        if (safari.test(userAgent)) {
+            const match = userAgent.match(safari);
+            return `safari/${match![1]}`;
+        }
+
+        if (supportedBrowsers.test(userAgent)) {
             const match = userAgent.match(supportedBrowsers)![0].split('/');
             return `${canonicalNames[match[0].toLowerCase()]}/${match[1]}`;
         }
