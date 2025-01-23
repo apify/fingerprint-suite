@@ -112,13 +112,14 @@ async function prepareRecords(
         // The maxTouchPoints should be 0 for desktops and > 0 for mobile devices
         if (!validTouchSupport) continue;
 
-        const validProductSub =
+        const validProduct =
+            fingerprint.product === 'Gecko' &&
             parsedUserAgent.browser.name === 'Firefox'
                 ? fingerprint.productSub === '20100101'
                 : fingerprint.productSub === '20030107';
 
-        // The productSub should be 20030107 for Non-Firefox supported browsers
-        if (!validProductSub) continue;
+        // The productSub should be 20100101 for Firefox and 20030107 for the rest
+        if (!validProduct) continue;
 
         const validVendor =
             (parsedUserAgent.browser.name === 'Firefox' &&
@@ -129,6 +130,13 @@ async function prepareRecords(
 
         // The vendor should be Google Inc. for Chrome and Apple Computer, Inc. for Safari
         if (!validVendor) continue;
+
+        const validAppName =
+            fingerprint.appName === 'Netscape' &&
+            fingerprint.appCodeName === 'Mozilla';
+
+        // The appName should be Netscape and the appCodeName should be Mozilla
+        if (!validAppName) continue;
 
         cleanedRecords.push({
             ...record,
