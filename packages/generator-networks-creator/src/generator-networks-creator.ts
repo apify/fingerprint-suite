@@ -274,6 +274,50 @@ async function prepareRecords(
         // The fonts should be empty or contain only known fonts for the OS
         if (!validFonts) continue;
 
+        const validScreenSize =
+            fingerprint.screen.width > 0 &&
+            fingerprint.screen.height > 0 &&
+            fingerprint.screen.availWidth > 0 &&
+            fingerprint.screen.availHeight > 0;
+
+        // The screen dimensions should be positive
+        if (!validScreenSize) continue;
+
+        const validAvailDimensions =
+            fingerprint.screen.availWidth <= fingerprint.screen.width &&
+            fingerprint.screen.availHeight <= fingerprint.screen.height;
+
+        // The availWidth and availHeight should be less or equal to the width and height
+        if (!validAvailDimensions) continue;
+
+        const validWindowSize =
+            fingerprint.screen.innerWidth <= fingerprint.screen.outerWidth &&
+            fingerprint.screen.innerHeight <= fingerprint.screen.outerHeight;
+
+        // The innerWidth and innerHeight should be less or equal to the outerWidth and outerHeight
+        if (!validWindowSize) continue;
+
+        const validClientDimensions =
+            fingerprint.screen.clientWidth <= fingerprint.screen.innerWidth &&
+            fingerprint.screen.clientHeight <= fingerprint.screen.innerHeight;
+
+        // The clientWidth and clientHeight should be less or equal to the innerWidth and innerHeight
+        if (!validClientDimensions) continue;
+
+        const validColorDepth =
+            !fingerprint.screen.pixelDepth ||
+            fingerprint.screen.pixelDepth === fingerprint.screen.colorDepth;
+
+        // The pixelDepth and colorDepth should be equal
+        if (!validColorDepth) continue;
+
+        const validDevicePixelRatio =
+            fingerprint.screen.devicePixelRatio >= 1 &&
+            fingerprint.screen.screen.devicePixelRatio <= 5;
+
+        // The devicePixelRatio should be between 1 and 5
+        if (!validDevicePixelRatio) continue;
+
         cleanedRecords.push({
             ...record,
             userAgent: record.browserFingerprint.userAgent,
