@@ -112,6 +112,13 @@ async function prepareRecords(
         // The maxTouchPoints should be 0 for desktops and > 0 for mobile devices
         if (!validTouchSupport) continue;
 
+        const validProductSub =
+            parsedUserAgent.browser.name === 'Firefox' ||
+            fingerprint.productSub === '20030107';
+
+        // The productSub should be 20030107 for Non-Firefox supported browsers
+        if (!validProductSub) continue;
+
         cleanedRecords.push({
             ...record,
             userAgent: record.browserFingerprint.userAgent,
