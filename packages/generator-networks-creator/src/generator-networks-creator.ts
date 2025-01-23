@@ -313,10 +313,49 @@ async function prepareRecords(
 
         const validDevicePixelRatio =
             fingerprint.screen.devicePixelRatio >= 1 &&
-            fingerprint.screen.screen.devicePixelRatio <= 5;
+            fingerprint.screen.devicePixelRatio <= 5;
 
         // The devicePixelRatio should be between 1 and 5
         if (!validDevicePixelRatio) continue;
+
+        let validScreenDimensions = true;
+
+        if (desktopFingerprint) {
+            const aspectRatio =
+                fingerprint.screen.width / fingerprint.screen.height;
+
+            validScreenDimensions =
+                fingerprint.screen.width >= 1024 &&
+                fingerprint.screen.width <= 5120 &&
+                fingerprint.screen.height >= 768 &&
+                fingerprint.screen.height <= 2880 &&
+                (Math.abs(aspectRatio - 16 / 9) < 0.1 || // 16:9 aspect ratio
+                    Math.abs(aspectRatio - 4 / 3) < 0.1); // 4:3 aspect ratio
+        } else {
+            const screenWidth = Math.max(
+                fingerprint.screen.width,
+                fingerprint.screen.height
+            );
+
+            const screenHeight = Math.min(
+                fingerprint.screen.width,
+                fingerprint.screen.height
+            );
+
+            const screenAspectRatio = screenWidth / screenHeight;
+
+            validScreenDimensions =
+                screenWidth >= 320 &&
+                screenWidth <= 2560 &&
+                screenHeight >= 480 &&
+                screenHeight <= 3200 &&
+                (Math.abs(screenAspectRatio - 9 / 16) < 0.1 || // 9:16 aspect ratio
+                    Math.abs(screenAspectRatio - 4 / 3) < 0.1 || // 4:3 aspect ratio
+                    Math.abs(screenAspectRatio - 16 / 9) < 0.1); // 16:9 aspect ratio
+        }
+
+        // The screen dimensions should be within the expected range
+        if (!validScreenDimensions) continue;
 
         cleanedRecords.push({
             ...record,
