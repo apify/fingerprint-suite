@@ -93,6 +93,32 @@ const KNOWN_WEBGL_RENDERER_PARTS = [
     'llvmpipe',
 ];
 
+const KNOWN_OS_FONTS = {
+    WINDOWS: [
+        'Cambria Math',
+        'Nirmala UI',
+        'Leelawadee UI',
+        'HoloLens MDL2 Assets',
+        'Segoe Fluent Icons',
+    ],
+    APPLE: [
+        'Helvetica Neue',
+        'Luminari',
+        'PingFang HK Light',
+        'InaiMathi Bold',
+        'Galvji',
+        'Chakra Petch',
+    ],
+    LINUX: [
+        'Arimo',
+        'MONO',
+        'Ubuntu',
+        'Noto Color Emoji',
+        'Dancing Script',
+        'Droid Sans Mono',
+    ],
+};
+
 async function prepareRecords(
     records: Record<string, any>[],
     preprocessingType: string
@@ -224,6 +250,29 @@ async function prepareRecords(
 
         // The WebGL renderer should contain a known substring, should not contain excessive blank spaces, should not be ANGLE or should be ANGLE with a valid name
         if (!validWebGLRenderer) continue;
+
+        const fontValidatableOS =
+            parsedUserAgent.os.name &&
+            (parsedUserAgent.os.name.startsWith('Windows') ||
+                ['macOS', 'iOS'].includes(parsedUserAgent.os.name));
+
+        const validFonts =
+            fingerprint.fonts.length === 0 ||
+            !fontValidatableOS ||
+            fingerprint.fonts.some((font: string) => {
+                if (parsedUserAgent.os.name!.startsWith('Windows')) {
+                    return KNOWN_OS_FONTS.WINDOWS.includes(font);
+                } else if (
+                    ['macOS', 'iOS'].includes(parsedUserAgent.os.name!)
+                ) {
+                    return KNOWN_OS_FONTS.APPLE.includes(font);
+                }
+
+                return false;
+            });
+
+        // The fonts should be empty or contain only known fonts for the OS
+        if (!validFonts) continue;
 
         cleanedRecords.push({
             ...record,
