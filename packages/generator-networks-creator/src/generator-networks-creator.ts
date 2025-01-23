@@ -79,7 +79,7 @@ async function prepareRecords(
         ).withClientHints();
 
         const validBrowser =
-            parsedUserAgent.browser.name &&
+            parsedUserAgent.browser.name !== undefined &&
             [
                 'Edge',
                 'Chrome',
@@ -113,11 +113,22 @@ async function prepareRecords(
         if (!validTouchSupport) continue;
 
         const validProductSub =
-            parsedUserAgent.browser.name === 'Firefox' ||
-            fingerprint.productSub === '20030107';
+            parsedUserAgent.browser.name === 'Firefox'
+                ? fingerprint.productSub === '20100101'
+                : fingerprint.productSub === '20030107';
 
         // The productSub should be 20030107 for Non-Firefox supported browsers
         if (!validProductSub) continue;
+
+        const validVendor =
+            (parsedUserAgent.browser.name === 'Firefox' &&
+                fingerprint.vendor === '') ||
+            (parsedUserAgent.browser.name!.startsWith('Safari') &&
+                fingerprint.vendor === 'Apple Computer, Inc.') ||
+            fingerprint.vendor === 'Google Inc.';
+
+        // The vendor should be Google Inc. for Chrome and Apple Computer, Inc. for Safari
+        if (!validVendor) continue;
 
         cleanedRecords.push({
             ...record,
