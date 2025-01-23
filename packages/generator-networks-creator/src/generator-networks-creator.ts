@@ -23,6 +23,76 @@ const STRINGIFIED_PREFIX = '*STRINGIFIED*';
 
 const PLUGIN_CHARACTERISTICS_ATTRIBUTES = ['plugins', 'mimeTypes'];
 
+const BLANK_SPACE_NOISE_REGEX = /\s{2,}|^\s|\s$/;
+
+const ANGLE_WEBGL_RENDERER_REGEX = /^ANGLE/;
+
+const ANGLE_BRACKETS_WEBGL_RENDERER_REGEX = /^ANGLE \((.+)\)/;
+
+const KNOWN_WEBGL_RENDERER_PARTS = [
+    'AMD',
+    'ANGLE',
+    'ASUS',
+    'ATI',
+    'ATI Radeon',
+    'ATI Technologies Inc',
+    'Adreno',
+    'Android Emulator',
+    'Apple',
+    'Apple GPU',
+    'Apple M1',
+    'Chipset',
+    'D3D11',
+    'Direct3D',
+    'Express Chipset',
+    'GeForce',
+    'Generation',
+    'Generic Renderer',
+    'Google',
+    'Google SwiftShader',
+    'Graphics',
+    'Graphics Media Accelerator',
+    'HD Graphics Family',
+    'Intel',
+    'Intel(R) HD Graphics',
+    'Intel(R) UHD Graphics',
+    'Iris',
+    'KBL Graphics',
+    'Mali',
+    'Mesa',
+    'Mesa DRI',
+    'Metal',
+    'Microsoft',
+    'Microsoft Basic Render Driver',
+    'Microsoft Corporation',
+    'NVIDIA',
+    'NVIDIA Corporation',
+    'NVIDIAGameReadyD3D',
+    'OpenGL',
+    'OpenGL Engine',
+    'Open Source Technology Center',
+    'Parallels',
+    'Parallels Display Adapter',
+    'PCIe',
+    'Plus Graphics',
+    'PowerVR',
+    'Pro Graphics',
+    'Quadro',
+    'Radeon',
+    'Radeon Pro',
+    'Radeon Pro Vega',
+    'Samsung',
+    'SSE2',
+    'VMware',
+    'VMware SVGA 3D',
+    'Vega',
+    'VirtualBox',
+    'VirtualBox Graphics Adapter',
+    'Vulkan',
+    'Xe Graphics',
+    'llvmpipe',
+];
+
 async function prepareRecords(
     records: Record<string, any>[],
     preprocessingType: string
@@ -137,6 +207,23 @@ async function prepareRecords(
 
         // The appName should be Netscape and the appCodeName should be Mozilla
         if (!validAppName) continue;
+
+        const knownWebGLRenderer =
+            !!fingerprint.videoCard &&
+            KNOWN_WEBGL_RENDERER_PARTS.some((name) =>
+                fingerprint.videoCard.renderer.includes(name)
+            );
+
+        const validWebGLRenderer =
+            knownWebGLRenderer &&
+            !BLANK_SPACE_NOISE_REGEX.test(fingerprint.videoCard.renderer) &&
+            (!ANGLE_WEBGL_RENDERER_REGEX.test(fingerprint.videoCard.renderer) ||
+                !!(ANGLE_BRACKETS_WEBGL_RENDERER_REGEX.exec(
+                    fingerprint.videoCard.renderer
+                ) || [])[1]);
+
+        // The WebGL renderer should contain a known substring, should not contain excessive blank spaces, should not be ANGLE or should be ANGLE with a valid name
+        if (!validWebGLRenderer) continue;
 
         cleanedRecords.push({
             ...record,
