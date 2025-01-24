@@ -322,10 +322,8 @@ async function prepareRecords(
 
         if (desktopFingerprint) {
             validScreenDimensions =
-                fingerprint.screen.width >= 1024 &&
-                fingerprint.screen.width <= 5120 &&
-                fingerprint.screen.height >= 768 &&
-                fingerprint.screen.height <= 2880;
+                fingerprint.screen.width >= 512 &&
+                fingerprint.screen.height >= 384;
         } else {
             const screenWidth = Math.max(
                 fingerprint.screen.width,
