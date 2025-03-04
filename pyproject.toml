@@ -1,0 +1,49 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "fingerprint_datapoints"
+version = "0.0.1"
+description = "Collected browser fingerprint datapoints"
+authors = [{ name = "Apify Technologies s.r.o.", email = "support@apify.com" }]
+license = { file = "fingerprint_datapoints/LICENSE" }
+readme = "fingerprint_datapoints/README.md"
+requires-python = ">=3.9"
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Libraries",
+]
+keywords = [
+    "apify",
+    "chrome",
+    "crawlee",
+    "crawler",
+    "scraper",
+    "scraping",
+    "fingerprints",
+]
+
+[project.urls]
+"Homepage" = "https://docs.apify.com/academy/anti-scraping/techniques/fingerprinting"
+"Apify homepage" = "https://apify.com"
+"Changelog" = "TBD"
+"Documentation" = "https://docs.apify.com/academy/anti-scraping/techniques/fingerprinting"
+"Issue tracker" = "https://github.com/apify/fingerprint-suite/issues"
+"Repository" = "https://github.com/apify/fingerprint-suite"
+
+[tool.hatch.build.targets.wheel.force-include]
+"./packages/fingerprint-generator/src/data_files/fingerprint-network-definition.zip" = "fingerprint_datapoints/data/fingerprint-network-definition.zip"
+"./packages/header-generator/src/data_files/browser-helper-file.json" = "fingerprint_datapoints/data/browser-helper-file.json"
+"./packages/header-generator/src/data_files/header-network-definition.zip" = "fingerprint_datapoints/data/header-network-definition.zip"
+"./packages/header-generator/src/data_files/headers-order.json" = "fingerprint_datapoints/data/headers-order.json"
+"./packages/header-generator/src/data_files/input-network-definition.zip" = "fingerprint_datapoints/data/input-network-definition.zip"
+
