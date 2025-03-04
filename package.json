@@ -63,7 +63,7 @@
         "husky": "^9.0.0",
         "playwright": "^1.25.1",
         "playwright-extra": "^4.3.5",
-        "puppeteer": "^22.13.0",
+        "puppeteer": "^24.0.0",
         "puppeteer-extra-plugin-stealth": "^2.11.1",
         "puppeteer-extra-plugin-user-preferences": "^2.4.1",
         "rimraf": "^6.0.0",
