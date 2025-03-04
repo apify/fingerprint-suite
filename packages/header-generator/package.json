@@ -25,7 +25,7 @@
     "dependencies": {
         "browserslist": "^4.21.1",
         "generative-bayesian-network": "^2.1.62",
-        "ow": "^0.28.1",
+        "ow": "^2.0.0",
         "tslib": "^2.4.0"
     },
     "scripts": {
