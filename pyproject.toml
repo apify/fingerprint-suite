@@ -35,7 +35,7 @@ keywords = [
 [project.urls]
 "Homepage" = "https://docs.apify.com/academy/anti-scraping/techniques/fingerprinting"
 "Apify homepage" = "https://apify.com"
-"Changelog" = "TBD"
+"Changelog" = "https://github.com/apify/fingerprint-suite/blob/master/fingerprint_datapoints/CHANGELOG.md"
 "Documentation" = "https://docs.apify.com/academy/anti-scraping/techniques/fingerprinting"
 "Issue tracker" = "https://github.com/apify/fingerprint-suite/issues"
 "Repository" = "https://github.com/apify/fingerprint-suite"

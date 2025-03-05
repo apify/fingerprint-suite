@@ -1,5 +1,6 @@
 Fingerprint datapoints files collected by Apify and originally stored at https://github.com/apify/fingerprint-suite.
-This repo contains datafiles and helper functions for getting the path to the datafiles.
+This pacakage contains datafiles and helper functions for getting the path to the datafiles.
+
 
 ## License
 
