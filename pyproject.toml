@@ -3,12 +3,12 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "fingerprint_datapoints"
+name = "apify_fingerprint_datapoints"
 version = "0.0.1"
-description = "Collected browser fingerprint datapoints"
+description = "Browser fingerprint datapoints collected by Apify"
 authors = [{ name = "Apify Technologies s.r.o.", email = "support@apify.com" }]
-license = { file = "fingerprint_datapoints/LICENSE" }
-readme = "fingerprint_datapoints/README.md"
+license = { file = "LICENSE.md" }
+readme = "apify_fingerprint_datapoints/README.md"
 requires-python = ">=3.9"
 classifiers = [
     "Development Status :: 5 - Production/Stable",
@@ -41,9 +41,9 @@ keywords = [
 "Repository" = "https://github.com/apify/fingerprint-suite"
 
 [tool.hatch.build.targets.wheel.force-include]
-"./packages/fingerprint-generator/src/data_files/fingerprint-network-definition.zip" = "fingerprint_datapoints/data/fingerprint-network-definition.zip"
-"./packages/header-generator/src/data_files/browser-helper-file.json" = "fingerprint_datapoints/data/browser-helper-file.json"
-"./packages/header-generator/src/data_files/header-network-definition.zip" = "fingerprint_datapoints/data/header-network-definition.zip"
-"./packages/header-generator/src/data_files/headers-order.json" = "fingerprint_datapoints/data/headers-order.json"
-"./packages/header-generator/src/data_files/input-network-definition.zip" = "fingerprint_datapoints/data/input-network-definition.zip"
+"./packages/fingerprint-generator/src/data_files/fingerprint-network-definition.zip" = "apify_fingerprint_datapoints/data/fingerprint-network-definition.zip"
+"./packages/header-generator/src/data_files/browser-helper-file.json" = "apify_fingerprint_datapoints/data/browser-helper-file.json"
+"./packages/header-generator/src/data_files/header-network-definition.zip" = "apify_fingerprint_datapoints/data/header-network-definition.zip"
+"./packages/header-generator/src/data_files/headers-order.json" = "apify_fingerprint_datapoints/data/headers-order.json"
+"./packages/header-generator/src/data_files/input-network-definition.zip" = "apify_fingerprint_datapoints/data/input-network-definition.zip"
 
