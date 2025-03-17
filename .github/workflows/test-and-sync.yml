@@ -15,7 +15,7 @@ jobs:
     lint:
         name: Lint
         if: ${{ !contains(github.event.head_commit.message, '[skip ci]') }}
-        runs-on: ubuntu-latest
+        runs-on: ubuntu-22.04
 
         steps:
             - uses: actions/checkout@v4
@@ -43,7 +43,7 @@ jobs:
 
         strategy:
             matrix:
-                os: [ ubuntu-latest ]
+                os: [ ubuntu-22.04 ]
                 node-version: [ 18, 20, 22 ]
 
         steps:
@@ -86,4 +86,4 @@ jobs:
 
             - name: Run Linux tests
               run: xvfb-run --auto-servernum -- npm test
-              if: ${{ matrix.os == 'ubuntu-latest'}}
+              if: ${{ matrix.os == 'ubuntu-22.04'}}
