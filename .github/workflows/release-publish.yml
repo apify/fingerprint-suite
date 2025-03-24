@@ -9,7 +9,7 @@ jobs:
 
     publish_latest:
         name: Publish latest
-        runs-on: ubuntu-22.04
+        runs-on: ubuntu-24.04
         needs: [ test_and_sync ]
         steps:
             -   name: Checkout Source code
