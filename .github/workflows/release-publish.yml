@@ -4,12 +4,12 @@ on:
         types: [published]
 
 jobs:
-    test_and_sync: 
+    test_and_sync:
         uses: apify/fingerprint-suite/.github/workflows/test-and-sync.yml@master
 
     publish_latest:
         name: Publish latest
-        runs-on: ubuntu-latest
+        runs-on: ubuntu-22.04
         needs: [ test_and_sync ]
         steps:
             -   name: Checkout Source code
@@ -45,7 +45,7 @@ jobs:
                     echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" >> ~/.npmrc
 
                     export GIT_TAG=$(echo $GITHUB_REF | sed 's/refs\/tags\///g')
-                    npm run release 
+                    npm run release
                 env:
                     NPM_TOKEN: ${{ secrets.APIFY_SERVICE_ACCOUNT_NPM_TOKEN }}
                     GIT_USER: "noreply@apify.com:${{ secrets.APIFY_SERVICE_ACCOUNT_GITHUB_TOKEN }}"

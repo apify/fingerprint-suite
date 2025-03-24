@@ -9,7 +9,7 @@ on:
 jobs:
   build_model:
     # The type of runner that the job will run on
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -37,7 +37,7 @@ jobs:
         run: npx playwright install
 
       - name: Install xvfb
-        run: | 
+        run: |
           sudo apt-get update
           sudo apt-get -y install xvfb
 
@@ -49,7 +49,7 @@ jobs:
 
       - name: Install Playwright deps v2
         run: npx playwright install-deps
-          
+
       - name: Collect HTTP header orders
         run: |
           xvfb-run -- node ./packages/header-order-collector/collector.js | tee ./packages/header-generator/src/data_files/headers-order.json
@@ -79,7 +79,7 @@ jobs:
           file_pattern: "./packages/ ./package.json ./package-lock.json"
 
           commit_user_name: "modelmaker[bot] ⚒️"
-          commit_user_email: modelmaker[bot]@users.noreply.github.com 
+          commit_user_email: modelmaker[bot]@users.noreply.github.com
 
       - name: Create release
         uses: actions/create-release@v1
