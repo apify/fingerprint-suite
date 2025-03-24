@@ -9,7 +9,7 @@ on:
 
 jobs:
   run_benchmark:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
 
     steps:
       - uses: actions/checkout@v4
@@ -32,12 +32,12 @@ jobs:
 
       - name: Install browsers
         run: npx playwright install
-      
+
       - name: Build the project
         run: npm run build
 
       - name: Run benchmarks
-        run: npm run benchmark 
+        run: npm run benchmark
 
       - name: Update the benchmark report
         uses: stefanzweifel/git-auto-commit-action@v5
@@ -46,4 +46,4 @@ jobs:
           branch: master
           file_pattern: '**/report.png'
           commit_user_name: "Mark Bench[bot] 💪🏼"
-          commit_user_email: markbench[bot]@users.noreply.github.com 
+          commit_user_email: markbench[bot]@users.noreply.github.com

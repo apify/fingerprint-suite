@@ -15,11 +15,11 @@ jobs:
     lint:
         name: Lint
         if: ${{ !contains(github.event.head_commit.message, '[skip ci]') }}
-        runs-on: ubuntu-latest
+        runs-on: ubuntu-22.04
 
         steps:
             - uses: actions/checkout@v4
-            - name: Use Node.js 22 
+            - name: Use Node.js 22
               uses: actions/setup-node@v4
               with:
                 node-version: 22
@@ -43,7 +43,7 @@ jobs:
 
         strategy:
             matrix:
-                os: [ ubuntu-latest ]
+                os: [ ubuntu-22.04 ]
                 node-version: [ 18, 20, 22 ]
 
         steps:
@@ -59,10 +59,10 @@ jobs:
                   path: |
                       node_modules
                   key: cache-${{ github.run_id }}
-            
+
             - name: Install Playwright deps
-              run : npx playwright install --with-deps 
-            
+              run : npx playwright install --with-deps
+
             - name: Install Puppeteer deps
               run : |
                 npx puppeteer browsers install chrome
@@ -76,7 +76,7 @@ jobs:
                 key: turbo-${{ github.job }}-${{ github.ref_name }}-${{ github.sha }}
                 restore-keys: |
                     turbo-${{ github.job }}-${{ github.ref_name }}-
-            
+
             - name: Build
               run: npm run build
 
@@ -86,4 +86,4 @@ jobs:
 
             - name: Run Linux tests
               run: xvfb-run --auto-servernum -- npm test
-              if: ${{ matrix.os == 'ubuntu-latest'}}
+              if: ${{ matrix.os == 'ubuntu-22.04'}}
