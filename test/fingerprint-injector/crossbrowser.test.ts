@@ -48,7 +48,9 @@ describe('Puppeteer controlled instances', () => {
     test.each(generateCartesianMatrix(runnableBrowsers, fingerprintBrowsers))(
         `[%s] should inject %s fingerprint`,
         async (browserType: typeof runnableBrowsers[number], fingerprintBrowser: typeof fingerprintBrowsers[number]) => {
-            const browser = await puppeteer.launch({ product: browserType === 'chrome' ? undefined : browserType });
+            const browser = await puppeteer.launch({
+                browser: browserType,
+            });
 
             const page = await newInjectedPage(browser, {
                 fingerprintOptions: {
