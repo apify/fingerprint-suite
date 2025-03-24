@@ -66,7 +66,7 @@ jobs:
             - name: Install Puppeteer deps
               run : |
                 npx puppeteer browsers install chrome
-                npx puppeteer browsers install firefox@beta
+                npx puppeteer browsers install firefox
 
             - name: Turbo cache
               id: turbo-cache
