@@ -39,7 +39,7 @@
         "prerelease": "npm run build -- --force && turbo run copy --force --concurrency=1",
         "release": "./scripts/publish.sh",
         "test": "jest --silent",
-        "lint": "eslint",
+        "lint": "eslint && prettier . --check",
         "lint:fix": "eslint --fix",
         "buildNetwork": "turbo run build && ./scripts/netgen.sh && turbo run build",
         "benchmark": "ts-node ./test/antibot-services/live-testing/cloudflare.ts"
