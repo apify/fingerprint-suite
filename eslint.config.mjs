@@ -29,10 +29,10 @@ export default [
             '@typescript-eslint': tsEslint.plugin,
         },
         rules: {
-            "no-void": 0,
-            "no-underscore-dangle": 0,
-            "max-classes-per-file": 0,
-            "no-console": "warn",
+            'no-void': 0,
+            'no-underscore-dangle': 0,
+            'max-classes-per-file': 0,
+            'no-console': 'warn',
         },
     },
 ];

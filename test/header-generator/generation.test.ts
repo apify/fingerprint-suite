@@ -4,7 +4,9 @@ import { HeaderGenerator, HeaderGeneratorOptions } from 'header-generator';
 import headersOrder from 'header-generator/src/data_files/headers-order.json';
 import { getUserAgent, getBrowser } from 'header-generator/src/utils';
 
-function extractLocalesFromAcceptLanguageHeader(acceptLanguageHeader: string): string[] {
+function extractLocalesFromAcceptLanguageHeader(
+    acceptLanguageHeader: string,
+): string[] {
     const extractedLocales = [];
     const localesWithWeight = acceptLanguageHeader.split(',');
     for (const localeWithWeight of localesWithWeight) {
@@ -21,11 +23,14 @@ describe('Generation tests', () => {
     });
 
     test('Accepts custom headers', () => {
-        const headers = headerGenerator.getHeaders({
-            httpVersion: '1',
-        }, {
-            'x-custom': 'foobar',
-        });
+        const headers = headerGenerator.getHeaders(
+            {
+                httpVersion: '1',
+            },
+            {
+                'x-custom': 'foobar',
+            },
+        );
 
         const keys = Object.keys(headers);
         expect(keys.indexOf('x-custom')).toBe(keys.length - 1);
@@ -38,11 +43,7 @@ describe('Generation tests', () => {
             connection: 'keep-alive',
         };
 
-        const order = [
-            'connection',
-            'foo',
-            'bar',
-        ];
+        const order = ['connection', 'foo', 'bar'];
 
         const generator = new HeaderGenerator();
         const ordered = generator.orderHeaders(headers, order);
@@ -52,7 +53,8 @@ describe('Generation tests', () => {
 
     test('Orders headers depending on user-agent', () => {
         const headers = {
-            'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.82 Safari/537.36',
+            'user-agent':
+                'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.82 Safari/537.36',
             cookie: 'test=123',
             Connection: 'keep-alive',
         };
@@ -60,7 +62,11 @@ describe('Generation tests', () => {
         const generator = new HeaderGenerator();
         const ordered = generator.orderHeaders(headers);
         expect(ordered).toEqual(headers);
-        expect(Object.keys(ordered)).toEqual(['Connection', 'user-agent', 'cookie']);
+        expect(Object.keys(ordered)).toEqual([
+            'Connection',
+            'user-agent',
+            'cookie',
+        ]);
     });
 
     test('Orders headers works without user-agent', () => {
@@ -88,7 +94,9 @@ describe('Generation tests', () => {
             httpVersion: '2',
             locales: requestedLocales,
         });
-        const extractedLocales = extractLocalesFromAcceptLanguageHeader(headers['accept-language']);
+        const extractedLocales = extractLocalesFromAcceptLanguageHeader(
+            headers['accept-language'],
+        );
         expect(requestedLocales.sort()).toEqual(extractedLocales.sort());
     });
 
@@ -113,31 +121,40 @@ describe('Generation tests', () => {
             httpVersion: '2',
             devices: ['mobile'],
         });
-        expect(/phone|android|mobile/i.test(headers['user-agent'])).toBeTruthy();
+        expect(
+            /phone|android|mobile/i.test(headers['user-agent']),
+        ).toBeTruthy();
     });
 
     test('Strict mode throws an error when nothing can be generated', () => {
         try {
             headerGenerator.getHeaders({
-                browsers: [{
-                    name: 'non-existing-browser',
-                }],
+                browsers: [
+                    {
+                        name: 'non-existing-browser',
+                    },
+                ],
                 strict: true,
             } as unknown as HeaderGeneratorOptions);
-            fail("HeaderGenerator didn't throw an error when trying to generate headers for a nonexisting browser.");
+            fail(
+                "HeaderGenerator didn't throw an error when trying to generate headers for a nonexisting browser.",
+            );
         } catch (error) {
-            expect(error)
-                .toEqual(
-                    new Error('No headers based on this input can be generated. Please relax or change some of the requirements you specified.'),
-                );
+            expect(error).toEqual(
+                new Error(
+                    'No headers based on this input can be generated. Please relax or change some of the requirements you specified.',
+                ),
+            );
         }
     });
 
     test('Default mode generates an approximately good header', () => {
-        expect(() => headerGenerator.getHeaders({
-            devices: ['mobile'],
-            operatingSystems: ['windows'],
-        } as unknown as HeaderGeneratorOptions)).not.toThrow();
+        expect(() =>
+            headerGenerator.getHeaders({
+                devices: ['mobile'],
+                operatingSystems: ['windows'],
+            } as unknown as HeaderGeneratorOptions),
+        ).not.toThrow();
     });
 
     test('Supports browserListQuery generation', () => {

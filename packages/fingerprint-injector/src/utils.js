@@ -1,14 +1,17 @@
 /* eslint-disable no-unused-vars */
-const isHeadlessChromium = /headless/i.test(navigator.userAgent) && navigator.plugins.length === 0;
-const isChrome = navigator.userAgent.includes("Chrome");
-const isFirefox = navigator.userAgent.includes("Firefox");
-const isSafari = navigator.userAgent.includes("Safari") && !navigator.userAgent.includes("Chrome");
+const isHeadlessChromium =
+    /headless/i.test(navigator.userAgent) && navigator.plugins.length === 0;
+const isChrome = navigator.userAgent.includes('Chrome');
+const isFirefox = navigator.userAgent.includes('Firefox');
+const isSafari =
+    navigator.userAgent.includes('Safari') &&
+    !navigator.userAgent.includes('Chrome');
 
 let slim = null;
 function getSlim() {
-    if(slim === null) {
+    if (slim === null) {
         slim = window.slim || false;
-        if(typeof window.slim !== 'undefined') {
+        if (typeof window.slim !== 'undefined') {
             delete window.slim;
         }
     }
@@ -35,7 +38,10 @@ const cache = {
  */
 function overridePropertyWithProxy(masterObject, propertyName, proxyHandler) {
     const originalObject = masterObject[propertyName];
-    const proxy = new Proxy(masterObject[propertyName], stripProxyFromErrors(proxyHandler));
+    const proxy = new Proxy(
+        masterObject[propertyName],
+        stripProxyFromErrors(proxyHandler),
+    );
 
     redefineProperty(masterObject, propertyName, { value: proxy });
     redirectToString(proxy, originalObject);
@@ -54,8 +60,7 @@ const prototypeProxyHandler = {
                 // eslint-disable-next-line no-unused-expressions
                 target.nonexistentpropertytest;
                 return true;
-            }
-            catch (err) {
+            } catch (err) {
                 Object.setPrototypeOf(target, oldProto);
                 if (oldStack.includes('Reflect.setPrototypeOf')) return false;
                 const newError = new TypeError('Cyclic __proto__ value');
@@ -65,11 +70,13 @@ const prototypeProxyHandler = {
             }
         }
     },
-}
+};
 
 function useStrictModeExceptions(prop) {
     if (['caller', 'callee', 'arguments'].includes(prop)) {
-        throw TypeError(`'caller', 'callee', and 'arguments' properties may not be accessed on strict mode functions or the arguments objects for calls to them`);
+        throw TypeError(
+            `'caller', 'callee', and 'arguments' properties may not be accessed on strict mode functions or the arguments objects for calls to them`,
+        );
     }
 }
 
@@ -122,7 +129,7 @@ function overrideInstancePrototype(instance, overrideObj) {
  * @param {*} originalObj
  */
 function redirectToString(proxyObj, originalObj) {
-    if(getSlim()) return;
+    if (getSlim()) return;
 
     const handler = {
         setPrototypeOf: (target, newProto) => {
@@ -158,7 +165,7 @@ function redirectToString(proxyObj, originalObj) {
                 return ctx.toString();
             }
 
-            if (Object.getPrototypeOf(ctx) === proxyObj){
+            if (Object.getPrototypeOf(ctx) === proxyObj) {
                 try {
                     return target.call(ctx);
                 } catch (err) {
@@ -166,32 +173,33 @@ function redirectToString(proxyObj, originalObj) {
                         'at Object.toString (',
                         'at Function.toString (',
                     );
-                throw err;
-            }}
+                    throw err;
+                }
+            }
             return target.call(ctx);
         },
         get(target, prop, receiver) {
             if (prop === 'toString') {
-              return new Proxy(target.toString, {
-                apply(tget, thisArg, argumentsList) {
-                    try {
-                        return tget.bind(thisArg)(...argumentsList);
-                    } catch (err) {
-                        if(Object.getPrototypeOf(thisArg) === tget){
-                            err.stack = err.stack.replace(
-                                'at Object.toString (',
-                                'at Function.toString (',
-                            );
-                        }
+                return new Proxy(target.toString, {
+                    apply(tget, thisArg, argumentsList) {
+                        try {
+                            return tget.bind(thisArg)(...argumentsList);
+                        } catch (err) {
+                            if (Object.getPrototypeOf(thisArg) === tget) {
+                                err.stack = err.stack.replace(
+                                    'at Object.toString (',
+                                    'at Function.toString (',
+                                );
+                            }
 
-                        throw err;
-                    }
-                }
-              });
+                            throw err;
+                        }
+                    },
+                });
             }
             useStrictModeExceptions(prop);
             return Reflect.get(target, prop, receiver);
-          }
+        },
     };
 
     const toStringProxy = new Proxy(
@@ -207,7 +215,11 @@ function makeNativeString(name = '') {
     return cache.nativeToStringStr.replace('toString', name || '');
 }
 
-function redefineProperty(masterObject, propertyName, descriptorOverrides = {}) {
+function redefineProperty(
+    masterObject,
+    propertyName,
+    descriptorOverrides = {},
+) {
     return Object.defineProperty(masterObject, propertyName, {
         // Copy over the existing descriptors (writable, enumerable, configurable, etc)
         ...(Object.getOwnPropertyDescriptor(masterObject, propertyName) || {}),
@@ -247,15 +259,23 @@ function stripProxyFromErrors(handler) {
                         `at Reflect.${trap} `, // e.g. Reflect.get or Reflect.apply
                         `at Object.${trap} `, // e.g. Object.get or Object.apply
                         `at Object.newHandler.<computed> [as ${trap}] `, // caused by this very wrapper :-)
-                        `at newHandler.<computed> [as ${trap}] `,        // also caused by this wrapper :p
+                        `at newHandler.<computed> [as ${trap}] `, // also caused by this wrapper :p
                     ];
                     return (
                         err.stack
                             .split('\n')
                             // Always remove the first (file) line in the stack (guaranteed to be our proxy)
-                            .filter((line, index) => !(index === 1 && stripFirstLine))
+                            .filter(
+                                (line, index) =>
+                                    !(index === 1 && stripFirstLine),
+                            )
                             // Check if the line starts with one of our blacklisted strings
-                            .filter((line) => !blacklist.some((bl) => line.trim().startsWith(bl)))
+                            .filter(
+                                (line) =>
+                                    !blacklist.some((bl) =>
+                                        line.trim().startsWith(bl),
+                                    ),
+                            )
                             .join('\n')
                     );
                 };
@@ -263,8 +283,12 @@ function stripProxyFromErrors(handler) {
                 const stripWithAnchor = (stack, anchor) => {
                     const stackArr = stack.split('\n');
                     // eslint-disable-next-line no-param-reassign
-                    anchor = anchor || `at Object.newHandler.<computed> [as ${trap}] `; // Known first Proxy line in chromium
-                    const anchorIndex = stackArr.findIndex((line) => line.trim().startsWith(anchor));
+                    anchor =
+                        anchor ||
+                        `at Object.newHandler.<computed> [as ${trap}] `; // Known first Proxy line in chromium
+                    const anchorIndex = stackArr.findIndex((line) =>
+                        line.trim().startsWith(anchor),
+                    );
                     if (anchorIndex === -1) {
                         return false; // 404, anchor not found
                     }
@@ -274,12 +298,15 @@ function stripProxyFromErrors(handler) {
                     return stackArr.join('\n');
                 };
 
-
                 const oldStackLines = err.stack.split('\n');
                 Error.captureStackTrace(err);
                 const newStackLines = err.stack.split('\n');
 
-                err.stack = [newStackLines[0],oldStackLines[1],...newStackLines.slice(1)].join('\n');
+                err.stack = [
+                    newStackLines[0],
+                    oldStackLines[1],
+                    ...newStackLines.slice(1),
+                ].join('\n');
 
                 if ((err.stack || '').includes('toString (')) {
                     err.stack = stripWithBlacklist(err.stack, false);
@@ -287,7 +314,8 @@ function stripProxyFromErrors(handler) {
                 }
 
                 // Try using the anchor method, fallback to blacklist if necessary
-                err.stack = stripWithAnchor(err.stack) || stripWithBlacklist(err.stack);
+                err.stack =
+                    stripWithAnchor(err.stack) || stripWithBlacklist(err.stack);
 
                 throw err; // Re-throw our now sanitized error
             }
@@ -296,12 +324,11 @@ function stripProxyFromErrors(handler) {
     return newHandler;
 }
 
-
 function overrideWebGl(webGl) {
     // try to override WebGl
     try {
         const getParameterProxyHandler = {
-            apply (target, ctx, args) {
+            apply(target, ctx, args) {
                 const param = (args || [])[0];
                 const result = cache.Reflect.apply(target, ctx, args);
                 // UNMASKED_VENDOR_WEBGL
@@ -314,14 +341,14 @@ function overrideWebGl(webGl) {
                 }
                 return result;
             },
-            get (target, prop, receiver) {
+            get(target, prop, receiver) {
                 useStrictModeExceptions(prop);
                 return Reflect.get(target, prop, receiver);
             },
-        }
+        };
         const addProxy = (obj, propName) => {
             overridePropertyWithProxy(obj, propName, getParameterProxyHandler);
-        }
+        };
         // For whatever weird reason loops don't play nice with Object.defineProperty, here's the next best thing:
         addProxy(WebGLRenderingContext.prototype, 'getParameter');
         addProxy(WebGL2RenderingContext.prototype, 'getParameter');
@@ -330,25 +357,37 @@ function overrideWebGl(webGl) {
     }
 }
 
-
 const overrideCodecs = (audioCodecs, videoCodecs) => {
     try {
         const codecs = {
-            ...Object.fromEntries(Object.entries(audioCodecs).map(([key, value]) => [`audio/${key}`, value])),
-            ...Object.fromEntries(Object.entries(videoCodecs).map(([key, value]) => [`video/${key}`, value])),
+            ...Object.fromEntries(
+                Object.entries(audioCodecs).map(([key, value]) => [
+                    `audio/${key}`,
+                    value,
+                ]),
+            ),
+            ...Object.fromEntries(
+                Object.entries(videoCodecs).map(([key, value]) => [
+                    `video/${key}`,
+                    value,
+                ]),
+            ),
         };
 
         const findCodec = (codecString) => {
             const [mime, codecSpec] = codecString.split(';');
             if (mime === 'video/mp4') {
-                if (codecSpec && codecSpec.includes('avc1.42E01E')) { // codec is missing from Chromium
-                    return {name: mime, state: 'probably'};
+                if (codecSpec && codecSpec.includes('avc1.42E01E')) {
+                    // codec is missing from Chromium
+                    return { name: mime, state: 'probably' };
                 }
             }
 
-            const codec = Object.entries(codecs).find(([key]) => key === codecString.split(';')[0]);
-            if(codec) {
-                return {name: codec[0], state: codec[1]};
+            const codec = Object.entries(codecs).find(
+                ([key]) => key === codecString.split(';')[0],
+            );
+            if (codec) {
+                return { name: codec[0], state: codec[1] };
             }
 
             return undefined;
@@ -382,7 +421,6 @@ const overrideCodecs = (audioCodecs, videoCodecs) => {
     }
 };
 
-
 function overrideBattery(batteryInfo) {
     try {
         const getBattery = {
@@ -393,7 +431,8 @@ function overrideBattery(batteryInfo) {
             },
         };
 
-        if(navigator.getBattery) { // Firefox does not have this method - to be fixed
+        if (navigator.getBattery) {
+            // Firefox does not have this method - to be fixed
             overridePropertyWithProxy(
                 Object.getPrototypeOf(navigator),
                 'getBattery',
@@ -405,25 +444,23 @@ function overrideBattery(batteryInfo) {
     }
 }
 
-function overrideIntlAPI(language){
+function overrideIntlAPI(language) {
     try {
         const innerHandler = {
             construct(Target, [locales, options]) {
-              return new Target(locales ?? language, options);
+                return new Target(locales ?? language, options);
             },
             apply(target, _, [locales, options]) {
                 return target(locales ?? language, options);
-            }
-          };
+            },
+        };
 
         overridePropertyWithProxy(window, 'Intl', {
-            get(target, key){
-                if(typeof key !== 'string' || key[0].toLowerCase() === key[0]) return target[key];
-                return new Proxy(
-                    target[key],
-                    innerHandler
-                );
-            }
+            get(target, key) {
+                if (typeof key !== 'string' || key[0].toLowerCase() === key[0])
+                    return target[key];
+                return new Proxy(target[key], innerHandler);
+            },
         });
     } catch (e) {
         console.warn(e);
@@ -443,7 +480,7 @@ function makeHandler() {
                 }
                 return ret;
             },
-            get (target, prop, receiver) {
+            get(target, prop, receiver) {
                 useStrictModeExceptions(prop);
                 return Reflect.get(target, prop, receiver);
             },
@@ -461,7 +498,6 @@ function overrideScreenByReassigning(target, newProperties) {
     }
 }
 
-
 function overrideWindowDimensionsProps(props) {
     try {
         overrideScreenByReassigning(window, props);
@@ -469,7 +505,6 @@ function overrideWindowDimensionsProps(props) {
         console.warn(e);
     }
 }
-
 
 function overrideDocumentDimensionsProps(props) {
     try {
@@ -515,21 +550,22 @@ function blockWebRTC() {
     replace(window, 'MediaStreamTrack', ConstrProxy);
 }
 
-
 function overrideUserAgentData(userAgentData) {
     try {
-        const { brands, mobile, platform, ...highEntropyValues } = userAgentData;
+        const { brands, mobile, platform, ...highEntropyValues } =
+            userAgentData;
         // Override basic properties
         const getHighEntropyValues = {
             // eslint-disable-next-line
             apply: async function (target, ctx, args) {
                 // Just to throw original validation error
                 // Remove traces of our Proxy
-                const stripErrorStack = (stack) => stack
-                    .split('\n')
-                    .filter((line) => !line.includes('at Object.apply'))
-                    .filter((line) => !line.includes('at Object.get'))
-                    .join('\n');
+                const stripErrorStack = (stack) =>
+                    stack
+                        .split('\n')
+                        .filter((line) => !line.includes('at Object.apply'))
+                        .filter((line) => !line.includes('at Object.get'))
+                        .join('\n');
 
                 try {
                     if (!args || !args.length) {
@@ -550,173 +586,181 @@ function overrideUserAgentData(userAgentData) {
             },
         };
 
-        if(window.navigator.userAgentData){ // Firefox does not contain this property - to be fixed
+        if (window.navigator.userAgentData) {
+            // Firefox does not contain this property - to be fixed
             overridePropertyWithProxy(
                 Object.getPrototypeOf(window.navigator.userAgentData),
                 'getHighEntropyValues',
                 getHighEntropyValues,
             );
 
-            overrideInstancePrototype(window.navigator.userAgentData, { brands, mobile, platform });
+            overrideInstancePrototype(window.navigator.userAgentData, {
+                brands,
+                mobile,
+                platform,
+            });
         }
     } catch (e) {
         console.warn(e);
     }
-};
+}
 
-function fixWindowChrome(){
-    if(isChrome && !window.chrome){
+function fixWindowChrome() {
+    if (isChrome && !window.chrome) {
         Object.defineProperty(window, 'chrome', {
             writable: true,
             enumerable: true,
             configurable: false,
-            value: {} // incomplete, todo!
-        })
+            value: {}, // incomplete, todo!
+        });
     }
 }
 
 // heavily inspired by https://github.com/berstend/puppeteer-extra/, check it out!
-function fixPermissions(){
-    const isSecure = document.location.protocol.startsWith('https')
+function fixPermissions() {
+    const isSecure = document.location.protocol.startsWith('https');
 
     if (isSecure) {
         overrideGetterWithProxy(Notification, 'permission', {
             apply() {
-                return 'default'
-            }
+                return 'default';
+            },
         });
     }
 
     if (!isSecure) {
         const handler = {
             apply(target, ctx, args) {
-                const param = (args || [])[0]
+                const param = (args || [])[0];
 
                 const isNotifications =
-                param && param.name && param.name === 'notifications'
+                    param && param.name && param.name === 'notifications';
                 if (!isNotifications) {
-                    return cache.Reflect.apply(target, ctx, args)
+                    return cache.Reflect.apply(target, ctx, args);
                 }
 
                 return Promise.resolve(
-                Object.setPrototypeOf(
-                    {
-                    state: 'denied',
-                    onchange: null
-                    },
-                    PermissionStatus.prototype
-                )
-                )
-            }
+                    Object.setPrototypeOf(
+                        {
+                            state: 'denied',
+                            onchange: null,
+                        },
+                        PermissionStatus.prototype,
+                    ),
+                );
+            },
         };
 
-        overridePropertyWithProxy(Permissions.prototype, 'query', handler)
+        overridePropertyWithProxy(Permissions.prototype, 'query', handler);
     }
 }
 
-function fixIframeContentWindow(){
+function fixIframeContentWindow() {
     try {
         // Adds a contentWindow proxy to the provided iframe element
-        const addContentWindowProxy = iframe => {
-          const contentWindowProxy = {
-            get(target, key) {
-              if (key === 'self') {
-                return this
-              }
-              if (key === 'frameElement') {
-                return iframe
-              }
+        const addContentWindowProxy = (iframe) => {
+            const contentWindowProxy = {
+                get(target, key) {
+                    if (key === 'self') {
+                        return this;
+                    }
+                    if (key === 'frameElement') {
+                        return iframe;
+                    }
 
-              if (key === '0') {
-                return undefined
-              }
-              return Reflect.get(target, key)
+                    if (key === '0') {
+                        return undefined;
+                    }
+                    return Reflect.get(target, key);
+                },
+            };
+
+            if (!iframe.contentWindow) {
+                const proxy = new Proxy(window, contentWindowProxy);
+                Object.defineProperty(iframe, 'contentWindow', {
+                    get() {
+                        return proxy;
+                    },
+                    set(newValue) {},
+                    enumerable: true,
+                    configurable: false,
+                });
             }
-          }
-
-          if (!iframe.contentWindow) {
-            const proxy = new Proxy(window, contentWindowProxy)
-            Object.defineProperty(iframe, 'contentWindow', {
-              get() {
-                return proxy
-              },
-              set(newValue) {},
-              enumerable: true,
-              configurable: false
-            })
-          }
-        }
+        };
 
         // Handles iframe element creation, augments `srcdoc` property so we can intercept further
         const handleIframeCreation = (target, thisArg, args) => {
-          const iframe = target.apply(thisArg, args)
+            const iframe = target.apply(thisArg, args);
 
-          // We need to keep the originals around
-          const _iframe = iframe
-          const _srcdoc = _iframe.srcdoc
+            // We need to keep the originals around
+            const _iframe = iframe;
+            const _srcdoc = _iframe.srcdoc;
 
-          // Add hook for the srcdoc property
-          // We need to be very surgical here to not break other iframes by accident
-          Object.defineProperty(iframe, 'srcdoc', {
-            configurable: true, // Important, so we can reset this later
-            get() {
-              return _srcdoc
-            },
-            set(newValue) {
-              addContentWindowProxy(this)
-              // Reset property, the hook is only needed once
-              Object.defineProperty(iframe, 'srcdoc', {
-                configurable: false,
-                writable: false,
-                value: _srcdoc
-              })
-              _iframe.srcdoc = newValue
-            }
-          })
-          return iframe
-        }
+            // Add hook for the srcdoc property
+            // We need to be very surgical here to not break other iframes by accident
+            Object.defineProperty(iframe, 'srcdoc', {
+                configurable: true, // Important, so we can reset this later
+                get() {
+                    return _srcdoc;
+                },
+                set(newValue) {
+                    addContentWindowProxy(this);
+                    // Reset property, the hook is only needed once
+                    Object.defineProperty(iframe, 'srcdoc', {
+                        configurable: false,
+                        writable: false,
+                        value: _srcdoc,
+                    });
+                    _iframe.srcdoc = newValue;
+                },
+            });
+            return iframe;
+        };
 
         // Adds a hook to intercept iframe creation events
         const addIframeCreationSniffer = () => {
             const createElementHandler = {
                 // Make toString() native
                 get(target, key) {
-                return Reflect.get(target, key)
+                    return Reflect.get(target, key);
                 },
                 apply(target, thisArg, args) {
                     if (`${args[0]}`.toLowerCase() === 'iframe') {
                         // Everything as usual
-                        return handleIframeCreation(target, thisArg, args)
+                        return handleIframeCreation(target, thisArg, args);
                     }
-                    return target.apply(thisArg, args)
-                }
-            }
+                    return target.apply(thisArg, args);
+                },
+            };
 
             // All this just due to iframes with srcdoc bug
             overridePropertyWithProxy(
                 document,
                 'createElement',
-                createElementHandler
-            )
-        }
+                createElementHandler,
+            );
+        };
 
         // Let's go
-        addIframeCreationSniffer()
-      } catch (err) {
+        addIframeCreationSniffer();
+    } catch (err) {
         // warning message supressed (see https://github.com/apify/fingerprint-suite/issues/61).
         // console.warn(err)
-      }
+    }
 }
 
 function fixPluginArray() {
-    if(window.navigator.plugins.length !== 0){
+    if (window.navigator.plugins.length !== 0) {
         return;
     }
 
     Object.defineProperty(navigator, 'plugins', {
         get: () => {
             const ChromiumPDFPlugin = Object.create(Plugin.prototype, {
-                description: { value: 'Portable Document Format', enumerable: false },
+                description: {
+                    value: 'Portable Document Format',
+                    enumerable: false,
+                },
                 filename: { value: 'internal-pdf-viewer', enumerable: false },
                 name: { value: 'Chromium PDF Plugin', enumerable: false },
             });
@@ -729,9 +773,9 @@ function fixPluginArray() {
     });
 }
 
-function runHeadlessFixes(){
+function runHeadlessFixes() {
     try {
-        if( isHeadlessChromium ){
+        if (isHeadlessChromium) {
             fixWindowChrome();
             fixPermissions();
             fixIframeContentWindow();
@@ -742,7 +786,7 @@ function runHeadlessFixes(){
     }
 }
 
-function overrideStatic(){
+function overrideStatic() {
     try {
         window.SharedArrayBuffer = undefined;
     } catch (e) {

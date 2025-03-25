@@ -18,7 +18,6 @@ export class FingerprintSuiteExtra extends PlaywrightExtra {
                 userAgent: fingerprint.fingerprint.navigator.userAgent,
                 viewport: fingerprint.fingerprint.screen,
                 locale: fingerprint.fingerprint.navigator.language,
-
             },
         });
 

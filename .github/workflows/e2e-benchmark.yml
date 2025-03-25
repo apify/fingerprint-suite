@@ -1,49 +1,48 @@
 name: Run Benchmarks
 
 on:
-  # Triggers the workflow every Monday at 5am
-  schedule:
-    - cron: "0 5 * * 1"
-  workflow_dispatch:
-
+    # Triggers the workflow every Monday at 5am
+    schedule:
+        - cron: '0 5 * * 1'
+    workflow_dispatch:
 
 jobs:
-  run_benchmark:
-    runs-on: ubuntu-22.04
+    run_benchmark:
+        runs-on: ubuntu-22.04
 
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.APIFY_SERVICE_ACCOUNT_GITHUB_TOKEN }}
-      - name: Use Node.js 22
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
+        steps:
+            - uses: actions/checkout@v4
+              with:
+                  token: ${{ secrets.APIFY_SERVICE_ACCOUNT_GITHUB_TOKEN }}
+            - name: Use Node.js 22
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 22
 
-      - name: Cache Node Modules
-        uses: actions/cache@v4
-        with:
-            path: |
-                node_modules
-            key: cache-${{ github.run_id }}
+            - name: Cache Node Modules
+              uses: actions/cache@v4
+              with:
+                  path: |
+                      node_modules
+                  key: cache-${{ github.run_id }}
 
-      - name: Install Dependencies
-        run: npm ci
+            - name: Install Dependencies
+              run: npm ci
 
-      - name: Install browsers
-        run: npx playwright install
+            - name: Install browsers
+              run: npx playwright install
 
-      - name: Build the project
-        run: npm run build
+            - name: Build the project
+              run: npm run build
 
-      - name: Run benchmarks
-        run: npm run benchmark
+            - name: Run benchmarks
+              run: npm run benchmark
 
-      - name: Update the benchmark report
-        uses: stefanzweifel/git-auto-commit-action@v5
-        with:
-          commit_message: "chore: [skip-ci] update benchmark results"
-          branch: master
-          file_pattern: '**/report.png'
-          commit_user_name: "Mark Bench[bot] 💪🏼"
-          commit_user_email: markbench[bot]@users.noreply.github.com
+            - name: Update the benchmark report
+              uses: stefanzweifel/git-auto-commit-action@v5
+              with:
+                  commit_message: 'chore: [skip-ci] update benchmark results'
+                  branch: master
+                  file_pattern: '**/report.png'
+                  commit_user_name: 'Mark Bench[bot] 💪🏼'
+                  commit_user_email: markbench[bot]@users.noreply.github.com

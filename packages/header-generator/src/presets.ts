@@ -55,5 +55,4 @@ export const MODERN_MACOS_CHROME = {
 export const MODERN_ANDROID = {
     ...MODERN_MOBILE,
     operatingSystems: ['android'],
-
 };

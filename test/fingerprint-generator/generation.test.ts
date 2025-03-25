@@ -15,7 +15,9 @@ describe('Generation tests', () => {
     test('Works with presets', () => {
         const presets = Object.values(PRESETS);
         for (const preset of presets) {
-            const { fingerprint } = fingerprintGenerator.getFingerprint({ ...preset } as Partial<HeaderGeneratorOptions>);
+            const { fingerprint } = fingerprintGenerator.getFingerprint({
+                ...preset,
+            } as Partial<HeaderGeneratorOptions>);
             expect(fingerprint).toBeDefined();
         }
     });
@@ -46,11 +48,15 @@ describe('Generation tests', () => {
         });
 
         const headersUserAgent = headers['User-Agent'] ?? headers['user-agent'];
-        expect(headersUserAgent === fingerprint.navigator.userAgent).toBeTruthy();
+        expect(
+            headersUserAgent === fingerprint.navigator.userAgent,
+        ).toBeTruthy();
     });
 
     test('Transforms schema', () => {
-        const { fingerprint: { screen, navigator } } = fingerprintGenerator.getFingerprint();
+        const {
+            fingerprint: { screen, navigator },
+        } = fingerprintGenerator.getFingerprint();
 
         const fields = [
             screen.width,
@@ -75,9 +81,11 @@ describe('Generate fingerprints with basic constraints', () => {
         const browsers = ['chrome', 'firefox', 'safari', 'edge'] as const;
 
         for (const browser of browsers) {
-            expect(fingerprintGenerator.getFingerprint({
-                browsers: [browser as any],
-            })).toBeDefined();
+            expect(
+                fingerprintGenerator.getFingerprint({
+                    browsers: [browser as any],
+                }),
+            ).toBeDefined();
         }
     });
 
@@ -86,61 +94,76 @@ describe('Generate fingerprints with basic constraints', () => {
         const oses = ['android', 'ios'] as const;
 
         for (const os of oses) {
-            expect(fingerprintGenerator.getFingerprint({
-                devices: ['mobile'],
-                operatingSystems: [os],
-            })).toBeDefined();
+            expect(
+                fingerprintGenerator.getFingerprint({
+                    devices: ['mobile'],
+                    operatingSystems: [os],
+                }),
+            ).toBeDefined();
         }
     });
 
     test('Screen sizes', () => {
         const fingerprintGenerator = new FingerprintGenerator();
 
-        expect(fingerprintGenerator.getFingerprint({
-            screen: {
-                minHeight: 1080,
-                minWidth: 1920,
-            },
-        })).toBeDefined();
+        expect(
+            fingerprintGenerator.getFingerprint({
+                screen: {
+                    minHeight: 1080,
+                    minWidth: 1920,
+                },
+            }),
+        ).toBeDefined();
 
-        expect(fingerprintGenerator.getFingerprint({
-            devices: ['mobile'],
-            screen: { // can generate a vertical screen
-                minHeight: 1080,
-                maxWidth: 1080,
-            },
-        })).toBeDefined();
+        expect(
+            fingerprintGenerator.getFingerprint({
+                devices: ['mobile'],
+                screen: {
+                    // can generate a vertical screen
+                    minHeight: 1080,
+                    maxWidth: 1080,
+                },
+            }),
+        ).toBeDefined();
     });
 
     test('[relaxation] header strict mode propagates', () => {
         const fingerprintGenerator = new FingerprintGenerator();
 
-        expect(fingerprintGenerator.getFingerprint({
-            devices: ['mobile'],
-            operatingSystems: ['windows'],
-        })).toBeDefined();
+        expect(
+            fingerprintGenerator.getFingerprint({
+                devices: ['mobile'],
+                operatingSystems: ['windows'],
+            }),
+        ).toBeDefined();
 
-        expect(() => fingerprintGenerator.getFingerprint({
-            devices: ['mobile'],
-            operatingSystems: ['windows'],
-            strict: true,
-        })).toThrow();
+        expect(() =>
+            fingerprintGenerator.getFingerprint({
+                devices: ['mobile'],
+                operatingSystems: ['windows'],
+                strict: true,
+            }),
+        ).toThrow();
     });
 
     test.skip('[relaxation] strict mode works with fp-only features', () => {
         const fingerprintGenerator = new FingerprintGenerator();
 
-        expect(fingerprintGenerator.getFingerprint({
-            screen: {
-                minHeight: 9999,
-            },
-        })).toBeDefined();
+        expect(
+            fingerprintGenerator.getFingerprint({
+                screen: {
+                    minHeight: 9999,
+                },
+            }),
+        ).toBeDefined();
 
-        expect(() => fingerprintGenerator.getFingerprint({
-            screen: {
-                minHeight: 9999,
-            },
-            strict: true,
-        })).toThrow();
+        expect(() =>
+            fingerprintGenerator.getFingerprint({
+                screen: {
+                    minHeight: 9999,
+                },
+                strict: true,
+            }),
+        ).toThrow();
     });
 });

@@ -14,8 +14,8 @@ app.get('/', (req, res) => {
         <input type="text" name="foo" value="bar" />
         <input type="submit" value="Submit" />
     </form>
-`)
-})
+`);
+});
 
 app.all('/headers', (req, res) => {
     const { rawHeaders } = req;
@@ -23,16 +23,15 @@ app.all('/headers', (req, res) => {
     res.json(headerNames);
 });
 
-
 function runServer(p) {
-    return new Promise(r => {
+    return new Promise((r) => {
         const inst = app.listen(p ?? port, (err) => {
-                if (err) {
-                    throw new Error(err);
-                }
+            if (err) {
+                throw new Error(err);
+            }
 
-                r(inst);
-            });
+            r(inst);
+        });
     });
 }
 
