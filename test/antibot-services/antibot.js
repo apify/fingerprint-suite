@@ -1,6 +1,6 @@
 const { chromium } = require('playwright');
-const { FingerprintGenerator } = require('../../packages/fingerprint-generator/dist/index');
-const { FingerprintInjector } = require('../../packages/fingerprint-injector/dist/index');
+const { FingerprintGenerator } = require('../../packages/fingerprint-generator/dist/index.mjs');
+const { FingerprintInjector } = require('../../packages/fingerprint-injector/dist/index.mjs');
 
 const services = [
     {
@@ -11,7 +11,7 @@ const services = [
 
             const results = await page.$$('#result-table tr td:nth-child(2)');
             const resultTexts = await Promise.all(results.map(x => x.textContent()));
-        
+
             const score = (resultTexts.length - resultTexts.filter(x => x === 'not detected').length)/resultTexts.length
 
             return String.fromCharCode('A'.charCodeAt() +  5 * score);
@@ -25,7 +25,7 @@ const services = [
 
             const result = await page.$('[class*=grade]');
             const resultScore = await result.textContent();
-        
+
             return resultScore[0];
         }
     },
@@ -50,7 +50,7 @@ if(!(services.find(x => x.name === service))) throw new Error(`Support for the s
 
     const page = await ctx.newPage();
 
-    const f = services.find(s => s.name === service).f;
+    const { f } = services.find(s => s.name === service);
     process.stdout.write(await f(page));
 
     await b.close();

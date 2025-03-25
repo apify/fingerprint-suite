@@ -1,6 +1,6 @@
 const playwright = require('playwright');
-const { runServer: v1 } = require('./server');
-const { runServer: v2 } = require('./serverv2');
+const { runServer: v1 } = require('./server.js');
+const { runServer: v2 } = require('./serverv2.js');
 
 const HTTP1port = 3001;
 const HTTP2port = 3002;
@@ -9,7 +9,7 @@ async function getHeadersFor(launcher, httpVersion) {
     const browser = await launcher({
         headless: false,
     });
-    
+
     const context = await browser.newContext({
         ignoreHTTPSErrors: true,
     });
@@ -23,13 +23,14 @@ async function getHeadersFor(launcher, httpVersion) {
 
     try {
         await page.click('[type="submit"]', { timeout: 1000 });
-    
+
         const headerNames = await page.evaluate(() => {
             return JSON.parse(document.body.innerText);
         });
         await browser.close();
         return headerNames;
     } catch (e) {
+        console.debug(e);
         // Webkit on Linux does not support http2
         return [];
     }
@@ -55,7 +56,7 @@ async function getHeadersFor(launcher, httpVersion) {
             );
             console.log(JSON.stringify(Object.fromEntries(x), null, 4));
             process.exit(0);
-            
+
         } catch (e) {
             console.error(e);
             process.exit(1);

@@ -1,4 +1,5 @@
 const express = require('express');
+
 const app = express();
 const port = 3001;
 
@@ -17,7 +18,7 @@ app.get('/', (req, res) => {
 })
 
 app.all('/headers', (req, res) => {
-    const rawHeaders = req.rawHeaders;
+    const { rawHeaders } = req;
     const headerNames = extractHeaderNames(rawHeaders);
     res.json(headerNames);
 });

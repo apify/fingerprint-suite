@@ -1,5 +1,5 @@
 const http2 = require('node:http2');
-const fs = require('fs');
+const fs = require('node:fs');
 
 const port = 3002;
 
