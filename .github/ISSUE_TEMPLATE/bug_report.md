@@ -4,7 +4,6 @@ about: Create a report to help us improve
 title: ''
 labels: bug
 assignees: ''
-
 ---
 
 **Describe the bug**
@@ -18,8 +17,9 @@ We should be able to copy your code, run it and get the same result.
 A clear and concise description of what you expected to happen.
 
 **System information:**
- - OS: [e.g. MacOS]
- - Node.js version [e.g. 14.7]
+
+- OS: [e.g. MacOS]
+- Node.js version [e.g. 14.7]
 
 **Additional context**
 Add any other context about the problem here.

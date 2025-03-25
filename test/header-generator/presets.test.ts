@@ -1,4 +1,8 @@
-import { HeaderGeneratorOptions, HeaderGenerator, PRESETS } from 'header-generator';
+import {
+    HeaderGeneratorOptions,
+    HeaderGenerator,
+    PRESETS,
+} from 'header-generator';
 
 describe('presets', () => {
     const generator = new HeaderGenerator();

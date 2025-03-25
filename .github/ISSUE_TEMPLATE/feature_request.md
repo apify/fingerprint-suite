@@ -4,7 +4,6 @@ about: For new things and improvements that are not bugs.
 title: ''
 labels: feature
 assignees: ''
-
 ---
 
 **Describe the feature**
