@@ -81,6 +81,7 @@ describe('FingerprintInjector', () => {
         // @ts-expect-error test only
         describe.each(testCases)(
             '$name',
+            // @ts-expect-error test only
             ({ name, launcher, options, fingerprintGeneratorOptions }) => {
                 let browser: any;
                 let page: any;
@@ -172,8 +173,8 @@ describe('FingerprintInjector', () => {
 
                     if (name === 'Chrome') {
                         const userAgentData = await page.evaluate(async () => {
-                            // @ts-expect-error internal browser code
                             const highEntropy =
+                                // @ts-expect-error internal browser code
                                 await navigator.userAgentData.getHighEntropyValues(
                                     [
                                         'architecture',
@@ -389,8 +390,8 @@ describe('FingerprintInjector', () => {
                 });
 
                 test('highEntropyValues contain default values', async () => {
-                    // @ts-expect-error internal browser code
                     const result = await page.evaluate(() =>
+                        // @ts-expect-error internal browser code
                         navigator.userAgentData?.getHighEntropyValues([]),
                     );
 
@@ -412,6 +413,7 @@ describe('FingerprintInjector', () => {
         // @ts-expect-error test only
         describe.each(testCases)(
             '$name',
+            // @ts-expect-error test only
             ({ name, launcher, options, fingerprintGeneratorOptions }) => {
                 const fpg = new FingerprintGenerator(
                     fingerprintGeneratorOptions,
