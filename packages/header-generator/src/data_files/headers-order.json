@@ -53,6 +53,7 @@
         "Accept-Encoding",
         "Accept-Language",
         "Cookie",
+        "Priority",
         ":method",
         ":authority",
         ":scheme",
@@ -74,7 +75,8 @@
         "referer",
         "accept-encoding",
         "accept-language",
-        "cookie"
+        "cookie",
+        "priority"
     ],
     "firefox": [
         "Host",
@@ -93,6 +95,7 @@
         "Sec-Fetch-Mode",
         "Sec-Fetch-Site",
         "Sec-Fetch-User",
+        "Priority",
         ":method",
         ":path",
         ":authority",
@@ -111,7 +114,8 @@
         "sec-fetch-mode",
         "sec-fetch-site",
         "sec-fetch-user",
-        "te"
+        "te",
+        "priority"
     ],
     "edge": []
 }
