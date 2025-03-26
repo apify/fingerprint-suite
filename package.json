@@ -40,7 +40,7 @@
         "release": "./scripts/publish.sh",
         "test": "jest --silent",
         "lint": "eslint && prettier . --check",
-        "lint:fix": "eslint --fix",
+        "lint:fix": "eslint --fix && prettier . --write",
         "buildNetwork": "turbo run build && ./scripts/netgen.sh && turbo run build",
         "benchmark": "ts-node ./test/antibot-services/live-testing/cloudflare.ts"
     },
