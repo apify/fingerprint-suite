@@ -416,8 +416,8 @@ export class HeaderGenerator {
         if (hasPriority) {
             generatedSample[
                 generatedHttpAndBrowser.httpVersion === '2'
-                ? 'priority'
-                : 'Priority'
+                    ? 'priority'
+                    : 'Priority'
             ] = 'u=0';
         }
 
