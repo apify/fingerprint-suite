@@ -79,13 +79,6 @@ import { newInjectedPage } from 'fingerprint-injector';
 })();
 ```
 
-## Performance
-
-With ever-improving performance of antibot fingerprinting services, we use some of the industry-leading services to benchmark our performance.
-The following table shows how is the latest build of `fingerprint-suite` doing in comparison to other popular fingerprinting tools.
-
-![Fingerprinting Benchmark Report](https://raw.githubusercontent.com/apify/fingerprint-suite/master/test/antibot-services/live-testing/report.png)
-
 ## Support
 
 If you find any bug or issue with any of the fingerprinting tools, please [submit an issue on GitHub](https://github.com/apify/fingerprint-suite/issues).
