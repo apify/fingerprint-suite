@@ -2,8 +2,6 @@ name: Run Benchmarks
 
 on:
     # Triggers the workflow every Monday at 5am
-    schedule:
-        - cron: '0 5 * * 1'
     workflow_dispatch:
 
 jobs:
