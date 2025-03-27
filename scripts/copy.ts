@@ -28,7 +28,10 @@ const localPackages = readdirSync(join(__dirname, '../packages'));
 
 if (!process.env.GIT_TAG || semver.valid(process.env.GIT_TAG) === null) {
     throw new Error(
-        'GIT_TAG environment variable is not set or is not a valid semver tag!',
+        `GIT_TAG environment variable is not set or is not a valid semver tag!
+
+GIT_TAG: ${process.env.GIT_TAG}
+GITHUB_REF: ${process.env.GITHUB_REF}`,
     );
 }
 
