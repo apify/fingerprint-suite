@@ -14,7 +14,8 @@
             ],
             "outputs": [
                 "dist/**"
-            ]
+            ],
+            "env": ["GIT_TAG"]
         },
         "clean": {
             "outputs": []
