@@ -1,6 +1,6 @@
 {
     "name": "header-generator",
-    "version": "2.1.62",
+    "version": "2.1.63",
     "description": "NodeJS package for generating realistic browser-like HTTP headers.",
     "author": {
         "name": "Apify",
@@ -24,7 +24,7 @@
     },
     "dependencies": {
         "browserslist": "^4.21.1",
-        "generative-bayesian-network": "^2.1.62",
+        "generative-bayesian-network": "^2.1.63",
         "ow": "^0.28.1",
         "tslib": "^2.4.0"
     },
