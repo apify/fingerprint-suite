@@ -13,12 +13,10 @@ describe('Generation tests', () => {
     });
 
     test('undefined options do not throw', () => {
-        const fp = fingerprintGenerator.getHeaders(
-            {
-                operatingSystems: undefined,
-                locales: undefined,
-            },
-        );
+        const fp = fingerprintGenerator.getHeaders({
+            operatingSystems: undefined,
+            locales: undefined,
+        });
 
         expect(fp).toBeDefined();
     });
