@@ -1,4 +1,3 @@
-/* eslint-disable import/no-extraneous-dependencies */
 const { chromium } = require('playwright');
 const { FingerprintGenerator } = require('fingerprint-generator');
 const { FingerprintInjector } = require('fingerprint-injector');

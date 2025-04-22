@@ -257,6 +257,13 @@ export class HeaderGenerator {
             'HeaderGeneratorOptions',
             ow.object.partialShape(headerGeneratorOptionsShape),
         );
+
+        for (const [key, value] of Object.entries(options)) {
+            if (!value) {
+                delete options[key as keyof typeof options];
+            }
+        }
+
         const headerOptions = { ...this.globalOptions, ...options };
         const possibleAttributeValues =
             this._getPossibleAttributeValues(headerOptions);
