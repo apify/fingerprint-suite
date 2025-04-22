@@ -132,6 +132,12 @@ export class FingerprintGenerator extends HeaderGenerator {
     ): BrowserFingerprintWithHeaders {
         const filteredValues: Record<string, string[]> = {};
 
+        for (const [key, value] of Object.entries(options)) {
+            if (!value) {
+                delete options[key as keyof typeof options];
+            }
+        }
+
         options = {
             ...this.fingerprintGlobalOptions,
             ...options,

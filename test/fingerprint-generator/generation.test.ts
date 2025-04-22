@@ -12,6 +12,17 @@ describe('Generation tests', () => {
         expect(fingerprint.navigator.userAgent).toContain('Chrome');
     });
 
+    test('undefined options do not throw', () => {
+        const fp = fingerprintGenerator.getHeaders(
+            {
+                operatingSystems: undefined,
+                locales: undefined,
+            },
+        );
+
+        expect(fp).toBeDefined();
+    });
+
     test('Works with presets', () => {
         const presets = Object.values(PRESETS);
         for (const preset of presets) {

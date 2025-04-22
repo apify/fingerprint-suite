@@ -35,6 +35,17 @@ describe('Generation tests', () => {
         const keys = Object.keys(headers);
         expect(keys.indexOf('x-custom')).toBe(keys.length - 1);
     });
+    
+    test('undefined options do not throw', () => {
+        const headers = headerGenerator.getHeaders(
+            {
+                operatingSystems: undefined,
+                locales: undefined,
+            },
+        );
+
+        expect(headers).toBeDefined();
+    });
 
     test('Orders headers', () => {
         const headers = {
