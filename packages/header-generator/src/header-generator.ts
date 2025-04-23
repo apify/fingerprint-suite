@@ -415,19 +415,6 @@ export class HeaderGenerator {
             generatedSample[secFetchAttributeNames.dest] = 'document';
         }
 
-        const hasPriority =
-            (isChrome && generatedHttpAndBrowser.version[0] >= 124) ||
-            (isFirefox && generatedHttpAndBrowser.version[0] >= 128) ||
-            (isEdge && generatedHttpAndBrowser.version[0] >= 124);
-
-        if (hasPriority) {
-            generatedSample[
-                generatedHttpAndBrowser.httpVersion === '2'
-                    ? 'priority'
-                    : 'Priority'
-            ] = 'u=0';
-        }
-
         for (const attribute of Object.keys(generatedSample)) {
             if (
                 attribute.toLowerCase() === 'connection' &&
