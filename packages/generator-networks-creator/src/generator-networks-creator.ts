@@ -1,5 +1,6 @@
 import fs from 'fs';
-import path, { parse } from 'path';
+import path from 'path';
+import { z } from 'zod';
 
 import { BayesianNetwork } from 'generative-bayesian-network';
 import fetch from 'node-fetch';
@@ -22,12 +23,6 @@ const nonGeneratedNodes = [
 const STRINGIFIED_PREFIX = '*STRINGIFIED*';
 
 const PLUGIN_CHARACTERISTICS_ATTRIBUTES = ['plugins', 'mimeTypes'];
-
-const BLANK_SPACE_NOISE_REGEX = /\s{2,}|^\s|\s$/;
-
-const ANGLE_WEBGL_RENDERER_REGEX = /^ANGLE/;
-
-const ANGLE_BRACKETS_WEBGL_RENDERER_REGEX = /^ANGLE \((.+)\)/;
 
 const KNOWN_WEBGL_RENDERER_PARTS = [
     'AMD',
@@ -119,6 +114,137 @@ const KNOWN_OS_FONTS = {
     ],
 };
 
+const recordSchema = z.preprocess(
+    async (record) => {
+        const castRecord = record as any;
+        if (castRecord?.browserFingerprint?.userAgent && !castRecord?.requestFingerprint?.headers) {
+            const parsedUserAgent = await UAParser(
+                castRecord.browserFingerprint.userAgent,
+                castRecord.requestFingerprint.headers
+            ).withClientHints();
+
+            const knownOsFonts = [];
+
+            if (parsedUserAgent.os.name) {
+                if (parsedUserAgent.os.name.startsWith('Windows')) {
+                    knownOsFonts.push(...KNOWN_OS_FONTS.WINDOWS);
+                } else if (['macOS', 'iOS'].includes(parsedUserAgent.os.name)) {
+                    knownOsFonts.push(...KNOWN_OS_FONTS.APPLE);
+                }
+            }
+
+            return {
+                ...castRecord,
+                userAgentProps: {
+                    parsedUserAgent,
+                    isDesktop: !['wearable', 'mobile'].includes(parsedUserAgent.device.type!),
+                    knownOsFonts,
+                },
+            }
+        }
+
+        return null;
+    }, 
+    z.object({
+        userAgentProps: z.object({
+            parsedUserAgent: z.object({
+                browser: z.object({
+                    name: z.enum(['Edge', 'Chrome', 'Chrome Mobile', 'Firefox', 'Safari', 'Safari Mobile']),
+                }),
+                device: z.object({
+                    // undefined means desktop
+                    type: z.enum(['mobile', 'tablet']).optional(),
+                }),
+                os: z.object({
+                    name: z.string()
+                }),
+            }),
+            isDesktop: z.boolean(),
+            knownOsFonts: z.array(z.string()),
+        }),
+        requestFingerprint: z.object({
+            headers: z.record(z.string(), z.string())
+        }),
+        browserFingerprint: z.object({
+            webdriver: z.literal(false).optional(),
+            plugins: z.array(z.any()).nonempty(),
+            mimeTypes: z.array(z.any()).nonempty(),
+            userAgentData: z.object({
+                brands: z.array(z.any()).length(3),
+                mobile: z.boolean(),
+                platform: z.string(),
+            }).optional(),
+            language: z.string(),
+            languages: z.array(z.string()).nonempty(),
+            product: z.literal('Gecko'),
+            appName: z.literal('Netscape'),
+            appCodeName: z.literal('Mozilla'),
+            maxTouchPoints: z.number().int().nonnegative(),
+            productSub: z.enum(['20030107', '20100101']).optional(),
+            vendor: z.enum(['', 'Google Inc.', 'Apple Computer, Inc.']),
+            videoCard: z.object({
+                renderer: z.string().refine((renderer) => KNOWN_WEBGL_RENDERER_PARTS.some((part) => renderer.includes(part))),
+            }),
+            fonts: z.array(z.string()),
+            screen: z.object({
+                width: z.number().positive(),
+                height: z.number().positive(),
+                availWidth: z.number().positive(),
+                availHeight: z.number().positive(),
+                clientWidth: z.number().positive(),
+                clientHeight: z.number().positive(),
+                innerWidth: z.number().positive(),
+                innerHeight: z.number().positive(),
+                outerWidth: z.number().positive(),
+                outerHeight: z.number().positive(),
+                colorDepth: z.number().positive(),
+                pixelDepth: z.number().positive().optional(),
+                devicePixelRatio: z.number().min(1).max(5),
+            })
+                .refine((data) => data.availWidth <= data.width && data.availHeight <= data.height)
+                .refine((data) => data.innerWidth <= data.outerWidth && data.innerHeight <= data.outerHeight)
+                .refine((data) => data.clientWidth <= data.innerWidth && data.clientHeight <= data.innerHeight)
+                .refine((data) => !data.pixelDepth || data.pixelDepth === data.colorDepth),
+            userAgent: z.string(),
+        })
+    })
+    .refine(({ userAgentProps: { isDesktop }, browserFingerprint: { maxTouchPoints, userAgentData }}) => {
+        if (isDesktop) {
+            return maxTouchPoints === 0 && userAgentData?.mobile !== true
+        } else {
+            return maxTouchPoints > 0
+        }
+    })
+    .refine(({ userAgentProps: { parsedUserAgent }, browserFingerprint: { productSub }}) => {
+        return parsedUserAgent.browser.name === 'Firefox' ? productSub === '20100101' : productSub === '20030107';
+    })
+    .refine(({ userAgentProps: { parsedUserAgent }, browserFingerprint: { vendor }}) => {
+        return parsedUserAgent.browser.name === 'Firefox' && vendor === '' ||
+                (parsedUserAgent.browser.name!.startsWith('Safari') && vendor === 'Apple Computer, Inc.') ||
+                vendor === 'Google Inc.';
+    })
+    .refine(({ userAgentProps: { knownOsFonts }, browserFingerprint: { fonts }}) => 
+        fonts.length === 0 || 
+        knownOsFonts.length === 0 ||
+        fonts.some((font) => knownOsFonts.includes(font))
+    )
+    .refine(({ userAgentProps: { isDesktop }, browserFingerprint: { screen }}) => {
+        if (isDesktop) {
+            return screen.width >= 512 && screen.height >= 384;
+        } else {
+            const screenWidth = Math.max(screen.width, screen.height);
+            const screenHeight = Math.min(screen.width, screen.height);
+            return (
+                screenWidth >= 320 &&
+                screenWidth <= 2560 &&
+                screenHeight >= 480 &&
+                screenHeight <= 3200
+            );
+        }
+    })
+    .transform(({ userAgentProps, ...rest }) => rest)
+);
+
 async function prepareRecords(
     records: Record<string, any>[],
     preprocessingType: string
@@ -126,228 +252,11 @@ async function prepareRecords(
     const cleanedRecords = [];
 
     for (const record of records) {
-        const {
-            requestFingerprint: { headers },
-            browserFingerprint: fingerprint,
-        } = record;
-
-        // The webdriver attribute should not be truthy
-        if (fingerprint.webdriver) continue;
-
-        const validPluginAndMime =
-            'plugins' in fingerprint &&
-            'mimeTypes' in fingerprint &&
-            fingerprint.plugins.length > 0 &&
-            fingerprint.mimeTypes.length > 0;
-
-        // The plugins and mimeTypes should be present and non-empty
-        if (!validPluginAndMime) continue;
-
-        const validUserAgent =
-            fingerprint.userAgent ===
-            (headers['user-agent'] ?? headers['User-Agent']);
-
-        // The userAgent should match the one in the headers
-        if (!validUserAgent) continue;
-
-        const validUserAgentData =
-            !('userAgentData' in fingerprint) ||
-            ('brands' in fingerprint.userAgentData &&
-                'mobile' in fingerprint.userAgentData &&
-                'platform' in fingerprint.userAgentData &&
-                fingerprint.userAgentData.brands.length === 3);
-
-        // The userAgentData should have the correct structure
-        if (!validUserAgentData) continue;
-
-        const validLanguage =
-            fingerprint.language &&
-            'languages' in fingerprint &&
-            fingerprint.languages.length > 0 &&
-            fingerprint.language === fingerprint.languages[0];
-
-        // The language should be the first in the list
-        if (!validLanguage) continue;
-
-        const parsedUserAgent = await UAParser(
-            fingerprint.userAgent,
-            headers
-        ).withClientHints();
-
-        const validBrowser =
-            parsedUserAgent.browser.name !== undefined &&
-            [
-                'Edge',
-                'Chrome',
-                'Chrome Mobile',
-                'Firefox',
-                'Safari',
-                'Safari Mobile',
-            ].includes(parsedUserAgent.browser.name);
-
-        // The browser should be one of the supported ones
-        if (!validBrowser) continue;
-
-        const desktopFingerprint =
-            parsedUserAgent.device.type === undefined ||
-            !['wearable', 'mobile'].includes(parsedUserAgent.device.type);
-
-        const validDeviceType =
-            parsedUserAgent.device.type === 'mobile' ||
-            parsedUserAgent.device.type === 'tablet' ||
-            desktopFingerprint;
-
-        // The device type should be mobile, tablet or desktop
-        if (!validDeviceType) continue;
-
-        const validTouchSupport =
-            desktopFingerprint || fingerprint.userAgentData?.mobile !== true
-                ? fingerprint.maxTouchPoints === 0
-                : fingerprint.maxTouchPoints > 0;
-
-        // The maxTouchPoints should be 0 for desktops and > 0 for mobile devices
-        if (!validTouchSupport) continue;
-
-        const validProduct =
-            fingerprint.product === 'Gecko' &&
-            parsedUserAgent.browser.name === 'Firefox'
-                ? fingerprint.productSub === '20100101'
-                : fingerprint.productSub === '20030107';
-
-        // The productSub should be 20100101 for Firefox and 20030107 for the rest
-        if (!validProduct) continue;
-
-        const validVendor =
-            (parsedUserAgent.browser.name === 'Firefox' &&
-                fingerprint.vendor === '') ||
-            (parsedUserAgent.browser.name!.startsWith('Safari') &&
-                fingerprint.vendor === 'Apple Computer, Inc.') ||
-            fingerprint.vendor === 'Google Inc.';
-
-        // The vendor should be Google Inc. for Chrome and Apple Computer, Inc. for Safari
-        if (!validVendor) continue;
-
-        const validAppName =
-            fingerprint.appName === 'Netscape' &&
-            fingerprint.appCodeName === 'Mozilla';
-
-        // The appName should be Netscape and the appCodeName should be Mozilla
-        if (!validAppName) continue;
-
-        const knownWebGLRenderer =
-            !!fingerprint.videoCard &&
-            KNOWN_WEBGL_RENDERER_PARTS.some((name) =>
-                fingerprint.videoCard.renderer.includes(name)
-            );
-
-        const validWebGLRenderer =
-            knownWebGLRenderer &&
-            !BLANK_SPACE_NOISE_REGEX.test(fingerprint.videoCard.renderer) &&
-            (!ANGLE_WEBGL_RENDERER_REGEX.test(fingerprint.videoCard.renderer) ||
-                !!(ANGLE_BRACKETS_WEBGL_RENDERER_REGEX.exec(
-                    fingerprint.videoCard.renderer
-                ) || [])[1]);
-
-        // The WebGL renderer should contain a known substring, should not contain excessive blank spaces, should not be ANGLE or should be ANGLE with a valid name
-        if (!validWebGLRenderer) continue;
-
-        const fontValidatableOS =
-            parsedUserAgent.os.name &&
-            (parsedUserAgent.os.name.startsWith('Windows') ||
-                ['macOS', 'iOS'].includes(parsedUserAgent.os.name));
-
-        const validFonts =
-            fingerprint.fonts.length === 0 ||
-            !fontValidatableOS ||
-            fingerprint.fonts.some((font: string) => {
-                if (parsedUserAgent.os.name!.startsWith('Windows')) {
-                    return KNOWN_OS_FONTS.WINDOWS.includes(font);
-                } else if (
-                    ['macOS', 'iOS'].includes(parsedUserAgent.os.name!)
-                ) {
-                    return KNOWN_OS_FONTS.APPLE.includes(font);
-                }
-
-                return false;
-            });
-
-        // The fonts should be empty or contain only known fonts for the OS
-        if (!validFonts) continue;
-
-        const validScreenSize =
-            fingerprint.screen.width > 0 &&
-            fingerprint.screen.height > 0 &&
-            fingerprint.screen.availWidth > 0 &&
-            fingerprint.screen.availHeight > 0;
-
-        // The screen dimensions should be positive
-        if (!validScreenSize) continue;
-
-        const validAvailDimensions =
-            fingerprint.screen.availWidth <= fingerprint.screen.width &&
-            fingerprint.screen.availHeight <= fingerprint.screen.height;
-
-        // The availWidth and availHeight should be less or equal to the width and height
-        if (!validAvailDimensions) continue;
-
-        const validWindowSize =
-            fingerprint.screen.innerWidth <= fingerprint.screen.outerWidth &&
-            fingerprint.screen.innerHeight <= fingerprint.screen.outerHeight;
-
-        // The innerWidth and innerHeight should be less or equal to the outerWidth and outerHeight
-        if (!validWindowSize) continue;
-
-        const validClientDimensions =
-            fingerprint.screen.clientWidth <= fingerprint.screen.innerWidth &&
-            fingerprint.screen.clientHeight <= fingerprint.screen.innerHeight;
-
-        // The clientWidth and clientHeight should be less or equal to the innerWidth and innerHeight
-        if (!validClientDimensions) continue;
-
-        const validColorDepth =
-            !fingerprint.screen.pixelDepth ||
-            fingerprint.screen.pixelDepth === fingerprint.screen.colorDepth;
-
-        // The pixelDepth and colorDepth should be equal
-        if (!validColorDepth) continue;
-
-        const validDevicePixelRatio =
-            fingerprint.screen.devicePixelRatio >= 1 &&
-            fingerprint.screen.devicePixelRatio <= 5;
-
-        // The devicePixelRatio should be between 1 and 5
-        if (!validDevicePixelRatio) continue;
-
-        let validScreenDimensions = true;
-
-        if (desktopFingerprint) {
-            validScreenDimensions =
-                fingerprint.screen.width >= 512 &&
-                fingerprint.screen.height >= 384;
-        } else {
-            const screenWidth = Math.max(
-                fingerprint.screen.width,
-                fingerprint.screen.height
-            );
-
-            const screenHeight = Math.min(
-                fingerprint.screen.width,
-                fingerprint.screen.height
-            );
-
-            validScreenDimensions =
-                screenWidth >= 320 &&
-                screenWidth <= 2560 &&
-                screenHeight >= 480 &&
-                screenHeight <= 3200;
-        }
-
-        // The screen dimensions should be within the expected range
-        if (!validScreenDimensions) continue;
+        const parsedRecord = recordSchema.parse(record);
 
         cleanedRecords.push({
-            ...record,
-            userAgent: record.browserFingerprint.userAgent,
+            ...parsedRecord,
+            userAgent: parsedRecord.browserFingerprint.userAgent,
         } as any);
     }
 
