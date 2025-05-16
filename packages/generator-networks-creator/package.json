@@ -20,7 +20,8 @@
         "generative-bayesian-network": "^2.1.62",
         "node-fetch": "^2.6.7",
         "tslib": "^2.4.0",
-        "ua-parser-js": "^2.0.0"
+        "ua-parser-js": "^2.0.0",
+        "zod": "^3.24.4"
     },
     "repository": {
         "type": "git",
