@@ -1,7 +1,7 @@
 {
     "name": "fingerprint-suite",
     "private": true,
-    "version": "2.1.62",
+    "version": "2.1.66",
     "description": "",
     "workspaces": [
         "packages/*"
@@ -39,39 +39,48 @@
         "prerelease": "npm run build -- --force && turbo run copy --force --concurrency=1",
         "release": "./scripts/publish.sh",
         "test": "jest --silent",
-        "lint": "eslint packages/*/src test",
-        "lint:fix": "eslint packages/*/src test --fix",
+        "lint": "eslint && prettier . --check",
+        "lint:fix": "eslint --fix && prettier . --write",
         "buildNetwork": "turbo run build && ./scripts/netgen.sh && turbo run build",
         "benchmark": "ts-node ./test/antibot-services/live-testing/cloudflare.ts"
     },
     "devDependencies": {
-        "@apify/eslint-config-ts": "^0.4.1",
+        "@apify/eslint-config": "^1.0.0",
         "@apify/tsconfig": "^0.1.0",
+        "@eslint/eslintrc": "^3.3.1",
+        "@eslint/js": "^9.23.0",
         "@types/adm-zip": "^0.5.0",
         "@types/jest": "^29.0.0",
         "@types/node": "^22.0.0",
         "@types/node-fetch": "^2.6.1",
-        "@types/puppeteer": "^5.4.4",
+        "@types/puppeteer": "^7.0.0",
         "@types/useragent": "^2.3.1",
-        "@typescript-eslint/eslint-plugin": "^6.18.0",
-        "@typescript-eslint/parser": "^6.18.0",
         "browserslist": "^4.21.1",
-        "eslint": "^8.14.0",
+        "eslint": "^9.23.0",
+        "eslint-config-prettier": "^10.1.1",
         "fast-csv": "^5.0.0",
         "gen-esm-wrapper": "^1.1.3",
+        "globals": "^16.0.0",
         "globby": "^14.0.0",
         "husky": "^9.0.0",
-        "playwright": "^1.25.1",
-        "playwright-extra": "^4.3.5",
-        "puppeteer": "^22.13.0",
-        "puppeteer-extra-plugin-stealth": "^2.11.1",
+        "playwright": "^1.51.1",
+        "playwright-extra": "^4.3.6",
+        "prettier": "3.5.3",
+        "puppeteer": "^24.4.0",
+        "puppeteer-extra-plugin-stealth": "^2.11.2",
         "puppeteer-extra-plugin-user-preferences": "^2.4.1",
         "rimraf": "^6.0.0",
         "semver": "^7.3.8",
         "ts-jest": "^29.0.0",
         "ts-node": "^10.8.0",
-        "turbo": "^1.2.14",
-        "typescript": "^5.0.0"
+        "turbo": "^2.4.4",
+        "typescript": "^5.0.0",
+        "typescript-eslint": "^8.28.0"
     },
-    "packageManager": "npm@10.9.2"
+    "overrides": {
+        "eslint-config-airbnb-base": {
+            "eslint": "$eslint"
+        }
+    },
+    "packageManager": "npm@11.4.0"
 }

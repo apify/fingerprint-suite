@@ -1,0 +1,50 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "apify_fingerprint_datapoints"
+version = "0.0.2"
+description = "Browser fingerprint datapoints collected by Apify"
+authors = [{ name = "Apify Technologies s.r.o.", email = "support@apify.com" }]
+license = { file = "LICENSE.md" }
+readme = "apify_fingerprint_datapoints/README.md"
+requires-python = ">=3.8"
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Libraries",
+]
+keywords = [
+    "apify",
+    "chrome",
+    "crawlee",
+    "crawler",
+    "scraper",
+    "scraping",
+    "fingerprints",
+]
+
+[project.urls]
+"Homepage" = "https://docs.apify.com/academy/anti-scraping/techniques/fingerprinting"
+"Apify homepage" = "https://apify.com"
+"Changelog" = "https://github.com/apify/fingerprint-suite/blob/master/apify_fingerprint_datapoints/CHANGELOG.md"
+"Documentation" = "https://docs.apify.com/academy/anti-scraping/techniques/fingerprinting"
+"Issue tracker" = "https://github.com/apify/fingerprint-suite/issues"
+"Repository" = "https://github.com/apify/fingerprint-suite"
+
+[tool.hatch.build.targets.wheel.force-include]
+"./packages/fingerprint-generator/src/data_files/fingerprint-network-definition.zip" = "apify_fingerprint_datapoints/data/fingerprint-network-definition.zip"
+"./packages/header-generator/src/data_files/browser-helper-file.json" = "apify_fingerprint_datapoints/data/browser-helper-file.json"
+"./packages/header-generator/src/data_files/header-network-definition.zip" = "apify_fingerprint_datapoints/data/header-network-definition.zip"
+"./packages/header-generator/src/data_files/headers-order.json" = "apify_fingerprint_datapoints/data/headers-order.json"
+"./packages/header-generator/src/data_files/input-network-definition.zip" = "apify_fingerprint_datapoints/data/input-network-definition.zip"
+

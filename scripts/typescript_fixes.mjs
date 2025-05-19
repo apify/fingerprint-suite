@@ -12,14 +12,14 @@ for (const filepath of files) {
 
     for (const line of input) {
         /* eslint-disable no-cond-assign */
-        if (match = line.match(/^([^']+)'node\/([^$]+)/)) {
+        if ((match = line.match(/^([^']+)'node\/([^$]+)/))) {
             output.push(`${match[1]} '${match[2]}`);
             changed = true;
-        } else if (match = line.match(/^([^']+)'puppeteer'/)) {
+        } else if ((match = line.match(/^([^']+)'puppeteer'/))) {
             output.push('// @ts-ignore optional peer dependency');
             output.push(line);
             changed = true;
-        } else if (match = line.match(/^([^']+)'playwright[/']/)) {
+        } else if ((match = line.match(/^([^']+)'playwright[/']/))) {
             output.push('// @ts-ignore optional peer dependency');
             output.push(line);
             changed = true;

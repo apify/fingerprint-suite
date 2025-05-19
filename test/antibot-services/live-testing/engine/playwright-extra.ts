@@ -5,13 +5,10 @@ import stealth from 'puppeteer-extra-plugin-stealth';
 import { FingeprintingEngine, GetContextOptions } from './vanilla-playwright';
 
 export class PlaywrightExtra implements FingeprintingEngine {
-    private browser: Browser|null = null;
+    private browser: Browser | null = null;
 
     async getContext(options: GetContextOptions): Promise<BrowserContext> {
-        const {
-            launchOptions = {},
-            contextOptions = {},
-        } = options;
+        const { launchOptions = {}, contextOptions = {} } = options;
 
         if (!this.browser) {
             chromium.use(stealth());

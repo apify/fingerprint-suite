@@ -5,16 +5,12 @@
         "es2020": true,
         "node": true
     },
-    "extends": [
-        "@apify/eslint-config-ts"
-    ],
+    "extends": ["@apify/eslint-config-ts"],
     "parserOptions": {
         "project": "./tsconfig.eslint.json",
         "ecmaVersion": 2020
     },
-    "plugins": [
-        "@typescript-eslint"
-    ],
+    "plugins": ["@typescript-eslint"],
     "ignorePatterns": [
         "node_modules",
         "dist",
@@ -35,9 +31,12 @@
         "@typescript-eslint/no-explicit-any": "off",
         "@typescript-eslint/no-empty-function": "off",
         "import/no-extraneous-dependencies": "off",
-        "@typescript-eslint/member-delimiter-style": ["error", {
-            "multiline": { "delimiter": "semi", "requireLast": true },
-            "singleline": { "delimiter": "semi", "requireLast": false }
-        }]
+        "@typescript-eslint/member-delimiter-style": [
+            "error",
+            {
+                "multiline": { "delimiter": "semi", "requireLast": true },
+                "singleline": { "delimiter": "semi", "requireLast": false }
+            }
+        ]
     }
 }

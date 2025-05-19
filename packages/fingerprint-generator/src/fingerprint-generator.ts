@@ -1,5 +1,9 @@
 import { BayesianNetwork, utils } from 'generative-bayesian-network';
-import { HeaderGenerator, HeaderGeneratorOptions, Headers } from 'header-generator';
+import {
+    HeaderGenerator,
+    HeaderGeneratorOptions,
+    Headers,
+} from 'header-generator';
 
 import { MISSING_VALUE_DATASET_TOKEN, STRINGIFIED_PREFIX } from './constants';
 
@@ -23,7 +27,7 @@ export type ScreenFingerprint = {
     clientWidth: number;
     clientHeight: number;
     hasHDR: boolean;
-}
+};
 
 export type NavigatorFingerprint = {
     userAgent: string;
@@ -45,12 +49,12 @@ export type NavigatorFingerprint = {
     vendorSub: string;
     maxTouchPoints?: number;
     extraProperties: Record<string, string>;
-}
+};
 
 export type VideoCard = {
     renderer: string;
     vendor: string;
-}
+};
 
 export type Fingerprint = {
     screen: ScreenFingerprint;
@@ -64,12 +68,12 @@ export type Fingerprint = {
     fonts: string[];
     mockWebRTC: boolean;
     slim?: boolean;
-}
+};
 
 export type BrowserFingerprintWithHeaders = {
     headers: Headers;
     fingerprint: Fingerprint;
-}
+};
 export interface FingerprintGeneratorOptions extends HeaderGeneratorOptions {
     /**
      * Defines the screen dimensions of the generated fingerprint.
@@ -97,7 +101,9 @@ export interface FingerprintGeneratorOptions extends HeaderGeneratorOptions {
  */
 export class FingerprintGenerator extends HeaderGenerator {
     fingerprintGeneratorNetwork: any;
-    fingerprintGlobalOptions: Partial<Omit<FingerprintGeneratorOptions, keyof HeaderGeneratorOptions>>;
+    fingerprintGlobalOptions: Partial<
+        Omit<FingerprintGeneratorOptions, keyof HeaderGeneratorOptions>
+    >;
 
     /**
      * @param options Default header generation options used - unless overridden.
@@ -109,7 +115,9 @@ export class FingerprintGenerator extends HeaderGenerator {
             mockWebRTC: options.mockWebRTC,
             slim: options.slim,
         };
-        this.fingerprintGeneratorNetwork = new BayesianNetwork({ path: `${__dirname}/data_files/fingerprint-network-definition.zip` });
+        this.fingerprintGeneratorNetwork = new BayesianNetwork({
+            path: `${__dirname}/data_files/fingerprint-network-definition.zip`,
+        });
     }
 
     /**
@@ -124,29 +132,48 @@ export class FingerprintGenerator extends HeaderGenerator {
     ): BrowserFingerprintWithHeaders {
         const filteredValues: Record<string, string[]> = {};
 
+        for (const [key, value] of Object.entries(options)) {
+            if (!value) {
+                delete options[key as keyof typeof options];
+            }
+        }
+
         options = {
             ...this.fingerprintGlobalOptions,
             ...options,
         };
 
         const partialCSP = (() => {
-            const extensiveScreen = options.screen && Object.keys(options.screen).length !== 0;
+            const extensiveScreen =
+                options.screen && Object.keys(options.screen).length !== 0;
             const shouldUseExtensiveConstraints = extensiveScreen;
 
             if (!shouldUseExtensiveConstraints) return undefined;
 
             filteredValues.screen = extensiveScreen
-                ? this.fingerprintGeneratorNetwork.nodesByName.screen.possibleValues.filter((screenString: string) => {
-                    const screen = JSON.parse(screenString.split(STRINGIFIED_PREFIX)[1]);
-                    return (screen.width >= (options.screen?.minWidth ?? 0)
-            && screen.width <= (options.screen?.maxWidth ?? 1e5)
-            && screen.height >= (options.screen?.minHeight ?? 0)
-            && screen.height <= (options.screen?.maxHeight ?? 1e5));
-                })
+                ? this.fingerprintGeneratorNetwork.nodesByName.screen.possibleValues.filter(
+                      (screenString: string) => {
+                          const screen = JSON.parse(
+                              screenString.split(STRINGIFIED_PREFIX)[1],
+                          );
+                          return (
+                              screen.width >= (options.screen?.minWidth ?? 0) &&
+                              screen.width <=
+                                  (options.screen?.maxWidth ?? 1e5) &&
+                              screen.height >=
+                                  (options.screen?.minHeight ?? 0) &&
+                              screen.height <=
+                                  (options.screen?.maxHeight ?? 1e5)
+                          );
+                      },
+                  )
                 : undefined;
 
             try {
-                return utils.getConstraintClosure(this.fingerprintGeneratorNetwork, filteredValues);
+                return utils.getConstraintClosure(
+                    this.fingerprintGeneratorNetwork,
+                    filteredValues,
+                );
             } catch (e) {
                 if (options?.strict) throw e;
                 delete filteredValues.screen;
@@ -156,14 +183,24 @@ export class FingerprintGenerator extends HeaderGenerator {
 
         for (let generateRetries = 0; generateRetries < 10; generateRetries++) {
             // Generate headers consistent with the inputs to get input-compatible user-agent and accept-language headers needed later
-            const headers = super.getHeaders(options, requestDependentHeaders, partialCSP?.userAgent);
-            const userAgent = 'User-Agent' in headers ? headers['User-Agent'] : headers['user-agent'];
+            const headers = super.getHeaders(
+                options,
+                requestDependentHeaders,
+                partialCSP?.userAgent,
+            );
+            const userAgent =
+                'User-Agent' in headers
+                    ? headers['User-Agent']
+                    : headers['user-agent'];
 
             // Generate fingerprint consistent with the generated user agent
-            const fingerprint: Record<string, any> = this.fingerprintGeneratorNetwork.generateConsistentSampleWhenPossible({
-                ...filteredValues,
-                userAgent: [userAgent],
-            });
+            const fingerprint: Record<string, any> =
+                this.fingerprintGeneratorNetwork.generateConsistentSampleWhenPossible(
+                    {
+                        ...filteredValues,
+                        userAgent: [userAgent],
+                    },
+                );
 
             /* Delete any missing attributes and unpack any object/array-like attributes
              * that have been packed together to make the underlying network simpler
@@ -171,15 +208,22 @@ export class FingerprintGenerator extends HeaderGenerator {
             for (const attribute of Object.keys(fingerprint)) {
                 if (fingerprint[attribute] === MISSING_VALUE_DATASET_TOKEN) {
                     fingerprint[attribute] = null;
-                } else if (fingerprint[attribute].startsWith(STRINGIFIED_PREFIX)) {
-                    fingerprint[attribute] = JSON.parse(fingerprint[attribute].slice(STRINGIFIED_PREFIX.length));
+                } else if (
+                    fingerprint[attribute].startsWith(STRINGIFIED_PREFIX)
+                ) {
+                    fingerprint[attribute] = JSON.parse(
+                        fingerprint[attribute].slice(STRINGIFIED_PREFIX.length),
+                    );
                 }
             }
 
             if (!fingerprint.screen) continue; // fix? sometimes, fingerprints are generated 90% empty/null. This is just a workaround.
 
             // Manually add the set of accepted languages required by the input
-            const acceptLanguageHeaderValue = 'Accept-Language' in headers ? headers['Accept-Language'] : headers['accept-language'];
+            const acceptLanguageHeaderValue =
+                'Accept-Language' in headers
+                    ? headers['Accept-Language']
+                    : headers['accept-language'];
             const acceptedLanguages = [];
             for (const locale of acceptLanguageHeaderValue.split(',')) {
                 acceptedLanguages.push(locale.split(';')[0]);
@@ -189,14 +233,22 @@ export class FingerprintGenerator extends HeaderGenerator {
             return {
                 fingerprint: {
                     ...this.transformFingerprint(fingerprint),
-                    mockWebRTC: options.mockWebRTC ?? this.fingerprintGlobalOptions.mockWebRTC ?? false,
-                    slim: options.slim ?? this.fingerprintGlobalOptions.slim ?? false,
+                    mockWebRTC:
+                        options.mockWebRTC ??
+                        this.fingerprintGlobalOptions.mockWebRTC ??
+                        false,
+                    slim:
+                        options.slim ??
+                        this.fingerprintGlobalOptions.slim ??
+                        false,
                 },
                 headers,
             };
         }
 
-        throw new Error('Failed to generate a consistent fingerprint after 10 attempts');
+        throw new Error(
+            'Failed to generate a consistent fingerprint after 10 attempts',
+        );
     }
 
     /**
@@ -205,7 +257,9 @@ export class FingerprintGenerator extends HeaderGenerator {
      * @param fingerprint Fingerprint to be transformed.
      * @returns Transformed fingerprint.
      */
-    private transformFingerprint(fingerprint: Record<string, any>): Fingerprint {
+    private transformFingerprint(
+        fingerprint: Record<string, any>,
+    ): Fingerprint {
         const {
             userAgent,
             userAgentData,
@@ -245,7 +299,9 @@ export class FingerprintGenerator extends HeaderGenerator {
             platform,
             deviceMemory: Number.isNaN(parsedMemory) ? null : parsedMemory, // Firefox does not have deviceMemory available
             hardwareConcurrency: parseInt(hardwareConcurrency, 10),
-            maxTouchPoints: Number.isNaN(parsedTouchPoints) ? 0 : parsedTouchPoints,
+            maxTouchPoints: Number.isNaN(parsedTouchPoints)
+                ? 0
+                : parsedTouchPoints,
             product,
             productSub,
             vendor,

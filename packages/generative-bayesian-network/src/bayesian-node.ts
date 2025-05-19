@@ -1,12 +1,15 @@
 import { RecordList } from './bayesian-network';
 
 /**
-* Calculates relative frequencies of values of specific attribute from the given data
-* @param dataframe A Danfo.js dataframe containing the data.
-* @param attributeName Attribute name.
-*/
-function getRelativeFrequencies(data: RecordList, attributeName: keyof RecordList[number]) {
-    const frequencies : Record<string, number> = {};
+ * Calculates relative frequencies of values of specific attribute from the given data
+ * @param dataframe A Danfo.js dataframe containing the data.
+ * @param attributeName Attribute name.
+ */
+function getRelativeFrequencies(
+    data: RecordList,
+    attributeName: keyof RecordList[number],
+) {
+    const frequencies: Record<string, number> = {};
     const totalCount = data.length;
 
     data.forEach((record) => {
@@ -14,7 +17,12 @@ function getRelativeFrequencies(data: RecordList, attributeName: keyof RecordLis
         frequencies[value] = (frequencies[value] ?? 0) + 1;
     });
 
-    return Object.fromEntries(Object.entries(frequencies).map(([key, value]) => [key, value / totalCount]));
+    return Object.fromEntries(
+        Object.entries(frequencies).map(([key, value]) => [
+            key,
+            value / totalCount,
+        ]),
+    );
 }
 
 /**
@@ -60,7 +68,9 @@ export class BayesianNode {
      * Extracts unconditional probabilities of node values given the values of the parent nodes
      * @param parentValues Parent nodes values.
      */
-    private getProbabilitiesGivenKnownValues(parentValues: Record<string, string> = {}) {
+    private getProbabilitiesGivenKnownValues(
+        parentValues: Record<string, string> = {},
+    ) {
         let probabilities = this.nodeDefinition.conditionalProbabilities;
 
         for (const parentName of this.parentNames) {
@@ -80,7 +90,11 @@ export class BayesianNode {
      * @param totalProbabilityOfPossibleValues Sum of probabilities of possibleValues in the conditional distribution.
      * @param probabilities A dictionary of probabilities from the conditional distribution, indexed by the values.
      */
-    private sampleRandomValueFromPossibilities(possibleValues: string[], totalProbabilityOfPossibleValues: number, probabilities: Record<string, number>) {
+    private sampleRandomValueFromPossibilities(
+        possibleValues: string[],
+        totalProbabilityOfPossibleValues: number,
+        probabilities: Record<string, number>,
+    ) {
         let chosenValue = possibleValues[0];
         const anchor = Math.random() * totalProbabilityOfPossibleValues;
         let cumulativeProbability = 0;
@@ -100,10 +114,15 @@ export class BayesianNode {
      * @param parentValues Values of the parent nodes.
      */
     sample(parentValues = {}) {
-        const probabilities = this.getProbabilitiesGivenKnownValues(parentValues);
+        const probabilities =
+            this.getProbabilitiesGivenKnownValues(parentValues);
         const possibleValues = Object.keys(probabilities);
 
-        return this.sampleRandomValueFromPossibilities(possibleValues, 1.0, probabilities);
+        return this.sampleRandomValueFromPossibilities(
+            possibleValues,
+            1.0,
+            probabilities,
+        );
     }
 
     /**
@@ -113,21 +132,33 @@ export class BayesianNode {
      * @param valuePossibilities List of possible values for this node.
      * @param bannedValues What values of this node are banned.
      */
-    sampleAccordingToRestrictions(parentValues: Record<string, string>, valuePossibilities: string[], bannedValues: string[]) : string | false {
-        const probabilities = this.getProbabilitiesGivenKnownValues(parentValues);
+    sampleAccordingToRestrictions(
+        parentValues: Record<string, string>,
+        valuePossibilities: string[],
+        bannedValues: string[],
+    ): string | false {
+        const probabilities =
+            this.getProbabilitiesGivenKnownValues(parentValues);
         let totalProbability = 0.0;
         const validValues = [];
         const valuesInDistribution = Object.keys(probabilities);
         const possibleValues = valuePossibilities || valuesInDistribution;
         for (const value of possibleValues) {
-            if (!bannedValues.includes(value) && valuesInDistribution.includes(value)) {
+            if (
+                !bannedValues.includes(value) &&
+                valuesInDistribution.includes(value)
+            ) {
                 validValues.push(value);
                 totalProbability += probabilities[value];
             }
         }
 
         if (validValues.length === 0) return false;
-        return this.sampleRandomValueFromPossibilities(validValues, totalProbability, probabilities);
+        return this.sampleRandomValueFromPossibilities(
+            validValues,
+            totalProbability,
+            probabilities,
+        );
     }
 
     /**
@@ -135,13 +166,19 @@ export class BayesianNode {
      * @param data A RecordList containing the data.
      * @param possibleParentValues A dictionary of lists of possible values for parent nodes.
      */
-    setProbabilitiesAccordingToData(data: RecordList, possibleParentValues: Record<string, string[]> = {}) {
-        this.nodeDefinition.possibleValues = Array.from(new Set(data.map((record) => record[this.name])));
-        this.nodeDefinition.conditionalProbabilities = this.recursivelyCalculateConditionalProbabilitiesAccordingToData(
-            data,
-            possibleParentValues,
-            0,
+    setProbabilitiesAccordingToData(
+        data: RecordList,
+        possibleParentValues: Record<string, string[]> = {},
+    ) {
+        this.nodeDefinition.possibleValues = Array.from(
+            new Set(data.map((record) => record[this.name])),
         );
+        this.nodeDefinition.conditionalProbabilities =
+            this.recursivelyCalculateConditionalProbabilitiesAccordingToData(
+                data,
+                possibleParentValues,
+                0,
+            );
     }
 
     /**
@@ -161,17 +198,24 @@ export class BayesianNode {
 
         if (depth < this.parentNames.length) {
             const currentParentName = this.parentNames[depth];
-            for (const possibleValue of possibleParentValues[currentParentName]) {
-                const skip = !data.map((record) => record[currentParentName]).includes(possibleValue);
+            for (const possibleValue of possibleParentValues[
+                currentParentName
+            ]) {
+                const skip = !data
+                    .map((record) => record[currentParentName])
+                    .includes(possibleValue);
                 let filteredData = data;
                 if (!skip) {
-                    filteredData = data.filter((record) => record[currentParentName] === possibleValue);
+                    filteredData = data.filter(
+                        (record) => record[currentParentName] === possibleValue,
+                    );
                 }
-                const nextLevel = this.recursivelyCalculateConditionalProbabilitiesAccordingToData(
-                    filteredData,
-                    possibleParentValues,
-                    depth + 1,
-                );
+                const nextLevel =
+                    this.recursivelyCalculateConditionalProbabilitiesAccordingToData(
+                        filteredData,
+                        possibleParentValues,
+                        depth + 1,
+                    );
 
                 if (!skip) {
                     probabilities.deeper[possibleValue] = nextLevel;
@@ -186,15 +230,15 @@ export class BayesianNode {
         return probabilities;
     }
 
-    get name() : string {
+    get name(): string {
         return this.nodeDefinition.name;
     }
 
-    get parentNames() : string[] {
+    get parentNames(): string[] {
         return this.nodeDefinition.parentNames;
     }
 
-    get possibleValues() : string[] {
+    get possibleValues(): string[] {
         return this.nodeDefinition.possibleValues;
     }
 }

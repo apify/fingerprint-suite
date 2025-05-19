@@ -3,7 +3,9 @@ import browsersList from 'browserslist';
 import { SUPPORTED_BROWSERS } from './constants';
 import { BrowserName, BrowserSpecification } from './header-generator';
 
-export const getUserAgent = (headers: Record<string, string>): string | undefined => {
+export const getUserAgent = (
+    headers: Record<string, string>,
+): string | undefined => {
     for (const [header, value] of Object.entries(headers)) {
         if (header.toLowerCase() === 'user-agent') {
             return value;
@@ -29,7 +31,9 @@ export const getBrowser = (userAgent?: string): BrowserName | undefined => {
     return browser as BrowserName;
 };
 
-const getBrowsersWithVersions = (browserList: string[]): Record<BrowserName, number[]> => {
+const getBrowsersWithVersions = (
+    browserList: string[],
+): Record<BrowserName, number[]> => {
     const browsersWithVersions: Record<string, number[]> = {};
 
     for (const browserDefinition of browserList) {
@@ -50,7 +54,9 @@ const getBrowsersWithVersions = (browserList: string[]): Record<BrowserName, num
     return browsersWithVersions;
 };
 
-const getOptimizedVersionDistribution = (browsersWithVersions: Record<BrowserName, number[]>): BrowserSpecification[] => {
+const getOptimizedVersionDistribution = (
+    browsersWithVersions: Record<BrowserName, number[]>,
+): BrowserSpecification[] => {
     const finalOptimizedBrowsers: BrowserSpecification[] = [];
 
     Object.entries(browsersWithVersions).forEach(([browser, versions]) => {
@@ -75,7 +81,9 @@ const getOptimizedVersionDistribution = (browsersWithVersions: Record<BrowserNam
     return finalOptimizedBrowsers;
 };
 
-export const getBrowsersFromQuery = (browserListQuery: string): BrowserSpecification[] => {
+export const getBrowsersFromQuery = (
+    browserListQuery: string,
+): BrowserSpecification[] => {
     const browserList = browsersList(browserListQuery);
     const browsersWithVersions = getBrowsersWithVersions(browserList);
     return getOptimizedVersionDistribution(browsersWithVersions);

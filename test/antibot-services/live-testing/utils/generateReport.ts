@@ -5,7 +5,9 @@ export interface TestResult {
     meanTimeToPass: number;
 }
 
-export function generateReport(testResults: Record<string, TestResult>): string {
+export function generateReport(
+    testResults: Record<string, TestResult>,
+): string {
     const table = `
 <table>
     <thead>
@@ -18,7 +20,9 @@ export function generateReport(testResults: Record<string, TestResult>): string 
         </tr>
     </thead>
     <tbody>
-        ${Object.entries(testResults).map(([testName, testResult]) => `
+        ${Object.entries(testResults)
+            .map(
+                ([testName, testResult]) => `
         <tr>
             <td style="text-align: left"><b>${testName}</b></td>
             <td>${testResult.passed} ✅</td>
@@ -26,7 +30,9 @@ export function generateReport(testResults: Record<string, TestResult>): string 
             <td>${testResult.unreachable} 🟡</td>
             <td>${Math.floor(testResult.meanTimeToPass)} ms</td>
         </tr>
-        `).join('')}
+        `,
+            )
+            .join('')}
     </tbody>
 </table>
 `;

@@ -3,10 +3,10 @@ name: Run tests
 on:
     # Push to master will deploy a dev version, push to stable deploys the latest version (and syncs the master branch)
     push:
-        branches: [ master, stable ]
+        branches: [master, stable]
     # PRs will run tests (skip deployment)
     pull_request:
-        branches: [ master, stable ]
+        branches: [master, stable]
     # A release via GitHub releases will deploy the latest version
     workflow_call:
     workflow_dispatch:
@@ -15,14 +15,14 @@ jobs:
     lint:
         name: Lint
         if: ${{ !contains(github.event.head_commit.message, '[skip ci]') }}
-        runs-on: ubuntu-latest
+        runs-on: ubuntu-22.04
 
         steps:
             - uses: actions/checkout@v4
-            - name: Use Node.js 22 
+            - name: Use Node.js 22
               uses: actions/setup-node@v4
               with:
-                node-version: 22
+                  node-version: 22
 
             - name: Install Dependencies
               run: npm ci
@@ -30,9 +30,9 @@ jobs:
             - name: Load Cache
               uses: actions/cache@v4
               with:
-                path: |
-                  node_modules
-                key: cache-${{ github.run_id }}
+                  path: |
+                      node_modules
+                  key: cache-${{ github.run_id }}
 
             - run: npm run lint
 
@@ -43,15 +43,15 @@ jobs:
 
         strategy:
             matrix:
-                os: [ ubuntu-latest ]
-                node-version: [ 18, 20, 22 ]
+                os: [ubuntu-22.04]
+                node-version: [18, 20, 22]
 
         steps:
             - uses: actions/checkout@v4
             - name: Use Node.js ${{ matrix.node-version }}
               uses: actions/setup-node@v4
               with:
-                node-version: ${{ matrix.node-version }}
+                  node-version: ${{ matrix.node-version }}
 
             - name: Cache Node Modules
               uses: actions/cache@v4
@@ -59,24 +59,24 @@ jobs:
                   path: |
                       node_modules
                   key: cache-${{ github.run_id }}
-            
+
             - name: Install Playwright deps
-              run : npx playwright install --with-deps 
-            
+              run: npx playwright install --with-deps
+
             - name: Install Puppeteer deps
-              run : |
-                npx puppeteer browsers install chrome
-                npx puppeteer browsers install firefox@beta
+              run: |
+                  npx puppeteer browsers install chrome
+                  npx puppeteer browsers install firefox
 
             - name: Turbo cache
               id: turbo-cache
               uses: actions/cache@v4
               with:
-                path: .turbo
-                key: turbo-${{ github.job }}-${{ github.ref_name }}-${{ github.sha }}
-                restore-keys: |
-                    turbo-${{ github.job }}-${{ github.ref_name }}-
-            
+                  path: .turbo
+                  key: turbo-${{ github.job }}-${{ github.ref_name }}-${{ github.sha }}
+                  restore-keys: |
+                      turbo-${{ github.job }}-${{ github.ref_name }}-
+
             - name: Build
               run: npm run build
 
@@ -86,4 +86,4 @@ jobs:
 
             - name: Run Linux tests
               run: xvfb-run --auto-servernum -- npm test
-              if: ${{ matrix.os == 'ubuntu-latest'}}
+              if: ${{ matrix.os == 'ubuntu-22.04'}}

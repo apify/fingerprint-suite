@@ -274,7 +274,7 @@ async function prepareRecords(
         let useRecord =
             !userAgent.match(/(bot|bots|slurp|spider|crawler|crawl)\b/i) &&
             !robotUserAgents.some((robot) =>
-                userAgent.match(new RegExp(robot.pattern, 'i'))
+                userAgent.match(new RegExp(robot.pattern, 'i')),
             );
 
         if (useRecord) {
@@ -347,7 +347,7 @@ export class GeneratorNetworksCreator {
     }
 
     private getBrowserNameVersion(
-        userAgent: string
+        userAgent: string,
     ): `${string}/${string}` | typeof missingValueDatasetToken {
         const canonicalNames = {
             chrome: 'chrome',
@@ -392,31 +392,31 @@ export class GeneratorNetworksCreator {
 
     async prepareHeaderGeneratorFiles(
         datasetPath: string,
-        resultsPath: string
+        resultsPath: string,
     ) {
         const datasetText = fs.readFileSync(datasetPath, { encoding: 'utf8' });
         const records = await prepareRecords(
             JSON.parse(datasetText),
-            'headers'
+            'headers',
         );
 
         const inputGeneratorNetwork = new BayesianNetwork({
             path: path.join(
                 __dirname,
                 'network_structures',
-                'input-network-structure.zip'
+                'input-network-structure.zip',
             ),
         });
         const headerGeneratorNetwork = new BayesianNetwork({
             path: path.join(
                 __dirname,
                 'network_structures',
-                'header-network-structure.zip'
+                'header-network-structure.zip',
             ),
         });
         // eslint-disable-next-line dot-notation
         const desiredHeaderAttributes = Object.keys(
-            headerGeneratorNetwork['nodesByName']
+            headerGeneratorNetwork['nodesByName'],
         ).filter((attribute) => !nonGeneratedNodes.includes(attribute));
 
         let selectedRecords = records.map((record) => {
@@ -426,7 +426,7 @@ export class GeneratorNetworksCreator {
                         acc[key] = value ?? missingValueDatasetToken;
                     return acc;
                 },
-                {}
+                {},
             );
         });
 
@@ -458,15 +458,15 @@ export class GeneratorNetworksCreator {
 
         const inputNetworkDefinitionPath = path.join(
             resultsPath,
-            'input-network-definition.zip'
+            'input-network-definition.zip',
         );
         const headerNetworkDefinitionPath = path.join(
             resultsPath,
-            'header-network-definition.zip'
+            'header-network-definition.zip',
         );
         const browserHelperFilePath = path.join(
             resultsPath,
-            'browser-helper-file.json'
+            'browser-helper-file.json',
         );
 
         headerGeneratorNetwork.saveNetworkDefinition({
@@ -478,25 +478,25 @@ export class GeneratorNetworksCreator {
 
         const uniqueBrowsersAndHttps = Array.from(
             new Set(
-                selectedRecords.map((record) => record[browserHttpNodeName])
-            )
+                selectedRecords.map((record) => record[browserHttpNodeName]),
+            ),
         );
         fs.writeFileSync(
             browserHelperFilePath,
-            JSON.stringify(uniqueBrowsersAndHttps)
+            JSON.stringify(uniqueBrowsersAndHttps),
         );
     }
 
     async prepareFingerprintGeneratorFiles(
         datasetPath: string,
-        resultsPath: string
+        resultsPath: string,
     ) {
         const datasetText = fs
             .readFileSync(datasetPath, { encoding: 'utf8' })
             .replace(/^\ufeff/, '');
         const records = await prepareRecords(
             JSON.parse(datasetText),
-            'fingerprints'
+            'fingerprints',
         );
         for (let x = 0; x < records.length; x++) {
             // eslint-disable-next-line no-console
@@ -539,12 +539,12 @@ export class GeneratorNetworksCreator {
             path: path.join(
                 __dirname,
                 'network_structures',
-                'fingerprint-network-structure.zip'
+                'fingerprint-network-structure.zip',
             ),
         });
         // eslint-disable-next-line dot-notation
         const desiredFingerprintAttributes = Object.keys(
-            fingerprintGeneratorNetwork['nodesByName']
+            fingerprintGeneratorNetwork['nodesByName'],
         );
 
         const selectedRecords = records.map((record) => {
@@ -554,19 +554,19 @@ export class GeneratorNetworksCreator {
                         acc[key] = value ?? missingValueDatasetToken;
                     return acc;
                 },
-                {}
+                {},
             );
         });
 
         const fingerprintNetworkDefinitionPath = path.join(
             resultsPath,
-            'fingerprint-network-definition.zip'
+            'fingerprint-network-definition.zip',
         );
 
         // eslint-disable-next-line no-console
         console.log('Building the fingerprint network...');
         fingerprintGeneratorNetwork.setProbabilitiesAccordingToData(
-            selectedRecords
+            selectedRecords,
         );
         fingerprintGeneratorNetwork.saveNetworkDefinition({
             path: fingerprintNetworkDefinitionPath,
