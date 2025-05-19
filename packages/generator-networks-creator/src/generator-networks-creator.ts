@@ -91,8 +91,8 @@ const KNOWN_WEBGL_RENDERER_PARTS = [
 const KNOWN_OS_FONTS = {
     WINDOWS: [
         'Cambria Math',
-        'Nirmala UI',
-        'Leelawadee UI',
+        'Calibri',
+        'MS Outlook',
         'HoloLens MDL2 Assets',
         'Segoe Fluent Icons',
     ],
@@ -104,32 +104,24 @@ const KNOWN_OS_FONTS = {
         'Galvji',
         'Chakra Petch',
     ],
-    LINUX: [
-        'Arimo',
-        'MONO',
-        'Ubuntu',
-        'Noto Color Emoji',
-        'Dancing Script',
-        'Droid Sans Mono',
-    ],
 };
 
-const recordSchema = z.preprocess(
-    async (record) => {
+const RecordSchema = z.preprocess(
+    (record) => {
         const castRecord = record as any;
-        if (castRecord?.browserFingerprint?.userAgent && !castRecord?.requestFingerprint?.headers) {
-            const parsedUserAgent = await UAParser(
+        if (castRecord?.browserFingerprint?.userAgent && castRecord?.requestFingerprint?.headers) {
+            const parsedUserAgent = UAParser(
                 castRecord.browserFingerprint.userAgent,
                 castRecord.requestFingerprint.headers
-            ).withClientHints();
+            );
 
-            const knownOsFonts = [];
+            let knownOsFonts: string[] = [];
 
             if (parsedUserAgent.os.name) {
                 if (parsedUserAgent.os.name.startsWith('Windows')) {
-                    knownOsFonts.push(...KNOWN_OS_FONTS.WINDOWS);
+                    knownOsFonts = KNOWN_OS_FONTS.WINDOWS;
                 } else if (['macOS', 'iOS'].includes(parsedUserAgent.os.name)) {
-                    knownOsFonts.push(...KNOWN_OS_FONTS.APPLE);
+                    knownOsFonts = KNOWN_OS_FONTS.APPLE;
                 }
             }
 
@@ -149,7 +141,7 @@ const recordSchema = z.preprocess(
         userAgentProps: z.object({
             parsedUserAgent: z.object({
                 browser: z.object({
-                    name: z.enum(['Edge', 'Chrome', 'Chrome Mobile', 'Firefox', 'Safari', 'Safari Mobile']),
+                    name: z.enum(['Edge', 'Chrome', 'Mobile Chrome', 'Firefox', 'Safari', 'Mobile Safari', 'Mobile Firefox']),
                 }),
                 device: z.object({
                     // undefined means desktop
@@ -163,17 +155,21 @@ const recordSchema = z.preprocess(
             knownOsFonts: z.array(z.string()),
         }),
         requestFingerprint: z.object({
-            headers: z.record(z.string(), z.string())
+            headers: z.record(z.string(), z.string()),
+            httpVersion: z.string()
         }),
         browserFingerprint: z.object({
             webdriver: z.literal(false).optional(),
-            plugins: z.array(z.any()).nonempty(),
-            mimeTypes: z.array(z.any()).nonempty(),
+            plugins: z.array(z.any()),
+            mimeTypes: z.array(z.any()),
             userAgentData: z.object({
-                brands: z.array(z.any()).length(3),
+                brands: z.array(z.object({
+                    brand: z.string(),
+                    version: z.string(),
+                })),
                 mobile: z.boolean(),
                 platform: z.string(),
-            }).optional(),
+            }).optional().nullable(),
             language: z.string(),
             languages: z.array(z.string()).nonempty(),
             product: z.literal('Gecko'),
@@ -191,57 +187,54 @@ const recordSchema = z.preprocess(
                 height: z.number().positive(),
                 availWidth: z.number().positive(),
                 availHeight: z.number().positive(),
-                clientWidth: z.number().positive(),
-                clientHeight: z.number().positive(),
-                innerWidth: z.number().positive(),
-                innerHeight: z.number().positive(),
+                clientWidth: z.number().nonnegative(),
+                clientHeight: z.number().nonnegative(),
+                innerWidth: z.number().nonnegative(),
+                innerHeight: z.number().nonnegative(),
                 outerWidth: z.number().positive(),
                 outerHeight: z.number().positive(),
-                colorDepth: z.number().positive(),
+                colorDepth: z.number().positive().optional(),
                 pixelDepth: z.number().positive().optional(),
-                devicePixelRatio: z.number().min(1).max(5),
+                devicePixelRatio: z.number().min(0).max(5),
             })
-                .refine((data) => data.availWidth <= data.width && data.availHeight <= data.height)
-                .refine((data) => data.innerWidth <= data.outerWidth && data.innerHeight <= data.outerHeight)
-                .refine((data) => data.clientWidth <= data.innerWidth && data.clientHeight <= data.innerHeight)
-                .refine((data) => !data.pixelDepth || data.pixelDepth === data.colorDepth),
+                .refine((data) => data.availWidth <= data.width && data.availHeight <= data.height, "Available width and height should be less than or equal to width and height")
+                .refine((data) => data.innerWidth <= data.outerWidth && data.innerHeight <= data.outerHeight, "Inner width and height should be less than or equal to outer width and height")
+                .refine((data) => !data.pixelDepth || data.pixelDepth === data.colorDepth, "Pixel depth should be equal to color depth"),
             userAgent: z.string(),
         })
     })
-    .refine(({ userAgentProps: { isDesktop }, browserFingerprint: { maxTouchPoints, userAgentData }}) => {
-        if (isDesktop) {
-            return maxTouchPoints === 0 && userAgentData?.mobile !== true
-        } else {
-            return maxTouchPoints > 0
-        }
-    })
-    .refine(({ userAgentProps: { parsedUserAgent }, browserFingerprint: { productSub }}) => {
-        return parsedUserAgent.browser.name === 'Firefox' ? productSub === '20100101' : productSub === '20030107';
-    })
-    .refine(({ userAgentProps: { parsedUserAgent }, browserFingerprint: { vendor }}) => {
-        return parsedUserAgent.browser.name === 'Firefox' && vendor === '' ||
-                (parsedUserAgent.browser.name!.startsWith('Safari') && vendor === 'Apple Computer, Inc.') ||
-                vendor === 'Google Inc.';
-    })
+    .refine(({ userAgentProps: { parsedUserAgent }, browserFingerprint: { productSub }}) => 
+        parsedUserAgent.browser.name.includes('Firefox') ? productSub === '20100101' : productSub === '20030107',
+        "ProductSub should be '20100101' for Firefox and '20030107' for other browsers"
+    )
+    .refine(({ userAgentProps: { parsedUserAgent }, browserFingerprint: { vendor }}) => 
+        (parsedUserAgent.browser.name.includes('Firefox') && vendor === '') ||
+        (parsedUserAgent.browser.name.includes('Safari') && vendor === 'Apple Computer, Inc.') ||
+        vendor === 'Google Inc.'
+    )
     .refine(({ userAgentProps: { knownOsFonts }, browserFingerprint: { fonts }}) => 
         fonts.length === 0 || 
         knownOsFonts.length === 0 ||
-        fonts.some((font) => knownOsFonts.includes(font))
+        fonts.some((font) => knownOsFonts.includes(font)),
+        "Fonts should be empty or contain known OS fonts"
     )
     .refine(({ userAgentProps: { isDesktop }, browserFingerprint: { screen }}) => {
+        const screenWidth = Math.max(screen.width, screen.height);
+        const screenHeight = Math.min(screen.width, screen.height);
+
         if (isDesktop) {
-            return screen.width >= 512 && screen.height >= 384;
-        } else {
-            const screenWidth = Math.max(screen.width, screen.height);
-            const screenHeight = Math.min(screen.width, screen.height);
-            return (
-                screenWidth >= 320 &&
-                screenWidth <= 2560 &&
-                screenHeight >= 480 &&
-                screenHeight <= 3200
-            );
+            if (!(screenWidth >= 512 && screenHeight >= 384)) {
+                return false;
+            }
         }
-    })
+
+        return (
+            screenWidth >= 480 &&
+            screenWidth <= 3440 &&
+            screenHeight >= 320 &&
+            screenHeight <= 2560
+        );
+    }, "Screen width and height should be valid for the device type")
     .transform(({ userAgentProps, ...rest }) => rest)
 );
 
@@ -249,16 +242,19 @@ async function prepareRecords(
     records: Record<string, any>[],
     preprocessingType: string
 ): Promise<Record<string, any>[]> {
-    const cleanedRecords = [];
+    const cleanedRecords: z.infer<typeof RecordSchema>[] = [];
 
-    for (const record of records) {
-        const parsedRecord = recordSchema.parse(record);
+    records
+        .map(x => RecordSchema.safeParse(x))
+        .filter((record) => record.success)
+        .forEach((record) => {
+            cleanedRecords.push({
+                ...record.data,
+                userAgent: record.data.browserFingerprint.userAgent,
+            } as any);
+        });
 
-        cleanedRecords.push({
-            ...parsedRecord,
-            userAgent: parsedRecord.browserFingerprint.userAgent,
-        } as any);
-    }
+    console.log(`Found ${cleanedRecords.length}/${records.length} valid records.`);
 
     // TODO this could break if the list is not there anymore
     // The robots list is available under the MIT license, for details see https://github.com/atmire/COUNTER-Robots/blob/master/LICENSE
