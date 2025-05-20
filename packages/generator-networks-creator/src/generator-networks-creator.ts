@@ -24,36 +24,45 @@ const PLUGIN_CHARACTERISTICS_ATTRIBUTES = ['plugins', 'mimeTypes'];
 
 async function prepareRecords(
     records: Record<string, any>[],
-    preprocessingType: string
+    preprocessingType: string,
 ): Promise<Record<string, any>[]> {
     const recordSchema = await getRecordSchema();
 
     const cleanedRecords = records
-        .map(x => recordSchema.safeParse(x))
+        .map((x) => recordSchema.safeParse(x))
         .filter((record) => record.success)
         .map((record) => record.data);
 
-    console.log(`Found ${cleanedRecords.length}/${records.length} valid records.`);
+    console.log(
+        `Found ${cleanedRecords.length}/${records.length} valid records.`,
+    );
 
-    const deconstructedRecords = cleanedRecords.map((record) => {
-        if (preprocessingType === 'headers') {
-            const { httpVersion, headers } = record.requestFingerprint;
-            headers[httpVersionNodeName] = `_${httpVersion}_`;
+    const deconstructedRecords = cleanedRecords
+        .map((record) => {
+            if (preprocessingType === 'headers') {
+                const { httpVersion, headers } = record.requestFingerprint;
+                headers[httpVersionNodeName] = `_${httpVersion}_`;
 
-            return headers;
-        } else {
-            return record.browserFingerprint;
-        }
-    }).filter(x => x);
+                return headers;
+            } else {
+                return record.browserFingerprint;
+            }
+        })
+        .filter((x) => x);
 
-    const attributes = new Set<keyof typeof deconstructedRecords[number]>(
-        deconstructedRecords.flatMap(record => Object.keys(record || {})) as (keyof typeof deconstructedRecords[number])[]
+    const attributes = new Set<keyof (typeof deconstructedRecords)[number]>(
+        deconstructedRecords.flatMap((record) =>
+            Object.keys(record || {}),
+        ) as (keyof (typeof deconstructedRecords)[number])[],
     );
 
     const reorganizedRecords = deconstructedRecords.map((record) => {
         const reorganizedRecord = {} as Record<string, any>;
         for (const attribute of attributes) {
-            reorganizedRecord[attribute] = record[attribute] === undefined ? missingValueDatasetToken : record[attribute];
+            reorganizedRecord[attribute] =
+                record[attribute] === undefined
+                    ? missingValueDatasetToken
+                    : record[attribute];
         }
         return reorganizedRecord;
     });
