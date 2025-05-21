@@ -5,6 +5,7 @@ import {
     Fingerprint,
     FingerprintGenerator,
     FingerprintGeneratorOptions,
+    type UserAgentData,
 } from 'fingerprint-generator';
 import {
     BrowserContext,
@@ -23,7 +24,7 @@ declare function overrideInstancePrototype<T>(
     overrideObj: Partial<T>,
 ): void;
 declare function overrideUserAgentData(
-    userAgentData: Record<string, string>,
+    userAgentData: UserAgentData,
 ): void;
 declare function overrideDocumentDimensionsProps(
     props: Record<string, number>,
