@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 
 import { BayesianNetwork } from 'generative-bayesian-network';
-import fetch from 'node-fetch';
+import { getRecordSchema } from './record-schema';
 
 const browserHttpNodeName = '*BROWSER_HTTP';
 const httpVersionNodeName = '*HTTP_VERSION';
@@ -26,90 +26,50 @@ async function prepareRecords(
     records: Record<string, any>[],
     preprocessingType: string,
 ): Promise<Record<string, any>[]> {
+    const recordSchema = await getRecordSchema();
+
     const cleanedRecords = records
-        .filter(({ requestFingerprint: { headers }, browserFingerprint }) => {
-            return (
-                (headers['user-agent'] ?? headers['User-Agent']) ===
-                browserFingerprint.userAgent
-            );
-        })
-        .filter(
-            ({
-                browserFingerprint: {
-                    screen: { width, height },
-                    userAgent,
-                },
-            }) =>
-                (width >= 1280 && width > height) ||
-                (width < height && /phone|android|mobile/i.test(userAgent)),
-        )
-        .map(
-            (record) =>
-                ({
-                    ...record,
-                    userAgent: record.browserFingerprint.userAgent,
-                }) as any,
-        );
+        .map((x) => recordSchema.safeParse(x))
+        .filter((record) => record.success)
+        .map((record) => record.data);
 
-    // TODO this could break if the list is not there anymore
-    // The robots list is available under the MIT license, for details see https://github.com/atmire/COUNTER-Robots/blob/master/LICENSE
-    const robotUserAgents = (await fetch(
-        'https://raw.githubusercontent.com/atmire/COUNTER-Robots/master/COUNTER_Robots_list.json',
-    ).then(async (res) => res.json())) as { pattern: string }[];
+    console.log(
+        `Found ${cleanedRecords.length}/${records.length} valid records.`,
+    );
 
-    const deconstructedRecords = [];
-    const userAgents = new Set();
-    for (let x = 0; x < cleanedRecords.length; x++) {
-        let record = cleanedRecords[x];
-        const { userAgent } = record as { userAgent: string };
-        let useRecord =
-            !userAgent.match(/(bot|bots|slurp|spider|crawler|crawl)\b/i) &&
-            !robotUserAgents.some((robot) =>
-                userAgent.match(new RegExp(robot.pattern, 'i')),
-            );
-
-        if (useRecord) {
+    const deconstructedRecords = cleanedRecords
+        .map((record) => {
             if (preprocessingType === 'headers') {
-                const { httpVersion } = record.requestFingerprint;
-                record = record.requestFingerprint.headers;
-                record[httpVersionNodeName] = `_${httpVersion}_`;
-                if (record[httpVersionNodeName] === '_1.1_') {
-                    useRecord = !('user-agent' in record);
-                }
+                const { httpVersion, headers } = record.requestFingerprint;
+                headers[httpVersionNodeName] = `_${httpVersion}_`;
+
+                return headers;
             } else {
-                record = record.browserFingerprint;
+                return record.browserFingerprint;
             }
-        }
+        })
+        .filter((x) => x);
 
-        if (useRecord) {
-            deconstructedRecords.push(record);
-        } else {
-            userAgents.add(userAgent);
-        }
-    }
+    const attributes = new Set<keyof (typeof deconstructedRecords)[number]>(
+        deconstructedRecords.flatMap((record) =>
+            Object.keys(record || {}),
+        ) as (keyof (typeof deconstructedRecords)[number])[],
+    );
 
-    const attributes = new Set<string>();
-    deconstructedRecords.forEach((record) => {
-        Object.keys(record).forEach((key) => {
-            attributes.add(key);
-        });
-    });
-
-    const reorganizedRecords = [] as Record<string, any>[];
-    for (const record of deconstructedRecords) {
+    const reorganizedRecords = deconstructedRecords.map((record) => {
         const reorganizedRecord = {} as Record<string, any>;
         for (const attribute of attributes) {
-            if (!(attribute in record) || record[attribute] === undefined) {
-                reorganizedRecord[attribute] = missingValueDatasetToken;
-            } else {
-                reorganizedRecord[attribute] = record[attribute];
-            }
+            reorganizedRecord[attribute] =
+                record[attribute] === undefined
+                    ? missingValueDatasetToken
+                    : record[attribute];
         }
-        reorganizedRecords.push(reorganizedRecord);
-    }
+        return reorganizedRecord;
+    });
 
     return reorganizedRecords;
 }
+
 export class GeneratorNetworksCreator {
     private getDeviceOS(userAgent: string): {
         device: string;
@@ -235,7 +195,11 @@ export class GeneratorNetworksCreator {
                 [browserNodeName]: browser,
                 [operatingSystemNodeName]: operatingSystem,
                 [deviceNodeName]: device,
-                [browserHttpNodeName]: `${browser}|${(record[httpVersionNodeName] as string).startsWith('_1') ? '1' : '2'}`,
+                [browserHttpNodeName]: `${browser}|${
+                    (record[httpVersionNodeName] as string).startsWith('_1')
+                        ? '1'
+                        : '2'
+                }`,
             };
         });
 
