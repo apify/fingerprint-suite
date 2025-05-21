@@ -23,9 +23,7 @@ declare function overrideInstancePrototype<T>(
     instance: T,
     overrideObj: Partial<T>,
 ): void;
-declare function overrideUserAgentData(
-    userAgentData: UserAgentData,
-): void;
+declare function overrideUserAgentData(userAgentData: UserAgentData): void;
 declare function overrideDocumentDimensionsProps(
     props: Record<string, number>,
 ): void;

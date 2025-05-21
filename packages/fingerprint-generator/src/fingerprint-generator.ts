@@ -32,7 +32,7 @@ export type ScreenFingerprint = {
 export type Brand = {
     brand: string;
     version: string;
-}
+};
 
 export type UserAgentData = {
     brands: Brand[];
@@ -44,7 +44,7 @@ export type UserAgentData = {
     model: string;
     platformVersion: string;
     uaFullVersion: string;
-}
+};
 
 export type ExtraProperties = {
     vendorFlavors: string[];
@@ -52,7 +52,7 @@ export type ExtraProperties = {
     globalPrivacyControl: null;
     pdfViewerEnabled: boolean;
     installedApps: any[];
-}
+};
 
 export type NavigatorFingerprint = {
     userAgent: string;
