@@ -17,14 +17,14 @@
 Today's websites are increasingly using fingerprinting to track users and identify them.
 With the help of `fingerprint-suite` you can generate and inject browser fingerprints into your browser, allowing you to fly your scrapers under the radar.
 
-> Would you like to work with us on our fingerprinting tools or similar projects? [We are hiring!](https://apify.com/jobs#senior-node.js-engineer)
+> Would you like to work with us on our fingerprinting tools or similar projects? [We are hiring!](https://apify.com/jobs)
 
 ## Overview
 
 `fingerprint-suite` is a modular toolkit for browser fingerprint generation and injection. It consists of the following `npm` packages, which you can use separately, or together:
 
 - [`header-generator`](https://www.npmjs.com/package/header-generator): generates configurable, realistic HTTP headers
-- [`fingerprint-generator`](https://www.npmjs.com/package/fingerprint-generator): generates realistic browser fingerprints, affecting the HTTP headers and browser JS APIs 
+- [`fingerprint-generator`](https://www.npmjs.com/package/fingerprint-generator): generates realistic browser fingerprints, affecting the HTTP headers and browser JS APIs
 - [`fingerprint-injector`](https://www.npmjs.com/package/fingerprint-injector): injects browser fingerprints into your Playwright or Puppeteer managed browser instance
 - [`generative-bayesian-network`](https://www.npmjs.com/package/generative-bayesian-network): our fast implementation of a Bayesian generative network used to generate realistic browser fingerprints
 
@@ -38,26 +38,23 @@ import { newInjectedContext } from 'fingerprint-injector';
 
 (async () => {
     const browser = await chromium.launch({ headless: false });
-    const context = await newInjectedContext(
-        browser,
-        {
-            // Constraints for the generated fingerprint (optional)
-            fingerprintOptions: {
-                devices: ['mobile'],
-                operatingSystems: ['ios'],
-            },
-            // Playwright's newContext() options (optional, random example for illustration)
-            newContextOptions: {
-                geolocation: {
-                    latitude: 51.50853,
-                    longitude: -0.12574,
-                }
-            }
+    const context = await newInjectedContext(browser, {
+        // Constraints for the generated fingerprint (optional)
+        fingerprintOptions: {
+            devices: ['mobile'],
+            operatingSystems: ['ios'],
         },
-    );
+        // Playwright's newContext() options (optional, random example for illustration)
+        newContextOptions: {
+            geolocation: {
+                latitude: 51.50853,
+                longitude: -0.12574,
+            },
+        },
+    });
 
     const page = await context.newPage();
-   // ... your code using `page` here
+    // ... your code using `page` here
 })();
 ```
 
@@ -69,27 +66,18 @@ import { newInjectedPage } from 'fingerprint-injector';
 
 (async () => {
     const browser = await puppeteer.launch({ headless: false });
-    const page = await newInjectedPage(
-        browser,
-        {
-            // constraints for the generated fingerprint
-            fingerprintOptions: {
-                devices: ['mobile'],
-                operatingSystems: ['ios'],
-            },
+    const page = await newInjectedPage(browser, {
+        // constraints for the generated fingerprint
+        fingerprintOptions: {
+            devices: ['mobile'],
+            operatingSystems: ['ios'],
         },
-    );
+    });
 
     // ... your code using `page` here
     await page.goto('https://example.com');
 })();
 ```
-
-## Performance
-With ever-improving performance of antibot fingerprinting services, we use some of the industry-leading services to benchmark our performance.
-The following table shows how is the latest build of `fingerprint-suite` doing in comparison to other popular fingerprinting tools.
-
-![Fingerprinting Benchmark Report](https://raw.githubusercontent.com/apify/fingerprint-suite/master/test/antibot-services/live-testing/report.png)
 
 ## Support
 

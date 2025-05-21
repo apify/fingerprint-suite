@@ -1,94 +1,94 @@
 name: Model updater
 
 on:
-  # Triggers the workflow every month
-  schedule:
-    - cron: "0 0 1 * *"
-  workflow_dispatch:
+    # Triggers the workflow every month
+    # schedule:
+    #   - cron: "0 0 1 * *"
+    workflow_dispatch:
 
 jobs:
-  build_model:
-    # The type of runner that the job will run on
-    runs-on: ubuntu-latest
+    build_model:
+        # The type of runner that the job will run on
+        runs-on: ubuntu-22.04
 
-    # Steps represent a sequence of tasks that will be executed as part of the job
-    steps:
-      # Runs a single command using the runners shell
-      - uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.APIFY_SERVICE_ACCOUNT_GITHUB_TOKEN }}
-      - name: Use Node.js 16
-        uses: actions/setup-node@v3
-        with:
-          node-version: 16
+        # Steps represent a sequence of tasks that will be executed as part of the job
+        steps:
+            # Runs a single command using the runners shell
+            - uses: actions/checkout@v4
+              with:
+                  token: ${{ secrets.APIFY_SERVICE_ACCOUNT_GITHUB_TOKEN }}
+            - name: Use Node.js 22
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 22
 
-      - name: Cache node modules + browsers
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.npm
-            ~/.cache/ms-playwright
-          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
+            - name: Cache node modules + browsers
+              uses: actions/cache@v4
+              with:
+                  path: |
+                      ~/.npm
+                      ~/.cache/ms-playwright
+                  key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
 
-      - name: Install Dependencies
-        run: npm ci
+            - name: Install Dependencies
+              run: npm ci
 
-      - name: Install Playwright deps
-        run: npx playwright install
+            - name: Install Playwright deps
+              run: npx playwright install
 
-      - name: Install xvfb
-        run: | 
-          sudo apt-get update
-          sudo apt-get -y install xvfb
+            - name: Install xvfb
+              run: |
+                  sudo apt-get update
+                  sudo apt-get -y install xvfb
 
-      - name: Install Playwright browsers
-        run: |
-          npx playwright install webkit
-          npx playwright install chrome
-          npx playwright install msedge
+            - name: Install Playwright browsers
+              run: |
+                  npx playwright install webkit
+                  npx playwright install chrome
+                  npx playwright install msedge
 
-      - name: Install Playwright deps v2
-        run: npx playwright install-deps
-          
-      - name: Collect HTTP header orders
-        run: |
-          xvfb-run -- node ./packages/header-order-collector/collector.js | tee ./packages/header-generator/src/data_files/headers-order.json
+            - name: Install Playwright deps v2
+              run: npx playwright install-deps
 
-      - name: Generate model and update versions
-        run: |
-          npm version patch --git-tag-version=false
-          export GIT_TAG=$(node -p "require('./package.json').version")
+            - name: Collect HTTP header orders
+              run: |
+                  xvfb-run -- node ./packages/header-order-collector/collector.js | tee ./packages/header-generator/src/data_files/headers-order.json
 
-          npm run prerelease
-          npm run buildNetwork
-        env:
-          APIFY_FINGERPRINT_DATASET_ID: ${{ secrets.APIFY_FINGERPRINT_DATASET_ID }}
+            - name: Generate model and update versions
+              run: |
+                  npm version patch --git-tag-version=false
+                  export GIT_TAG=$(node -p "require('./package.json').version")
 
-      - name: Get the new version number
-        id: get_version
-        run: |
-          echo "::set-output name=version::$(node -p "require('./package.json').version")"
+                  npm run prerelease
+                  npm run buildNetwork
+              env:
+                  APIFY_FINGERPRINT_DATASET_ID: ${{ secrets.APIFY_FINGERPRINT_DATASET_ID }}
 
-      - name: Push new model
-        uses: stefanzweifel/git-auto-commit-action@v4
-        with:
-          commit_message: "[auto] fingerprint/header model update"
-          branch: master
-          tagging_message: "v${{ steps.get_version.outputs.version }}"
+            - name: Get the new version number
+              id: get_version
+              run: |
+                  echo "::set-output name=version::$(node -p "require('./package.json').version")"
 
-          file_pattern: "./packages/ ./package.json ./package-lock.json"
+            - name: Push new model
+              uses: stefanzweifel/git-auto-commit-action@v5
+              with:
+                  commit_message: '[auto] fingerprint/header model update'
+                  branch: master
+                  tagging_message: 'v${{ steps.get_version.outputs.version }}'
 
-          commit_user_name: "modelmaker[bot] ⚒️"
-          commit_user_email: modelmaker[bot]@users.noreply.github.com 
+                  file_pattern: './packages/ ./package.json ./package-lock.json'
 
-      - name: Create release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.APIFY_SERVICE_ACCOUNT_GITHUB_TOKEN }}
-        with:
-          tag_name: "v${{ steps.get_version.outputs.version }}"
-          release_name: "v${{ steps.get_version.outputs.version }}"
-          body: |
-            This is an automated release of the model used by the `fingerprint-suite`.
+                  commit_user_name: 'modelmaker[bot] ⚒️'
+                  commit_user_email: modelmaker[bot]@users.noreply.github.com
 
-            The only difference between this release and the previous one is the model used to generate fingerprints.
+            - name: Create release
+              uses: actions/create-release@v1
+              env:
+                  GITHUB_TOKEN: ${{ secrets.APIFY_SERVICE_ACCOUNT_GITHUB_TOKEN }}
+              with:
+                  tag_name: 'v${{ steps.get_version.outputs.version }}'
+                  release_name: 'v${{ steps.get_version.outputs.version }}'
+                  body: |
+                      This is an automated release of the model used by the `fingerprint-suite`.
+
+                      The only difference between this release and the previous one is the model used to generate fingerprints.

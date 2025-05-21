@@ -1,5 +1,6 @@
 import { FingerprintGenerator } from 'fingerprint-generator';
 import { FingerprintInjector } from 'fingerprint-injector';
+
 import { VanillaPlaywright } from './vanilla-playwright';
 
 export class FingerprintSuite extends VanillaPlaywright {
@@ -17,7 +18,6 @@ export class FingerprintSuite extends VanillaPlaywright {
                 userAgent: fingerprint.fingerprint.navigator.userAgent,
                 viewport: fingerprint.fingerprint.screen,
                 locale: fingerprint.fingerprint.navigator.language,
-
             },
         });
 

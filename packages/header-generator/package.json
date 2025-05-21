@@ -1,6 +1,6 @@
 {
     "name": "header-generator",
-    "version": "2.1.45",
+    "version": "2.1.66",
     "description": "NodeJS package for generating realistic browser-like HTTP headers.",
     "author": {
         "name": "Apify",
@@ -24,13 +24,13 @@
     },
     "dependencies": {
         "browserslist": "^4.21.1",
-        "generative-bayesian-network": "^2.1.45",
+        "generative-bayesian-network": "^2.1.66",
         "ow": "^0.28.1",
         "tslib": "^2.4.0"
     },
     "scripts": {
         "build": "npm run clean && npm run compile",
-        "postbuild": "cp -r src/data_files/ dist/ && cp ../../README.md dist/",
+        "postbuild": "cp -r src/data_files/ dist/ && cp ./README.md dist/",
         "clean": "rimraf ./dist",
         "compile": "tsc -p tsconfig.build.json && gen-esm-wrapper ./dist/index.js ./dist/index.mjs",
         "copy": "ts-node -T ../../scripts/copy.ts"

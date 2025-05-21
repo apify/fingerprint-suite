@@ -3,38 +3,47 @@ import * as path from 'path';
 import { BayesianNetwork } from 'generative-bayesian-network';
 import { parseFile } from 'fast-csv';
 
-const testNetworkDefinitionPath = path.join(__dirname, './testNetworkDefinition.zip');
+const testNetworkDefinitionPath = path.join(
+    __dirname,
+    './testNetworkDefinition.zip',
+);
 
 describe('Setup test', () => {
-    const testGeneratorNetwork = new BayesianNetwork({path: path.join(__dirname, './testNetworkStructureDefinition.zip')});
+    const testGeneratorNetwork = new BayesianNetwork({
+        path: path.join(__dirname, './testNetworkStructureDefinition.zip'),
+    });
 
     test('Calculates probabilities from data', async () => {
-        const rows : string[][] = [];
+        const rows: string[][] = [];
 
         await new Promise<void>((res) => {
             parseFile(path.join(__dirname, './testDataset.csv'))
-            .on('data', r => rows.push(r))
-            .on('end', () => {
-               res();
-            })
+                .on('data', (r) => rows.push(r))
+                .on('end', () => {
+                    res();
+                });
         });
 
-        const data = rows.slice(1).map(r => {
+        const data = rows.slice(1).map((r) => {
             const x = {} as Record<string, any>;
-            for(let i = 0; i < r.length; i++) {
+            for (let i = 0; i < r.length; i++) {
                 x[rows[0][i]] = r[i];
             }
             return x;
         });
-        
+
         testGeneratorNetwork.setProbabilitiesAccordingToData(data);
-        testGeneratorNetwork.saveNetworkDefinition({path: testNetworkDefinitionPath});
+        testGeneratorNetwork.saveNetworkDefinition({
+            path: testNetworkDefinitionPath,
+        });
         expect(testGeneratorNetwork.generateSample()).toBeTruthy();
     });
 });
 
 describe('Generation tests', () => {
-    const testGeneratorNetwork = new BayesianNetwork({path: testNetworkDefinitionPath});
+    const testGeneratorNetwork = new BayesianNetwork({
+        path: testNetworkDefinitionPath,
+    });
 
     test('Generates a sample', () => {
         expect(testGeneratorNetwork.generateSample()).toBeTruthy();
@@ -47,8 +56,12 @@ describe('Generation tests', () => {
             ATTR3: 'ATTR3_VAL2',
         };
         const sample = testGeneratorNetwork.generateSample(knownValues);
-        for (const attribute of Object.keys(knownValues) as (keyof typeof knownValues)[]) {
-            expect((sample as any)[attribute] === knownValues[attribute]).toBeTruthy();
+        for (const attribute of Object.keys(
+            knownValues,
+        ) as (keyof typeof knownValues)[]) {
+            expect(
+                (sample as any)[attribute] === knownValues[attribute],
+            ).toBeTruthy();
         }
     });
 
@@ -58,10 +71,17 @@ describe('Generation tests', () => {
             ATTR3: ['ATTR3_VAL2', 'ATTR3_VAL3'],
             ATTR5: ['ATTR5_VAL1', 'ATTR5_VAL3'],
         };
-        const sample = testGeneratorNetwork.generateConsistentSampleWhenPossible(valuePossibilities);
+        const sample =
+            testGeneratorNetwork.generateConsistentSampleWhenPossible(
+                valuePossibilities,
+            );
         for (const attribute of Object.keys(sample)) {
             if (attribute in valuePossibilities) {
-                expect(valuePossibilities[attribute as keyof typeof valuePossibilities].includes(sample[attribute])).toBeTruthy();
+                expect(
+                    valuePossibilities[
+                        attribute as keyof typeof valuePossibilities
+                    ].includes(sample[attribute]),
+                ).toBeTruthy();
             }
         }
     });

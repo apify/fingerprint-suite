@@ -1,5 +1,4 @@
 import browsersList from 'browserslist';
-
 import { getBrowsersFromQuery } from 'header-generator/src/utils';
 
 describe('browserList generation', () => {

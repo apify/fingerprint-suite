@@ -1,10 +1,19 @@
-import { chromium, firefox, webkit, BrowserContext, LaunchOptions, BrowserContextOptions, BrowserType, Browser } from 'playwright';
+import {
+    chromium,
+    firefox,
+    webkit,
+    BrowserContext,
+    LaunchOptions,
+    BrowserContextOptions,
+    BrowserType,
+    Browser,
+} from 'playwright';
 
 export interface GetContextOptions {
     browserType?: 'chromium' | 'firefox' | 'webkit';
     launchOptions?: LaunchOptions;
     contextOptions?: BrowserContextOptions;
-};
+}
 
 export interface FingeprintingEngine {
     getContext({
@@ -17,7 +26,7 @@ export interface FingeprintingEngine {
 }
 
 export class VanillaPlaywright implements FingeprintingEngine {
-    private browser: Browser|null = null;
+    private browser: Browser | null = null;
 
     async getContext(options: GetContextOptions): Promise<BrowserContext> {
         const {

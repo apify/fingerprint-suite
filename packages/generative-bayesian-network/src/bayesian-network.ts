@@ -1,4 +1,5 @@
 import AdmZip = require('adm-zip');
+
 import { BayesianNode } from './bayesian-node';
 
 export type RecordList = Record<string, any>[];
@@ -8,20 +9,27 @@ export type RecordList = Record<string, any>[];
  * represented by the network.
  */
 export class BayesianNetwork {
-    private nodesInSamplingOrder : BayesianNode[] = [];
-    private nodesByName : Record<string, BayesianNode> = {};
+    private nodesInSamplingOrder: BayesianNode[] = [];
+    private nodesByName: Record<string, BayesianNode> = {};
 
-    constructor({ path }: {path: string}) {
+    constructor({ path }: { path: string }) {
         const zip = new AdmZip(path);
         const zipEntries = zip.getEntries();
 
-        const networkDefinition = JSON.parse(zipEntries[0].getData().toString('utf8'));
-        this.nodesInSamplingOrder = networkDefinition.nodes.map((nodeDefinition: any) => new BayesianNode(nodeDefinition));
+        const networkDefinition = JSON.parse(
+            zipEntries[0].getData().toString('utf8'),
+        );
+        this.nodesInSamplingOrder = networkDefinition.nodes.map(
+            (nodeDefinition: any) => new BayesianNode(nodeDefinition),
+        );
 
-        this.nodesByName = this.nodesInSamplingOrder.reduce((p, node) => ({
-            ...p,
-            [node.name]: node,
-        }), {});
+        this.nodesByName = this.nodesInSamplingOrder.reduce(
+            (p, node) => ({
+                ...p,
+                [node.name]: node,
+            }),
+            {},
+        );
     }
 
     /**
@@ -44,8 +52,14 @@ export class BayesianNetwork {
      * Returns false if no such sample can be generated.
      * @param valuePossibilities A dictionary of lists of possible values for nodes (if a node isn't present in the dictionary, all values are possible).
      */
-    generateConsistentSampleWhenPossible(valuePossibilities: Record<string, string[]>) {
-        return this.recursivelyGenerateConsistentSampleWhenPossible({}, valuePossibilities, 0);
+    generateConsistentSampleWhenPossible(
+        valuePossibilities: Record<string, string[]>,
+    ) {
+        return this.recursivelyGenerateConsistentSampleWhenPossible(
+            {},
+            valuePossibilities,
+            0,
+        );
     }
 
     /**
@@ -55,20 +69,31 @@ export class BayesianNetwork {
      * @param depth Current recursion depth.
      */
     private recursivelyGenerateConsistentSampleWhenPossible(
-        sampleSoFar: Record<string, string>, valuePossibilities: Record<string, string[]>, depth: number,
-    ) : Record<string, string> {
-        const bannedValues : string[] = [];
+        sampleSoFar: Record<string, string>,
+        valuePossibilities: Record<string, string[]>,
+        depth: number,
+    ): Record<string, string> {
+        const bannedValues: string[] = [];
         const node = this.nodesInSamplingOrder[depth];
         let sampleValue;
 
         do {
-            sampleValue = node.sampleAccordingToRestrictions(sampleSoFar, valuePossibilities[node.name], bannedValues);
+            sampleValue = node.sampleAccordingToRestrictions(
+                sampleSoFar,
+                valuePossibilities[node.name],
+                bannedValues,
+            );
             if (!sampleValue) break;
 
             sampleSoFar[node.name] = sampleValue;
 
             if (depth + 1 < this.nodesInSamplingOrder.length) {
-                const sample = this.recursivelyGenerateConsistentSampleWhenPossible(sampleSoFar, valuePossibilities, depth + 1);
+                const sample =
+                    this.recursivelyGenerateConsistentSampleWhenPossible(
+                        sampleSoFar,
+                        valuePossibilities,
+                        depth + 1,
+                    );
                 if (Object.keys(sample).length !== 0) {
                     return sample;
                 }
@@ -89,10 +114,13 @@ export class BayesianNetwork {
     setProbabilitiesAccordingToData(data: RecordList) {
         this.nodesInSamplingOrder.forEach((node, i) => {
             // eslint-disable-next-line no-console
-            console.log(`${i}/${this.nodesInSamplingOrder.length} Setting probabilities for node ${node.name}`);
+            console.log(
+                `${i}/${this.nodesInSamplingOrder.length} Setting probabilities for node ${node.name}`,
+            );
             const possibleParentValues: Record<string, string[]> = {};
             for (const parentName of node.parentNames) {
-                possibleParentValues[parentName] = this.nodesByName[parentName].possibleValues;
+                possibleParentValues[parentName] =
+                    this.nodesByName[parentName].possibleValues;
             }
             node.setProbabilitiesAccordingToData(data, possibleParentValues);
         });
@@ -102,7 +130,7 @@ export class BayesianNetwork {
      * Saves the network definition to the specified file path to be used later.
      * @param networkDefinitionFilePath File path where the network definition should be saved.
      */
-    saveNetworkDefinition({ path } : {path: string}) {
+    saveNetworkDefinition({ path }: { path: string }) {
         const network = {
             nodes: this.nodesInSamplingOrder,
         };
@@ -110,7 +138,10 @@ export class BayesianNetwork {
         // creating archives
         const zip = new AdmZip();
 
-        zip.addFile('network.json', Buffer.from(JSON.stringify(network), 'utf8'));
+        zip.addFile(
+            'network.json',
+            Buffer.from(JSON.stringify(network), 'utf8'),
+        );
         zip.writeZip(path);
     }
 }
