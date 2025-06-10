@@ -52,7 +52,7 @@ jobs:
                   GH_TOKEN: ${{ secrets.APIFY_SERVICE_ACCOUNT_GITHUB_TOKEN }}
 
             - name: Commit the version bump
-              uses: stefanzweifel/git-auto-commit-action@v5
+              uses: stefanzweifel/git-auto-commit-action@v6
               with:
                   branch: master
                   commit_message: 'chore: [skip ci] sync new package.json versions'
