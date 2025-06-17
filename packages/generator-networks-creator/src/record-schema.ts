@@ -219,10 +219,17 @@ export async function getRecordSchema() {
                                     renderer.includes(part),
                                 ),
                             ),
+                        vendor: z.string(),
                     }),
                     fonts: z.array(z.string()),
                     screen: z
                         .object({
+                            availTop: z.number().nonnegative(),
+                            availLeft: z.number().nonnegative(),
+                            pageXOffset: z.number().nonnegative(),
+                            pageYOffset: z.number().nonnegative(),
+                            screenX: z.number().nonnegative(),
+                            hasHDR: z.boolean().optional(),
                             width: z.number().positive(),
                             height: z.number().positive(),
                             availWidth: z.number().positive(),
