@@ -5,9 +5,9 @@ on:
     schedule:
         - cron: '0 0 1 * *'
     workflow_dispatch:
-    push:
-        branches:
-            - fix/models
+    # push:
+    #     branches:
+    #         - fix/models
 
 jobs:
     build_model:

@@ -2,6 +2,9 @@ name: Test Browserforge compatibility
 
 on:
     workflow_call:
+    push:
+      branches:
+        - fix/models
 
 jobs:
     test:
@@ -15,11 +18,17 @@ jobs:
               run: uv python install 3.13
 
             - name: Install dependencies
-              run: uv add "browserforge[all]==1.2.3"
+              run: |
+                uv venv create --python 3.13
+                uv venv activate
+                uv init
+                uv add "browserforge[all]==1.2.3"
 
             - name: Download artifacts
               uses: actions/download-artifact@v4
               with:
+                  run-id: 15706743298
+                  github-token: ${{ secrets.APIFY_SERVICE_ACCOUNT_GITHUB_TOKEN }}
                   name: new-models
                   path: ./new-models
 
@@ -30,11 +39,11 @@ jobs:
 
             - name: Copy models
               run: |
-                  cp ./new-models/header-generator/src/data_files/header-network-definition.zip ~/.uv/lib/python3.13/site-packages/browserforge/headers/data/header-network.zip
-                  cp ./new-models/header-generator/src/data_files/browser-helper-file.json ~/.uv/lib/python3.13/site-packages/browserforge/headers/data/browser-helper-file.json
-                  cp ./new-models/header-generator/src/data_files/input-network-definition.zip ~/.uv/lib/python3.13/site-packages/browserforge/headers/data/input-network.zip
-                  cp ./new-models/header-generator/src/data_files/headers-order.json ~/.uv/lib/python3.13/site-packages/browserforge/headers/data/headers-order.json
-                  cp ./new-models/fingerprint-generator/src/data_files/fingerprint-network-definition.zip ~/.uv/lib/python3.13/site-packages/browserforge/fingerprints/data/fingerprint-network.zip
+                  cp ./new-models/packages/header-generator/src/data_files/header-network-definition.zip ./.venv/lib/python3.13/site-packages/browserforge/headers/data/header-network.zip
+                  cp ./new-models/packages/header-generator/src/data_files/browser-helper-file.json ./.venv/lib/python3.13/site-packages/browserforge/headers/data/browser-helper-file.json
+                  cp ./new-models/packages/header-generator/src/data_files/input-network-definition.zip ./.venv/lib/python3.13/site-packages/browserforge/headers/data/input-network.zip
+                  cp ./new-models/packages/header-generator/src/data_files/headers-order.json ./.venv/lib/python3.13/site-packages/browserforge/headers/data/headers-order.json
+                  cp ./new-models/packages/fingerprint-generator/src/data_files/fingerprint-network-definition.zip ./.venv/lib/python3.13/site-packages/browserforge/fingerprints/data/fingerprint-network.zip
 
             - name: Run Browserforge compatibility test
               run: |
