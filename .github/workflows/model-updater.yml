@@ -81,7 +81,7 @@ jobs:
             - name: Test model changes (Node.JS packages)
               run: |
                   npm run build
-                  npm run test
+                  xvfb-run --auto-servernum -- npm test
 
             - name: Test model changes (Browserforge)
               uses: ./.github/workflows/python-code-checks.yaml
