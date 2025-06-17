@@ -64,16 +64,29 @@ jobs:
               env:
                   APIFY_FINGERPRINT_DATASET_ID: ${{ secrets.APIFY_FINGERPRINT_DATASET_ID }}
 
+            - name: Upload models as artifacts
+              uses: actions/upload-artifact@v4
+              with:
+                  name: new-models
+                  path: |
+                      ./packages/header-generator/src/data_files/headers-order.json
+                      ./packages/header-generator/src/data_files/header-network-definition.zip
+                      ./packages/header-generator/src/data_files/browser-helper-file.json
+                      ./packages/header-generator/src/data_files/input-network-definition.zip
+                      ./packages/fingerprint-generator/src/data_files/fingerprint-network-definition.zip
+
+            - name: Test model changes (Node.JS packages)
+              run: |
+                  npm run build
+                  npm run test
+
+            - name: Test model changes (Browserforge)
+              uses: ./.github/workflows/python-code-checks.yaml
+
             - name: Get the new version number
               id: get_version
               run: |
                   echo "::set-output name=version::$(node -p "require('./package.json').version")"
-
-            - name: Test changes (Node.JS packages)
-              id: test_changes
-              run: |
-                  npm run build
-                  npm run test
 
             - name: Push new model
               uses: stefanzweifel/git-auto-commit-action@v6

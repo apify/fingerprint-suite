@@ -9,20 +9,32 @@ on:
 jobs:
     test:
         runs-on: ubuntu-22.04
+        timeout-minutes: 5
         steps:
-            # Runs a single command using the runners shell
             - uses: actions/checkout@v4
-              with:
-                  token: ${{ secrets.APIFY_SERVICE_ACCOUNT_GITHUB_TOKEN }}
 
             - name: Install uv
               uses: astral-sh/setup-uv@v6
           
             - name: Set up Python
-              run: uv python install
+              run: uv python install 3.13
 
             - name: Install dependencies
               run: uv add "browserforge[all]==1.2.3"
+
+            - name: Download artifacts
+              uses: actions/download-artifact@v4
+              with:
+                  name: new-models
+                  path: ./new-models
+
+            - name: Copy models
+              run: |
+                  cp ./new-models/header-network-definition.zip ~/.uv/lib/python3.13/site-packages/browserforge/headers/data/header-network.zip
+                  cp ./new-models/fingerprint-network-definition.zip ~/.uv/lib/python3.13/site-packages/browserforge/fingerprints/data/fingerprint-network.zip
+                  cp ./new-models/browser-helper-file.json ~/.uv/lib/python3.13/site-packages/browserforge/headers/data/browser-helper-file.json
+                  cp ./new-models/input-network-definition.zip ~/.uv/lib/python3.13/site-packages/browserforge/headers/data/input-network.zip
+                  cp ./new-models/headers-order.json ~/.uv/lib/python3.13/site-packages/browserforge/headers/data/headers-order.json
 
             - name: Run Browserforge compatibility test
               run: |
