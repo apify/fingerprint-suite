@@ -1,0 +1,57 @@
+name: Test Browserforge compatibility
+
+on:
+    workflow_call:
+
+jobs:
+    test:
+        runs-on: ubuntu-22.04
+        timeout-minutes: 5
+        steps:
+            - name: Install uv
+              uses: astral-sh/setup-uv@v6
+
+            - name: Set up Python
+              run: uv python install 3.13
+
+            - name: Install dependencies
+              run: |
+                  uv venv create --python 3.13
+                  uv venv activate
+                  uv init
+                  uv add "browserforge[all]==1.2.3"
+
+            - name: Download artifacts
+              uses: actions/download-artifact@v4
+              with:
+                  name: new-models
+                  path: ./new-models
+
+            - name: List workspace tree
+              run: |
+                  echo "Workspace tree:"
+                  find . -type d -path "./node_modules/*" -prune -name ".git" -prune -o -print | sort
+
+            - name: Copy models
+              run: |
+                  cp ./new-models/packages/header-generator/src/data_files/header-network-definition.zip ./.venv/lib/python3.13/site-packages/browserforge/headers/data/header-network.zip
+                  cp ./new-models/packages/header-generator/src/data_files/browser-helper-file.json ./.venv/lib/python3.13/site-packages/browserforge/headers/data/browser-helper-file.json
+                  cp ./new-models/packages/header-generator/src/data_files/input-network-definition.zip ./.venv/lib/python3.13/site-packages/browserforge/headers/data/input-network.zip
+                  cp ./new-models/packages/header-generator/src/data_files/headers-order.json ./.venv/lib/python3.13/site-packages/browserforge/headers/data/headers-order.json
+                  cp ./new-models/packages/fingerprint-generator/src/data_files/fingerprint-network-definition.zip ./.venv/lib/python3.13/site-packages/browserforge/fingerprints/data/fingerprint-network.zip
+
+            - name: Run Browserforge compatibility test
+              run: |
+                  cat << EOF > ./test.py
+                  from browserforge.fingerprints import FingerprintGenerator
+                  from browserforge.headers import HeaderGenerator
+
+                  fg = FingerprintGenerator()
+                  hg = HeaderGenerator()
+
+                  for _ in range(10000):
+                      fingerprint = fg.generate()
+                      headers = hg.generate()
+                  EOF
+
+                  uv run ./test.py

@@ -219,10 +219,17 @@ export async function getRecordSchema() {
                                     renderer.includes(part),
                                 ),
                             ),
+                        vendor: z.string(),
                     }),
                     fonts: z.array(z.string()),
                     screen: z
                         .object({
+                            availTop: z.number().nonnegative(),
+                            availLeft: z.number().nonnegative(),
+                            pageXOffset: z.number().nonnegative(),
+                            pageYOffset: z.number().nonnegative(),
+                            screenX: z.number().nonnegative(),
+                            hasHDR: z.boolean().optional(),
                             width: z.number().positive(),
                             height: z.number().positive(),
                             availWidth: z.number().positive(),
@@ -298,6 +305,17 @@ export async function getRecordSchema() {
             )
             .refine(
                 ({
+                    requestFingerprint: { headers },
+                    browserFingerprint: { userAgent },
+                }) => {
+                    const userAgentHeader =
+                        headers['user-agent'] || headers['User-Agent'];
+                    return userAgentHeader === userAgent;
+                },
+                'User-Agent header should match the browser fingerprint user agent',
+            )
+            .refine(
+                ({
                     userAgentProps: { knownOsFonts },
                     browserFingerprint: { fonts },
                 }) =>
@@ -311,20 +329,20 @@ export async function getRecordSchema() {
                     userAgentProps: { isDesktop },
                     browserFingerprint: { screen },
                 }) => {
-                    const screenWidth = Math.max(screen.width, screen.height);
-                    const screenHeight = Math.min(screen.width, screen.height);
+                    const screenMax = Math.max(screen.width, screen.height);
+                    const screenMin = Math.min(screen.width, screen.height);
 
                     if (isDesktop) {
-                        if (!(screenWidth >= 512 && screenHeight >= 384)) {
+                        if (screenMax < 512 || screenMin < 384) {
                             return false;
                         }
                     }
 
                     return (
-                        screenWidth >= 480 &&
-                        screenWidth <= 3440 &&
-                        screenHeight >= 320 &&
-                        screenHeight <= 2560
+                        screenMax >= 480 &&
+                        screenMax <= 7680 &&
+                        screenMin >= 320 &&
+                        screenMin <= 4320
                     );
                 },
                 'Screen width and height should be valid for the device type',

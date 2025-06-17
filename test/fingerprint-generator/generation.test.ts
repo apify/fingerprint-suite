@@ -129,8 +129,8 @@ describe('Generate fingerprints with basic constraints', () => {
                 devices: ['mobile'],
                 screen: {
                     // can generate a vertical screen
-                    minHeight: 1080,
-                    maxWidth: 1080,
+                    minHeight: 500,
+                    maxWidth: 500,
                 },
             }),
         ).toBeDefined();
