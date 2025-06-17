@@ -8,8 +8,6 @@ jobs:
         runs-on: ubuntu-22.04
         timeout-minutes: 5
         steps:
-            - uses: actions/checkout@v4
-
             - name: Install uv
               uses: astral-sh/setup-uv@v6
 
@@ -24,6 +22,11 @@ jobs:
               with:
                   name: new-models
                   path: ./new-models
+
+            - name: List workspace tree
+              run: |
+                  echo "Workspace tree:"
+                  find . -type d -path "./node_modules/*" -prune -name ".git" -prune -o -print | sort
 
             - name: Copy models
               run: |

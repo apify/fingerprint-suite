@@ -105,6 +105,11 @@ jobs:
               with:
                   name: new-models
 
+            - name: List downloaded files
+              run: |
+                  echo "Downloaded files:"
+                  find . -type f -name "*.zip" -printf "%T+\t%s\t%p\n" | sort
+
             - name: Test model changes (Node.JS packages)
               run: |
                   npx playwright install --with-deps
