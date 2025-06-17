@@ -27,11 +27,11 @@ jobs:
 
             - name: Copy models
               run: |
-                  cp ./new-models/header-network-definition.zip ~/.uv/lib/python3.13/site-packages/browserforge/headers/data/header-network.zip
-                  cp ./new-models/fingerprint-network-definition.zip ~/.uv/lib/python3.13/site-packages/browserforge/fingerprints/data/fingerprint-network.zip
-                  cp ./new-models/browser-helper-file.json ~/.uv/lib/python3.13/site-packages/browserforge/headers/data/browser-helper-file.json
-                  cp ./new-models/input-network-definition.zip ~/.uv/lib/python3.13/site-packages/browserforge/headers/data/input-network.zip
-                  cp ./new-models/headers-order.json ~/.uv/lib/python3.13/site-packages/browserforge/headers/data/headers-order.json
+                  cp ./new-models/header-generator/src/data_files/header-network-definition.zip ~/.uv/lib/python3.13/site-packages/browserforge/headers/data/header-network.zip
+                  cp ./new-models/header-generator/src/data_files/browser-helper-file.json ~/.uv/lib/python3.13/site-packages/browserforge/headers/data/browser-helper-file.json
+                  cp ./new-models/header-generator/src/data_files/input-network-definition.zip ~/.uv/lib/python3.13/site-packages/browserforge/headers/data/input-network.zip
+                  cp ./new-models/header-generator/src/data_files/headers-order.json ~/.uv/lib/python3.13/site-packages/browserforge/headers/data/headers-order.json
+                  cp ./new-models/fingerprint-generator/src/data_files/fingerprint-network-definition.zip ~/.uv/lib/python3.13/site-packages/browserforge/fingerprints/data/fingerprint-network.zip
 
             - name: Run Browserforge compatibility test
               run: |
