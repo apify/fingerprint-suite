@@ -11,12 +11,11 @@ on:
 
 jobs:
     build_model:
-        # The type of runner that the job will run on
         runs-on: ubuntu-22.04
+        outputs:
+          version: ${{ steps.get_version.outputs.version }}
 
-        # Steps represent a sequence of tasks that will be executed as part of the job
         steps:
-            # Runs a single command using the runners shell
             - uses: actions/checkout@v4
               with:
                   token: ${{ secrets.APIFY_SERVICE_ACCOUNT_GITHUB_TOKEN }}
@@ -77,6 +76,34 @@ jobs:
                       ./packages/header-generator/src/data_files/browser-helper-file.json
                       ./packages/header-generator/src/data_files/input-network-definition.zip
                       ./packages/fingerprint-generator/src/data_files/fingerprint-network-definition.zip
+                      ./package.json
+                      ./package-lock.json
+
+            - name: Get the new version number
+              id: get_version
+              run: |
+                  echo "::set-output name=version::$(node -p "require('./package.json').version")"
+
+    test_model_js:
+        runs-on: ubuntu-22.04
+        needs: build_model
+        steps:
+            - uses: actions/checkout@v4
+              with:
+                  token: ${{ secrets.APIFY_SERVICE_ACCOUNT_GITHUB_TOKEN }}
+
+            - name: Use Node.js 22
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 22
+
+            - name: Install Dependencies
+              run: npm ci
+
+            - name: Download artifacts
+              uses: actions/download-artifact@v4
+              with:
+                  name: new-models
 
             - name: Test model changes (Node.JS packages)
               run: |
@@ -86,14 +113,26 @@ jobs:
 
                   npm run build
                   xvfb-run --auto-servernum -- npm test
+    
+    test_model_py:
+        needs: build_model
+        uses: ./.github/workflows/browserforge-compat-test.yml
+        
+    commit_model:
+        name: Commit and push new model
+        needs: [build_model, test_model_js, test_model_py]
+        runs-on: ubuntu-22.04
+        steps:
+            - uses: actions/checkout@v4
+              with:
+                  token: ${{ secrets.APIFY_SERVICE_ACCOUNT_GITHUB_TOKEN }}
 
-            - name: Test model changes (Browserforge)
-              uses: ./.github/workflows/browserforge-compat-test.yml
+            - uses: actions/download-artifact@v4
+              with:
+                  name: new-models
 
-            - name: Get the new version number
-              id: get_version
-              run: |
-                  echo "::set-output name=version::$(node -p "require('./package.json').version")"
+            - name: Log the new version number
+              run: "echo New version: ${{ steps.get_version.outputs.version }}"
 
             # - name: Push new model
             #   uses: stefanzweifel/git-auto-commit-action@v6
