@@ -69,6 +69,12 @@ jobs:
               run: |
                   echo "::set-output name=version::$(node -p "require('./package.json').version")"
 
+            - name: Test changes (Node.JS packages)
+              id: test_changes
+              run: |
+                  npm run build
+                  npm run test
+
             - name: Push new model
               uses: stefanzweifel/git-auto-commit-action@v6
               with:
