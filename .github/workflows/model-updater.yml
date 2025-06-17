@@ -56,13 +56,8 @@ jobs:
               run: |
                   xvfb-run -- node ./packages/header-order-collector/collector.js | tee ./packages/header-generator/src/data_files/headers-order.json
 
-            - name: Generate model and update versions
-              run: |
-                  npm version patch --git-tag-version=false
-                  export GIT_TAG=$(node -p "require('./package.json').version")
-
-                  npm run prerelease
-                  npm run buildNetwork
+            - name: Generate model
+              run: npm run buildNetwork
               env:
                   APIFY_FINGERPRINT_DATASET_ID: ${{ secrets.APIFY_FINGERPRINT_DATASET_ID }}
 
@@ -78,11 +73,6 @@ jobs:
                       ./packages/fingerprint-generator/src/data_files/fingerprint-network-definition.zip
                       ./package.json
                       ./package-lock.json
-
-            - name: Get the new version number
-              id: get_version
-              run: |
-                  echo "::set-output name=version::$(node -p "require('./package.json').version")"
 
     test_model_js:
         runs-on: ubuntu-22.04
@@ -136,15 +126,25 @@ jobs:
               with:
                   name: new-models
 
-            - name: Log the new version number
-              run: 'echo New version: ${{ steps.get_version.outputs.version }}'
+            - name: Bump package version numbers
+              id: bump_version
+              run: |
+                  npm version patch --git-tag-version=false
+                  export GIT_TAG=$(node -p "require('./package.json').version")
+
+                  npm run prerelease
+
+                  echo "version=${GIT_TAG}" >> $GITHUB_OUTPUT
+
+            - name: Print new version
+              run: 'echo new version: ${{ steps.bump_version.outputs.version }}'
 
             # - name: Push new model
             #   uses: stefanzweifel/git-auto-commit-action@v6
             #   with:
             #       commit_message: '[auto] fingerprint/header model update'
             #       branch: master
-            #       tagging_message: 'v${{ steps.get_version.outputs.version }}'
+            #       tagging_message: 'v${{ steps.bump_version.outputs.version }}'
 
             #       file_pattern: './packages/ ./package.json ./package-lock.json'
 
@@ -156,8 +156,8 @@ jobs:
             #   env:
             #       GITHUB_TOKEN: ${{ secrets.APIFY_SERVICE_ACCOUNT_GITHUB_TOKEN }}
             #   with:
-            #       tag_name: 'v${{ steps.get_version.outputs.version }}'
-            #       release_name: 'v${{ steps.get_version.outputs.version }}'
+            #       tag_name: 'v${{ steps.bump_version.outputs.version }}'
+            #       release_name: 'v${{ steps.bump_version.outputs.version }}'
             #       body: |
             #           This is an automated release of the model used by the `fingerprint-suite`.
 
