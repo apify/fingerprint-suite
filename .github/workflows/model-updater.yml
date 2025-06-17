@@ -80,6 +80,10 @@ jobs:
 
             - name: Test model changes (Node.JS packages)
               run: |
+                  npx playwright install --with-deps
+                  npx puppeteer browsers install chrome
+                  npx puppeteer browsers install firefox
+
                   npm run build
                   xvfb-run --auto-servernum -- npm test
 
