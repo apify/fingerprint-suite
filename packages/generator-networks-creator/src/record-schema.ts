@@ -318,20 +318,20 @@ export async function getRecordSchema() {
                     userAgentProps: { isDesktop },
                     browserFingerprint: { screen },
                 }) => {
-                    const screenWidth = Math.max(screen.width, screen.height);
-                    const screenHeight = Math.min(screen.width, screen.height);
+                    const screenMax = Math.max(screen.width, screen.height);
+                    const screenMin = Math.min(screen.width, screen.height);
 
                     if (isDesktop) {
-                        if (!(screenWidth >= 512 && screenHeight >= 384)) {
+                        if (screenMax < 512 || screenMin < 384) {
                             return false;
                         }
                     }
 
                     return (
-                        screenWidth >= 480 &&
-                        screenWidth <= 3440 &&
-                        screenHeight >= 320 &&
-                        screenHeight <= 2560
+                        screenMax >= 480 &&
+                        screenMax <= 7680 &&
+                        screenMin >= 320 &&
+                        screenMin <= 4320
                     );
                 },
                 'Screen width and height should be valid for the device type',
