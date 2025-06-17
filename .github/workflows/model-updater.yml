@@ -88,7 +88,7 @@ jobs:
                   xvfb-run --auto-servernum -- npm test
 
             - name: Test model changes (Browserforge)
-              uses: ./.github/workflows/python-code-checks.yaml
+              uses: ./.github/workflows/browserforge-compat-test.yaml
 
             - name: Get the new version number
               id: get_version
