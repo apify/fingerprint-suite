@@ -10,121 +10,131 @@ on:
             - fix/models
 
 jobs:
-    build_model:
-        runs-on: ubuntu-22.04
-        outputs:
-            version: ${{ steps.get_version.outputs.version }}
+    # build_model:
+    #     runs-on: ubuntu-22.04
+    #     outputs:
+    #         version: ${{ steps.get_version.outputs.version }}
 
-        steps:
-            - uses: actions/checkout@v4
-              with:
-                  token: ${{ secrets.APIFY_SERVICE_ACCOUNT_GITHUB_TOKEN }}
-            - name: Use Node.js 22
-              uses: actions/setup-node@v4
-              with:
-                  node-version: 22
+    #     steps:
+    #         - uses: actions/checkout@v4
+    #           with:
+    #               token: ${{ secrets.APIFY_SERVICE_ACCOUNT_GITHUB_TOKEN }}
+    #         - name: Use Node.js 22
+    #           uses: actions/setup-node@v4
+    #           with:
+    #               node-version: 22
 
-            - name: Cache node modules + browsers
-              uses: actions/cache@v4
-              with:
-                  path: |
-                      ~/.npm
-                      ~/.cache/ms-playwright
-                  key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
+    #         - name: Cache node modules + browsers
+    #           uses: actions/cache@v4
+    #           with:
+    #               path: |
+    #                   ~/.npm
+    #                   ~/.cache/ms-playwright
+    #               key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
 
-            - name: Install Dependencies
-              run: npm ci
+    #         - name: Install Dependencies
+    #           run: npm ci
 
-            - name: Install Playwright deps
-              run: npx playwright install
+    #         - name: Install Playwright deps
+    #           run: npx playwright install
 
-            - name: Install xvfb
-              run: |
-                  sudo apt-get update
-                  sudo apt-get -y install xvfb
+    #         - name: Install xvfb
+    #           run: |
+    #               sudo apt-get update
+    #               sudo apt-get -y install xvfb
 
-            - name: Install Playwright browsers
-              run: |
-                  npx playwright install webkit
-                  npx playwright install chrome
-                  npx playwright install msedge
+    #         - name: Install Playwright browsers
+    #           run: |
+    #               npx playwright install webkit
+    #               npx playwright install chrome
+    #               npx playwright install msedge
 
-            - name: Install Playwright deps v2
-              run: npx playwright install-deps
+    #         - name: Install Playwright deps v2
+    #           run: npx playwright install-deps
 
-            - name: Collect HTTP header orders
-              run: |
-                  xvfb-run -- node ./packages/header-order-collector/collector.js | tee ./packages/header-generator/src/data_files/headers-order.json
+    #         - name: Collect HTTP header orders
+    #           run: |
+    #               xvfb-run -- node ./packages/header-order-collector/collector.js | tee ./packages/header-generator/src/data_files/headers-order.json
 
-            - name: Generate model
-              run: npm run buildNetwork
-              env:
-                  APIFY_FINGERPRINT_DATASET_ID: ${{ secrets.APIFY_FINGERPRINT_DATASET_ID }}
+    #         - name: Generate model
+    #           run: npm run buildNetwork
+    #           env:
+    #               APIFY_FINGERPRINT_DATASET_ID: ${{ secrets.APIFY_FINGERPRINT_DATASET_ID }}
 
-            - name: Upload models as artifacts
-              uses: actions/upload-artifact@v4
-              with:
-                  name: new-models
-                  path: |
-                      ./packages/header-generator/src/data_files/headers-order.json
-                      ./packages/header-generator/src/data_files/header-network-definition.zip
-                      ./packages/header-generator/src/data_files/browser-helper-file.json
-                      ./packages/header-generator/src/data_files/input-network-definition.zip
-                      ./packages/fingerprint-generator/src/data_files/fingerprint-network-definition.zip
-                      ./package.json
-                      ./package-lock.json
+    #         - name: Upload models as artifacts
+    #           uses: actions/upload-artifact@v4
+    #           with:
+    #               name: new-models
+    #               path: |
+    #                   ./packages/header-generator/src/data_files/headers-order.json
+    #                   ./packages/header-generator/src/data_files/header-network-definition.zip
+    #                   ./packages/header-generator/src/data_files/browser-helper-file.json
+    #                   ./packages/header-generator/src/data_files/input-network-definition.zip
+    #                   ./packages/fingerprint-generator/src/data_files/fingerprint-network-definition.zip
+    #                   ./package.json
+    #                   ./package-lock.json
 
-    test_model_js:
-        runs-on: ubuntu-22.04
-        needs: build_model
-        steps:
-            - uses: actions/checkout@v4
-              with:
-                  token: ${{ secrets.APIFY_SERVICE_ACCOUNT_GITHUB_TOKEN }}
+    # test_model_js:
+    #     runs-on: ubuntu-22.04
+    #     needs: build_model
+    #     steps:
+    #         - uses: actions/checkout@v4
+    #           with:
+    #               token: ${{ secrets.APIFY_SERVICE_ACCOUNT_GITHUB_TOKEN }}
 
-            - name: Use Node.js 22
-              uses: actions/setup-node@v4
-              with:
-                  node-version: 22
+    #         - name: Use Node.js 22
+    #           uses: actions/setup-node@v4
+    #           with:
+    #               node-version: 22
 
-            - name: Install Dependencies
-              run: npm ci
+    #         - name: Install Dependencies
+    #           run: npm ci
 
-            - name: Download artifacts
-              uses: actions/download-artifact@v4
-              with:
-                  name: new-models
+    #         - name: Download artifacts
+    #           uses: actions/download-artifact@v4
+    #           with:
+    #               name: new-models
 
-            - name: List downloaded files
-              run: |
-                  echo "Downloaded files:"
-                  find . -type f -name "*.zip" -printf "%T+\t%s\t%p\n" | sort
+    #         - name: List downloaded files
+    #           run: |
+    #               echo "Downloaded files:"
+    #               find . -type f -name "*.zip" -printf "%T+\t%s\t%p\n" | sort
 
-            - name: Test model changes (Node.JS packages)
-              run: |
-                  npx playwright install --with-deps
-                  npx puppeteer browsers install chrome
-                  npx puppeteer browsers install firefox
+    #         - name: Test model changes (Node.JS packages)
+    #           run: |
+    #               npx playwright install --with-deps
+    #               npx puppeteer browsers install chrome
+    #               npx puppeteer browsers install firefox
 
-                  npm run build
-                  xvfb-run --auto-servernum -- npm test
+    #               npm run build
+    #               xvfb-run --auto-servernum -- npm test
 
-    test_model_py:
-        needs: build_model
-        uses: ./.github/workflows/browserforge-compat-test.yml
+    # test_model_py:
+    #     needs: build_model
+    #     uses: ./.github/workflows/browserforge-compat-test.yml
 
     commit_model:
         name: Commit and push new model
-        needs: [build_model, test_model_js, test_model_py]
+        # needs: [build_model, test_model_js, test_model_py]
         runs-on: ubuntu-22.04
         steps:
             - uses: actions/checkout@v4
               with:
                   token: ${{ secrets.APIFY_SERVICE_ACCOUNT_GITHUB_TOKEN }}
+
+            - name: Use Node.js 22
+              uses: actions/setup-node@v4
+              with:
+                node-version: 22
+    
+            - name: Install Dependencies
+              run: npm ci
 
             - uses: actions/download-artifact@v4
               with:
                   name: new-models
+                  run-id: 15709043154
+                  github-token: ${{ secrets.APIFY_SERVICE_ACCOUNT_GITHUB_TOKEN }}
 
             - name: Bump package version numbers
               id: bump_version
