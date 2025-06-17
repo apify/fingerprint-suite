@@ -1,0 +1,42 @@
+name: Test Browserforge compatibility
+
+on:
+    workflow_call:
+    push: 
+        branches:
+            - fix/models
+
+jobs:
+    test:
+        runs-on: ubuntu-22.04
+        steps:
+            # Runs a single command using the runners shell
+            - uses: actions/checkout@v4
+              with:
+                  token: ${{ secrets.APIFY_SERVICE_ACCOUNT_GITHUB_TOKEN }}
+
+            - name: Install uv
+              uses: astral-sh/setup-uv@v6
+          
+            - name: Set up Python
+              run: uv python install
+
+            - name: Install dependencies
+              run: uv add "browserforge[all]==1.2.3"
+
+            - name: Run Browserforge compatibility test
+              run: |
+                  cat << EOF > ./test.py
+                  from browserforge.fingerprints import FingerprintGenerator
+                  from browserforge.headers import HeaderGenerator
+
+                  fg = FingerprintGenerator()
+                  hg = HeaderGenerator()
+
+                  for _ in range(10000):
+                      fingerprint = fg.generate()
+                      headers = hg.generate()
+                  EOF
+              
+                  uv run ./test.py
+
