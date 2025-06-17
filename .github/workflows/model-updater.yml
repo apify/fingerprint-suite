@@ -13,7 +13,7 @@ jobs:
     build_model:
         runs-on: ubuntu-22.04
         outputs:
-          version: ${{ steps.get_version.outputs.version }}
+            version: ${{ steps.get_version.outputs.version }}
 
         steps:
             - uses: actions/checkout@v4
@@ -118,11 +118,11 @@ jobs:
 
                   npm run build
                   xvfb-run --auto-servernum -- npm test
-    
+
     test_model_py:
         needs: build_model
         uses: ./.github/workflows/browserforge-compat-test.yml
-        
+
     commit_model:
         name: Commit and push new model
         needs: [build_model, test_model_js, test_model_py]
@@ -137,7 +137,7 @@ jobs:
                   name: new-models
 
             - name: Log the new version number
-              run: "echo New version: ${{ steps.get_version.outputs.version }}"
+              run: 'echo New version: ${{ steps.get_version.outputs.version }}'
 
             # - name: Push new model
             #   uses: stefanzweifel/git-auto-commit-action@v6
