@@ -305,6 +305,17 @@ export async function getRecordSchema() {
             )
             .refine(
                 ({
+                    requestFingerprint: { headers },
+                    browserFingerprint: { userAgent },
+                }) => {
+                    const userAgentHeader =
+                        headers['user-agent'] || headers['User-Agent'];
+                    return userAgentHeader === userAgent;
+                },
+                'User-Agent header should match the browser fingerprint user agent',
+            )
+            .refine(
+                ({
                     userAgentProps: { knownOsFonts },
                     browserFingerprint: { fonts },
                 }) =>
