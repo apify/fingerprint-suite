@@ -127,8 +127,6 @@ describe('FingerprintInjector', () => {
                     if (frameworkName === 'Playwright') {
                         browser = (await launcher.launch({
                             headless: false,
-                            browser: 'chrome',
-                            debuggingPort: 9222,
                             ...options,
                         })) as import('playwright').Browser;
 
@@ -565,10 +563,10 @@ describe('FingerprintInjector', () => {
                         return page;
                     }
                     if (frameworkName === 'CDP') {
+                        const orig_close = browser.close;
                         const client = await CDP({
                             target: (browser as PPBrowser).wsEndpoint(),
                         });
-                        const orig_close = browser.close;
                         const { targetInfos } =
                             await client.Target.getTargets();
 
@@ -602,20 +600,6 @@ describe('FingerprintInjector', () => {
                             fp,
                         );
                         return {
-                            evaluate: async (
-                                fn: (...args: unknown[]) => unknown,
-                                ...args: unknown[]
-                            ) => {
-                                const stringified = stringifyFunction(fn);
-                                const evaluated = await Runtime.callFunctionOn({
-                                    functionDeclaration: stringified,
-                                    arguments: args.map((a) => ({ value: a })),
-                                    awaitPromise: true,
-
-                                    returnByValue: true,
-                                });
-                                return evaluated.result.value;
-                            },
                             goto: async (url: string) => {
                                 await Page.navigate({ url });
                             },
