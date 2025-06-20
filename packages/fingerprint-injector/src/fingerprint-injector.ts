@@ -1,4 +1,6 @@
 import { readFileSync } from 'fs';
+import * as ptc from "devtools-protocol";
+import CDP from 'chrome-remote-interface';
 
 import {
     BrowserFingerprintWithHeaders,
@@ -17,6 +19,13 @@ import { Page, Browser as PPBrowser } from 'puppeteer';
 interface EnhancedFingerprint extends Fingerprint {
     userAgent: string;
     historyLength: number;
+}
+
+type AttachFingerprintToCDPparams = {
+    page: CDP.StableDomains['Page'];
+    network: CDP.StableDomains['Network'];
+    emulation: CDP.StableDomains['Emulation'];
+    browser: CDP.StableDomains['Browser'];
 }
 
 declare function overrideInstancePrototype<T>(
@@ -164,6 +173,70 @@ export class FingerprintInjector {
         await page.evaluateOnNewDocument(
             this.getInjectableFingerprintFunction(enhancedFingerprint),
         );
+    }
+
+    /**
+     * Adds script that is evaluated before every document creation.
+     * Sets User-Agent and viewport using native puppeteer interface
+     * @param params AttachFingerprintToCDPparams `AttachFingerprintToCDPparams` object to be injected with the fingerprint.
+     * @param fingerprint Fingerprint from [`fingerprint-generator`](https://github.com/apify/fingerprint-generator).
+     */
+    async attachFingerprintToCDP(
+        { page, network, emulation, browser }: AttachFingerprintToCDPparams,
+        browserFingerprintWithHeaders: BrowserFingerprintWithHeaders,
+    ): Promise<void> {
+        const { fingerprint, headers } = browserFingerprintWithHeaders;
+        const enhancedFingerprint = this._enhanceFingerprint(fingerprint);
+        const { screen, userAgent } = enhancedFingerprint;
+
+        await network.setUserAgentOverride({ userAgent });
+        const { product: browserVersion } = await browser.getVersion();
+
+        if (!browserVersion.toLowerCase().includes('firefox')) {
+            page.setDeviceMetricsOverride({
+                screenHeight: screen.height,
+                screenWidth: screen.width,
+                width: screen.width,
+                height: screen.height,
+                mobile: /phone|android|mobile/i.test(userAgent),
+                screenOrientation:
+                    screen.height > screen.width
+                        ? { angle: 0, type: 'portraitPrimary' }
+                        : { angle: 90, type: 'landscapePrimary' },
+                deviceScaleFactor: screen.devicePixelRatio,
+            });
+
+            await network.setExtraHTTPHeaders({
+                headers: this.onlyInjectableHeaders(headers, browserVersion),
+            });
+
+            await emulation.setEmulatedMedia({
+                features: [{ name: 'prefers-color-scheme', value: 'dark' }],
+            });
+        }
+
+        // const frameTreeResponse = await page.getFrameTree();
+        // const frames = [frameTreeResponse.frameTree.frame.id];
+        //
+        // const frameTreeResolver = (
+        //     {frame, childFrames}: ptc.Protocol.Page.FrameTree
+        // ): void => {
+        //     if (frame) {
+        //         frames.push(frame.id);
+        //         for (const childFrame of childFrames ?? []) {
+        //             frameTreeResolver(childFrame);
+        //         }
+        //     }
+        // }
+        // if (frameTreeResponse.frameTree.childFrames) {
+        //     for (const childFrame of frameTreeResponse.frameTree.childFrames) {
+        //         frameTreeResolver(childFrame);
+        //     }
+        // }
+
+        await page.addScriptToEvaluateOnNewDocument({
+            source: this.getInjectableFingerprintFunction(enhancedFingerprint),
+        });
     }
 
     /**
@@ -375,3 +448,17 @@ export async function newInjectedPage(
 
     return page;
 }
+
+export async function newCDPInjector(args: AttachFingerprintToCDPparams, options?: {
+    fingerprint?: BrowserFingerprintWithHeaders;
+    fingerprintOptions?: Partial<FingerprintGeneratorOptions>;
+}): Promise<void> {
+
+    const generator = new FingerprintGenerator();
+    const fingerprintWithHeaders =
+        options?.fingerprint ??
+        generator.getFingerprint(options?.fingerprintOptions ?? {});
+    const injector = new FingerprintInjector();
+    await injector.attachFingerprintToCDP(args, fingerprintWithHeaders);
+}
+

@@ -525,6 +525,7 @@ function replace(target, key, value) {
 // Replaces all the WebRTC related methods with a recursive ES6 Proxy
 // This way, we don't have to model a mock WebRTC API and we still don't get any exceptions.
 function blockWebRTC() {
+    console.log("Blocking WebRTC");
     const handler = {
         get: () => {
             return new Proxy(() => {}, handler);
