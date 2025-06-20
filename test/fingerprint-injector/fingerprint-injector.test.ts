@@ -194,15 +194,6 @@ describe('FingerprintInjector', () => {
                             fingerprintWithHeaders,
                         );
 
-                        const responseHeaders = new Map<string, Record<string, string>>();
-                        Network.on('responseReceived', (params) => {
-                            if (params.type === 'Document') {
-                                responseHeaders.set(
-                                    params.frameId,
-                                    params.response.headers,
-                                );
-                            }
-                        });
                         const requestHeaders = new Map<string, Record<string, string>>();
                         Network.requestWillBeSent((params) => {
                             if (
@@ -583,12 +574,6 @@ describe('FingerprintInjector', () => {
                         const { Page, Network, Emulation, Runtime } =
                             ctx_client;
                         await Page.enable();
-                        await Page.addScriptToEvaluateOnNewDocument({
-                            source: `
-                                window.$ = s => document.querySelector(s);
-                                window.$$ = s => Array.from(document.querySelectorAll(s));
-                            `,
-                        })
                         await Network.enable();
                         await fpInjector.attachFingerprintToCDP(
                             {
