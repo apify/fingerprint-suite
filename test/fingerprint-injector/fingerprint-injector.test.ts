@@ -13,58 +13,57 @@ import {
 import playwright, { chromium, type Browser as PWBrowser } from 'playwright';
 import puppeteer, { Browser as PPBrowser } from 'puppeteer';
 import CDP from 'chrome-remote-interface';
-import * as ptc from "devtools-protocol";
 
 const cases = [
-    // [
-    //     'Playwright',
-    //     [
-    //         {
-    //             name: 'Firefox',
-    //             launcher: playwright.firefox,
-    //             options: {},
-    //             fingerprintGeneratorOptions: {
-    //                 browsers: [{ name: 'firefox', minVersion: 96 }],
-    //             },
-    //         },
-    //         {
-    //             name: 'Chrome',
-    //             launcher: playwright.chromium,
-    //             options: {
-    //                 channel: 'chrome',
-    //             },
-    //             fingerprintGeneratorOptions: {
-    //                 browsers: [{ name: 'chrome', minVersion: 90 }],
-    //             },
-    //         },
-    //     ],
-    // ],
-    // [
-    //     'Puppeteer',
-    //     [
-    //         {
-    //             name: 'Chrome',
-    //             launcher: puppeteer,
-    //             options: {
-    //                 args: ['--no-sandbox', '--use-gl=desktop'],
-    //                 channel: 'chrome',
-    //             },
-    //             fingerprintGeneratorOptions: {
-    //                 browsers: [{ name: 'chrome', minVersion: 90 }],
-    //             },
-    //         },
-    //         {
-    //             name: 'Chromium',
-    //             launcher: puppeteer,
-    //             options: {
-    //                 args: ['--no-sandbox', '--use-gl=desktop'],
-    //             },
-    //             fingerprintGeneratorOptions: {
-    //                 browsers: [{ name: 'chrome', minVersion: 90 }],
-    //             },
-    //         },
-    //     ],
-    // ],
+    [
+        'Playwright',
+        [
+            {
+                name: 'Firefox',
+                launcher: playwright.firefox,
+                options: {},
+                fingerprintGeneratorOptions: {
+                    browsers: [{ name: 'firefox', minVersion: 96 }],
+                },
+            },
+            {
+                name: 'Chrome',
+                launcher: playwright.chromium,
+                options: {
+                    channel: 'chrome',
+                },
+                fingerprintGeneratorOptions: {
+                    browsers: [{ name: 'chrome', minVersion: 90 }],
+                },
+            },
+        ],
+    ],
+    [
+        'Puppeteer',
+        [
+            {
+                name: 'Chrome',
+                launcher: puppeteer,
+                options: {
+                    args: ['--no-sandbox', '--use-gl=desktop'],
+                    channel: 'chrome',
+                },
+                fingerprintGeneratorOptions: {
+                    browsers: [{ name: 'chrome', minVersion: 90 }],
+                },
+            },
+            {
+                name: 'Chromium',
+                launcher: puppeteer,
+                options: {
+                    args: ['--no-sandbox', '--use-gl=desktop'],
+                },
+                fingerprintGeneratorOptions: {
+                    browsers: [{ name: 'chrome', minVersion: 90 }],
+                },
+            },
+        ],
+    ],
     [
         'CDP',
         [
@@ -83,7 +82,7 @@ const cases = [
             },
         ],
     ],
-];
+] as const;
 
 describe('FingerprintInjector', () => {
     let fpInjector: FingerprintInjector;
@@ -178,14 +177,14 @@ describe('FingerprintInjector', () => {
                             target: targetInfos[0].targetId,
                         });
 
-                        const { Page, Network, Emulation, Runtime, Target, Fetch } =
+                        const { Page, Network, Emulation, Runtime, Target } =
                             ctx_client;
 
                         await Page.enable();
                         await Network.enable();
 
                         // TODO: remove after testing, undefined on per-case runs
-                        fpInjector ??= new FingerprintInjector();
+                        // fpInjector ??= new FingerprintInjector();
 
                         await fpInjector.attachFingerprintToCDP(
                             {
@@ -197,52 +196,9 @@ describe('FingerprintInjector', () => {
                             fingerprintWithHeaders,
                         );
 
-                        let ctx = new Map<
-                            string,
-                            {
-                                sessionId: string;
-                                contextId: number;
-                            }
-                        >();
-                        const contextDetacher = async ({
-                            targetInfo,
-                        }: {
-                            targetInfo?: ptc.Protocol.Target.TargetInfo;
-                        }) => {
-                            Runtime.on(
-                                'executionContextCreated',
-                                async ({ context }) => {
-                                    if (!targetInfo) {
-                                        ({ targetInfo } =
-                                            await Target.getTargetInfo());
-                                    }
-                                    const { sessionId } =
-                                        await client.Target.attachToTarget({
-                                            targetId: targetInfo.targetId,
-                                            flatten: true,
-                                        });
-                                    ctx.set(targetInfo.targetId, {
-                                        sessionId,
-                                        contextId: context.id,
-                                    });
-                                    await Runtime.disable();
-                                },
-                            );
-                            await Runtime.enable();
-                        };
-                        await Promise.all(
-                            targetInfos.map((ti) =>
-                                contextDetacher({ targetInfo: ti }),
-                            ),
-                        );
-
                         const responseHeaders = new Map<string, Record<string, string>>();
                         Network.on('responseReceived', (params) => {
                             if (params.type === 'Document') {
-                                console.log(
-                                    'Received response for frame:',
-                                    params.frameId,
-                                );
                                 responseHeaders.set(
                                     params.frameId,
                                     params.response.headers,
@@ -273,21 +229,24 @@ describe('FingerprintInjector', () => {
                                 const stringified = stringifyFunction(fn);
                                 const { targetInfo: ti } =
                                     await Target.getTargetInfo();
-                                const sess = ctx.get(ti.targetId);
+                                const { sessionId} = await Target.attachToTarget({
+                                    targetId: ti.targetId,
+                                    flatten: true,
+                                })
+                                ctx_client.send('Runtime.enable', undefined, sessionId)
+                                const ctx = await Runtime.executionContextCreated()
                                 const evaluated = await Runtime.callFunctionOn({
                                     functionDeclaration: stringified,
-                                    ...(sess
-                                        ? { executionContextId: sess.contextId }
-                                        : {}),
+                                    executionContextId: ctx.context.id,
                                     arguments: args.map((a) => ({ value: a })),
                                     awaitPromise: true,
 
                                     returnByValue: true,
-                                });
+                                }, sessionId);
+                                await Runtime.disable();
                                 return evaluated.result.value;
                             },
                             goto: async (url: string) => {
-                                console.log('Navigating to:', url);
                                 const { frameId } = await Page.navigate({
                                     url,
                                 });
@@ -545,7 +504,6 @@ describe('FingerprintInjector', () => {
                     const requestHeaders =
                         (await requestObject.allHeaders?.()) ??
                         requestObject.headers?.();
-                    console.log('req headers: ',requestHeaders)
                     const { headers } = fingerprintWithHeaders;
 
                     // eslint-disable-next-line dot-notation
@@ -554,7 +512,6 @@ describe('FingerprintInjector', () => {
                     ];
 
                     for (const header of Object.keys(onlyInjectable(headers))) {
-                        console.log('header: ', header, 'value: ', headers[header])
                         expect(requestHeaders[header]).toBe(headers[header]);
                     }
                 });
@@ -627,6 +584,7 @@ describe('FingerprintInjector', () => {
 
                         const { Page, Network, Emulation, Runtime } =
                             ctx_client;
+                        await Page.enable();
                         await Page.addScriptToEvaluateOnNewDocument({
                             source: `
                                 window.$ = s => document.querySelector(s);
@@ -660,11 +618,9 @@ describe('FingerprintInjector', () => {
                             },
                             goto: async (url: string) => {
                                 await Page.navigate({ url });
-                                return;
                             },
 
                             $: async (selector: string) => {
-                                console.log('Selecting element:', selector);
                                 const { result } = await Runtime.evaluate({
                                     expression: `document.querySelector('${selector}')`,
                                     returnByValue: true,

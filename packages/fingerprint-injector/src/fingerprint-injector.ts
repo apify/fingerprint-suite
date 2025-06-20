@@ -1,5 +1,4 @@
 import { readFileSync } from 'fs';
-import * as ptc from "devtools-protocol";
 import CDP from 'chrome-remote-interface';
 
 import {
@@ -26,7 +25,7 @@ type AttachFingerprintToCDPparams = {
     network: CDP.StableDomains['Network'];
     emulation: CDP.StableDomains['Emulation'];
     browser: CDP.StableDomains['Browser'];
-}
+};
 
 declare function overrideInstancePrototype<T>(
     instance: T,
@@ -214,25 +213,6 @@ export class FingerprintInjector {
                 features: [{ name: 'prefers-color-scheme', value: 'dark' }],
             });
         }
-
-        // const frameTreeResponse = await page.getFrameTree();
-        // const frames = [frameTreeResponse.frameTree.frame.id];
-        //
-        // const frameTreeResolver = (
-        //     {frame, childFrames}: ptc.Protocol.Page.FrameTree
-        // ): void => {
-        //     if (frame) {
-        //         frames.push(frame.id);
-        //         for (const childFrame of childFrames ?? []) {
-        //             frameTreeResolver(childFrame);
-        //         }
-        //     }
-        // }
-        // if (frameTreeResponse.frameTree.childFrames) {
-        //     for (const childFrame of frameTreeResponse.frameTree.childFrames) {
-        //         frameTreeResolver(childFrame);
-        //     }
-        // }
 
         await page.addScriptToEvaluateOnNewDocument({
             source: this.getInjectableFingerprintFunction(enhancedFingerprint),
@@ -449,11 +429,13 @@ export async function newInjectedPage(
     return page;
 }
 
-export async function newCDPInjector(args: AttachFingerprintToCDPparams, options?: {
-    fingerprint?: BrowserFingerprintWithHeaders;
-    fingerprintOptions?: Partial<FingerprintGeneratorOptions>;
-}): Promise<void> {
-
+export async function newCDPInjector(
+    args: AttachFingerprintToCDPparams,
+    options?: {
+        fingerprint?: BrowserFingerprintWithHeaders;
+        fingerprintOptions?: Partial<FingerprintGeneratorOptions>;
+    },
+): Promise<void> {
     const generator = new FingerprintGenerator();
     const fingerprintWithHeaders =
         options?.fingerprint ??
@@ -461,4 +443,3 @@ export async function newCDPInjector(args: AttachFingerprintToCDPparams, options
     const injector = new FingerprintInjector();
     await injector.attachFingerprintToCDP(args, fingerprintWithHeaders);
 }
-
