@@ -30,6 +30,9 @@ declare function overrideDocumentDimensionsProps(
 declare function overrideWindowDimensionsProps(
     props: Record<string, number>,
 ): void;
+declare function overrideWindowScreen(
+    props: Record<string, number>,
+): void;
 declare function overrideBattery(
     batteryInfo?: Record<string, string | number>,
 ): void;
@@ -263,7 +266,7 @@ export class FingerprintInjector {
             }
             overrideInstancePrototype(window.navigator, navigatorProps);
 
-            overrideInstancePrototype(window.screen, newScreen);
+            overrideWindowScreen(newScreen);
             overrideWindowDimensionsProps(windowScreenProps);
             overrideDocumentDimensionsProps(documentScreenProps);
 
