@@ -1,5 +1,5 @@
 import { readFileSync } from 'fs';
-import CDP from 'chrome-remote-interface';
+import type CDP from 'chrome-remote-interface';
 
 import {
     BrowserFingerprintWithHeaders,
