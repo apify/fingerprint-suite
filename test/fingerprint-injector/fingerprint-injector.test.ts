@@ -194,19 +194,20 @@ describe('FingerprintInjector', () => {
                             fingerprintWithHeaders,
                         );
 
-                        const requestHeaders = new Map<string, Record<string, string>>();
+                        const requestHeaders = new Map<
+                            string,
+                            Record<string, string>
+                        >();
                         Network.requestWillBeSent((params) => {
-                            if (
-                                params.type === 'Document'
-                            ) {
+                            if (params.type === 'Document') {
                                 let lowerCase: Record<string, string> = {};
-                                for (const header of Object.keys(params.request.headers)) {
-                                    lowerCase[header.toLowerCase()] = params.request.headers[header];
+                                for (const header of Object.keys(
+                                    params.request.headers,
+                                )) {
+                                    lowerCase[header.toLowerCase()] =
+                                        params.request.headers[header];
                                 }
-                                requestHeaders.set(
-                                    params.frameId,
-                                    lowerCase,
-                                );
+                                requestHeaders.set(params.frameId, lowerCase);
                             }
                         });
 
@@ -218,20 +219,31 @@ describe('FingerprintInjector', () => {
                                 const stringified = stringifyFunction(fn);
                                 const { targetInfo: ti } =
                                     await Target.getTargetInfo();
-                                const { sessionId} = await Target.attachToTarget({
-                                    targetId: ti.targetId,
-                                    flatten: true,
-                                })
-                                ctx_client.send('Runtime.enable', undefined, sessionId)
-                                const ctx = await Runtime.executionContextCreated()
-                                const evaluated = await Runtime.callFunctionOn({
-                                    functionDeclaration: stringified,
-                                    executionContextId: ctx.context.id,
-                                    arguments: args.map((a) => ({ value: a })),
-                                    awaitPromise: true,
+                                const { sessionId } =
+                                    await Target.attachToTarget({
+                                        targetId: ti.targetId,
+                                        flatten: true,
+                                    });
+                                ctx_client.send(
+                                    'Runtime.enable',
+                                    undefined,
+                                    sessionId,
+                                );
+                                const ctx =
+                                    await Runtime.executionContextCreated();
+                                const evaluated = await Runtime.callFunctionOn(
+                                    {
+                                        functionDeclaration: stringified,
+                                        executionContextId: ctx.context.id,
+                                        arguments: args.map((a) => ({
+                                            value: a,
+                                        })),
+                                        awaitPromise: true,
 
-                                    returnByValue: true,
-                                }, sessionId);
+                                        returnByValue: true,
+                                    },
+                                    sessionId,
+                                );
                                 await Runtime.disable();
                                 return evaluated.result.value;
                             },
@@ -243,7 +255,8 @@ describe('FingerprintInjector', () => {
 
                                 return {
                                     request: () => ({
-                                        headers: () => requestHeaders.get(frameId),
+                                        headers: () =>
+                                            requestHeaders.get(frameId),
                                     }),
                                 };
                             },
@@ -257,7 +270,7 @@ describe('FingerprintInjector', () => {
 
                 afterAll(async () => {
                     if (client) {
-                        await client.close()
+                        await client.close();
                     }
                     if (browser) {
                         await browser.close();
@@ -718,33 +731,33 @@ describe('FingerprintInjector', () => {
 
 // from https://github.com/puppeteer/puppeteer/blob/main/packages/puppeteer-core/src/util/Function.ts#L30
 function stringifyFunction(fn: (...args: never) => unknown): string {
-     let value = fn.toString();
-     try {
-         new Function(`(${value})`);
-     } catch (err) {
-         if (
-             (err as Error).message.includes(
-                 `Refused to evaluate a string as JavaScript because 'unsafe-eval' is not an allowed source of script in the following Content Security Policy directive`,
-             )
-         ) {
-             // The content security policy does not allow Function eval. Let's
-             // assume the value might be valid as is.
-             return value;
-         }
-         // This means we might have a function shorthand (e.g. `test(){}`). Let's
-         // try prefixing.
-         let prefix = 'function ';
-         if (value.startsWith('async ')) {
-             prefix = `async ${prefix}`;
-             value = value.substring('async '.length);
-         }
-         value = `${prefix}${value}`;
-         try {
-             new Function(`(${value})`);
-         } catch {
-             // We tried hard to serialize, but there's a weird beast here.
-             throw new Error('Passed function cannot be serialized!');
-         }
-     }
-     return value;
- }
+    let value = fn.toString();
+    try {
+        new Function(`(${value})`);
+    } catch (err) {
+        if (
+            (err as Error).message.includes(
+                `Refused to evaluate a string as JavaScript because 'unsafe-eval' is not an allowed source of script in the following Content Security Policy directive`,
+            )
+        ) {
+            // The content security policy does not allow Function eval. Let's
+            // assume the value might be valid as is.
+            return value;
+        }
+        // This means we might have a function shorthand (e.g. `test(){}`). Let's
+        // try prefixing.
+        let prefix = 'function ';
+        if (value.startsWith('async ')) {
+            prefix = `async ${prefix}`;
+            value = value.substring('async '.length);
+        }
+        value = `${prefix}${value}`;
+        try {
+            new Function(`(${value})`);
+        } catch {
+            // We tried hard to serialize, but there's a weird beast here.
+            throw new Error('Passed function cannot be serialized!');
+        }
+    }
+    return value;
+}

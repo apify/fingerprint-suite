@@ -6,7 +6,7 @@ import {
 } from 'fingerprint-injector';
 import playwright from 'playwright';
 import puppeteer, { Browser } from 'puppeteer';
-import CDP from "chrome-remote-interface";
+import CDP from 'chrome-remote-interface';
 
 function generateCartesianMatrix(A: any, B: any) {
     const matrix = [];
@@ -103,23 +103,26 @@ describe('CDP controller instances', () => {
             const { Target } = client;
 
             // getting the default 'about:blank' page
-            const { targetInfos} = await Target.getTargets();
+            const { targetInfos } = await Target.getTargets();
             const ctx_client = await CDP({ target: targetInfos[0].targetId });
 
             const { Network, Page, Browser, Emulation } = ctx_client;
             await Network.enable();
             await Page.enable();
 
-            await newCDPInjector({
-                network: Network,
-                page: Page,
-                browser: Browser,
-                emulation: Emulation,
-            }, {
-                fingerprintOptions: {
-                    browsers: [fingerprintBrowser],
+            await newCDPInjector(
+                {
+                    network: Network,
+                    page: Page,
+                    browser: Browser,
+                    emulation: Emulation,
                 },
-                });
+                {
+                    fingerprintOptions: {
+                        browsers: [fingerprintBrowser],
+                    },
+                },
+            );
 
             const { frameId } = await Page.navigate({
                 url: 'http://example.com',
