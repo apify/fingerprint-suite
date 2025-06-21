@@ -331,14 +331,19 @@ function overrideWebGl(webGl) {
             apply(target, ctx, args) {
                 const param = (args || [])[0];
                 const result = cache.Reflect.apply(target, ctx, args);
-                // UNMASKED_VENDOR_WEBGL
-                if (param === 37445) {
+                const debugInfo = ctx.getExtension('WEBGL_debug_renderer_info');
+                const UNMASKED_VENDOR_WEBGL =
+                    (debugInfo && debugInfo.UNMASKED_VENDOR_WEBGL) || 37445;
+                const UNMASKED_RENDERER_WEBGL =
+                    (debugInfo && debugInfo.UNMASKED_RENDERER_WEBGL) || 37446;
+
+                if (param === UNMASKED_VENDOR_WEBGL) {
                     return webGl.vendor;
                 }
-                // UNMASKED_RENDERER_WEBGL
-                if (param === 37446) {
+                if (param === UNMASKED_RENDERER_WEBGL) {
                     return webGl.renderer;
                 }
+
                 return result;
             },
             get(target, prop, receiver) {
