@@ -12,7 +12,7 @@ on:
     workflow_dispatch:
 
 env:
-  APIFY_HTTPBIN_TOKEN: ${{ secrets.APIFY_HTTPBIN_TOKEN }}
+    APIFY_HTTPBIN_TOKEN: ${{ secrets.APIFY_HTTPBIN_TOKEN }}
 
 jobs:
     lint:
