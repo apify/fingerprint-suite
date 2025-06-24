@@ -13,6 +13,10 @@ import {
 import playwright, { chromium, type Browser as PWBrowser } from 'playwright';
 import puppeteer, { Browser as PPBrowser } from 'puppeteer';
 
+function getHTTPBinUrl() {
+    return process.env.APIFY_HTTPBIN_TOKEN ? `https://httpbin.apify.actor/get?token=${process.env.APIFY_HTTPBIN_TOKEN}` : 'https://httpbin.org/get';
+}
+
 const cases = [
     [
         'Playwright',
@@ -422,11 +426,12 @@ describe('FingerprintInjector', () => {
                 const getNewPage = async (
                     browser: PPBrowser | PWBrowser,
                     fp: any,
+                    newContextOptions = {},
                 ): Promise<any> => {
                     if (frameworkName === 'Playwright') {
                         const context = await (
                             browser as PWBrowser
-                        ).newContext();
+                        ).newContext(newContextOptions);
                         await fpInjector.attachFingerprintToPlaywright(
                             context,
                             fp,
@@ -440,6 +445,53 @@ describe('FingerprintInjector', () => {
                     }
                     throw new Error(`Unknown framework name ${frameworkName}`);
                 };
+
+                test('injects actual HTTP headers (network-layer)', async () => {
+                    const fp = fpg.getFingerprint();
+                    const browser = await launcher.launch({ ...options });
+
+                    const page = await getNewPage(browser, fp);
+
+                    await page.goto(getHTTPBinUrl());
+                    const response = await JSON.parse(await page.$eval('pre', (el: any) => {
+                        return el.textContent || '';
+                    }));
+
+                    const onlyInjectable = new FingerprintInjector()[
+                        'onlyInjectableHeaders'
+                    ];
+
+                    for (const headerName of Object.keys(onlyInjectable(fp.headers))) {
+                        expect(Object.entries(response.headers).find(([key]) => key.toLowerCase() === headerName.toLowerCase())?.[1]).toBe(
+                            fp.headers[headerName],
+                        );
+                    }
+                });
+
+                test('does not override user-defined headers', async () => {
+                    // Puppeteer only supports setting HTTP headers on the page level,
+                    // so user is the one responsible for not overriding the headers.
+                    if (frameworkName === 'Puppeteer') return;
+
+                    const fp = fpg.getFingerprint();
+                    const browser = await launcher.launch({ ...options });
+
+                    const page = await getNewPage(browser, fp, {
+                        extraHTTPHeaders: {
+                            'X-Test-Header': 'TestValue',
+                            'User-Agent': 'CustomUserAgent/1.0',
+                        }
+                    });
+
+                    await page.goto(getHTTPBinUrl());
+                    const response = await JSON.parse(await page.$eval('pre', (el: any) => {
+                        return el.textContent || '';
+                    }));
+
+                    expect(response.headers['X-Test-Header']).toBe('TestValue');
+                    expect(response.headers['User-Agent']).toBe('CustomUserAgent/1.0');
+
+                });
 
                 test('WebRTC not blocked by default', async () => {
                     const fp = fpg.getFingerprint();
