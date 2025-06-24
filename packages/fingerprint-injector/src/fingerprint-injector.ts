@@ -105,9 +105,12 @@ export class FingerprintInjector {
             this.getInjectableFingerprintFunction(enhancedFingerprint);
 
         const browserName = browserContext.browser()?.browserType().name();
-        await browserContext.setExtraHTTPHeaders(
-            this.onlyInjectableHeaders(headers, browserName),
-        );
+
+        await browserContext.setExtraHTTPHeaders({
+            ...this.onlyInjectableHeaders(headers, browserName),
+            // @ts-expect-error Accessing private property
+            ...(Object.fromEntries((browserContext._options?.extraHTTPHeaders ?? []).map(({ name, value }) => [name, value]))),
+        });
 
         browserContext.on('page', (page) => {
             page.emulateMedia({ colorScheme: 'dark' }).catch(() => {});
