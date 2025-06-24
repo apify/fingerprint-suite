@@ -108,8 +108,15 @@ export class FingerprintInjector {
 
         await browserContext.setExtraHTTPHeaders({
             ...this.onlyInjectableHeaders(headers, browserName),
-            // @ts-expect-error Accessing private property
-            ...(Object.fromEntries((browserContext._options?.extraHTTPHeaders ?? []).map(({ name, value }) => [name, value]))),
+            ...Object.fromEntries(
+                // @ts-expect-error Accessing private property
+                (browserContext._options?.extraHTTPHeaders ?? []).map(
+                    ({ name, value }: { name: string; value: string }) => [
+                        name,
+                        value,
+                    ],
+                ),
+            ),
         });
 
         browserContext.on('page', (page) => {
