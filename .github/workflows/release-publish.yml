@@ -6,6 +6,7 @@ on:
 jobs:
     test_and_sync:
         uses: apify/fingerprint-suite/.github/workflows/test-and-sync.yml@master
+        secrets: inherit
 
     publish_latest:
         name: Publish latest
