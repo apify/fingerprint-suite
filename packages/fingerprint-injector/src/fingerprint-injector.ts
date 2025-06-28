@@ -1,4 +1,5 @@
 import { readFileSync } from 'fs';
+import type CDP from 'chrome-remote-interface';
 
 import {
     BrowserFingerprintWithHeaders,
@@ -18,6 +19,13 @@ interface EnhancedFingerprint extends Fingerprint {
     userAgent: string;
     historyLength: number;
 }
+
+type AttachFingerprintToCDPparams = {
+    page: CDP.StableDomains['Page'];
+    network: CDP.StableDomains['Network'];
+    emulation: CDP.StableDomains['Emulation'];
+    browser: CDP.StableDomains['Browser'];
+};
 
 declare function overrideInstancePrototype<T>(
     instance: T,
@@ -174,6 +182,53 @@ export class FingerprintInjector {
         await page.evaluateOnNewDocument(
             this.getInjectableFingerprintFunction(enhancedFingerprint),
         );
+    }
+
+    /**
+     * Adds script that is evaluated before every document creation.
+     * Sets User-Agent and viewport using native puppeteer interface
+     * @param params AttachFingerprintToCDPparams `AttachFingerprintToCDPparams` object to be injected with the fingerprint.
+     * @param fingerprint Fingerprint from [`fingerprint-generator`](https://github.com/apify/fingerprint-generator).
+     */
+    async attachFingerprintToCDP(
+        { page, network, emulation, browser }: AttachFingerprintToCDPparams,
+        browserFingerprintWithHeaders: BrowserFingerprintWithHeaders,
+    ): Promise<void> {
+        const { fingerprint, headers } = browserFingerprintWithHeaders;
+        const enhancedFingerprint = this._enhanceFingerprint(fingerprint);
+        const { screen, userAgent } = enhancedFingerprint;
+
+        await network.setUserAgentOverride({ userAgent });
+        const { product: browserVersion } = await browser.getVersion();
+
+        if (!browserVersion.toLowerCase().includes('firefox')) {
+            page.setDeviceMetricsOverride({
+                screenHeight: screen.height,
+                screenWidth: screen.width,
+                width: screen.width,
+                height: screen.height,
+                mobile: /phone|android|mobile/i.test(userAgent),
+                screenOrientation:
+                    screen.height > screen.width
+                        ? { angle: 0, type: 'portraitPrimary' }
+                        : { angle: 90, type: 'landscapePrimary' },
+                deviceScaleFactor: screen.devicePixelRatio,
+            });
+
+            await network.setExtraHTTPHeaders({
+                headers: this.onlyInjectableHeaders(headers, browserVersion),
+            });
+
+            await emulation.setEmulatedMedia({
+                features: [{ name: 'prefers-color-scheme', value: 'dark' }],
+            });
+        }
+
+        await page.addScriptToEvaluateOnNewDocument({
+            source: this.getInjectableFingerprintFunction(enhancedFingerprint),
+            // @ts-ignore unfortunately types are too old, its essential to guarantee script is executed immediately
+            runImmediately: true,
+        });
     }
 
     /**

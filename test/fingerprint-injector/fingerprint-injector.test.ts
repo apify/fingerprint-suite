@@ -12,6 +12,7 @@ import {
 } from 'fingerprint-injector';
 import playwright, { chromium, type Browser as PWBrowser } from 'playwright';
 import puppeteer, { Browser as PPBrowser } from 'puppeteer';
+import CDP from 'chrome-remote-interface';
 
 function getHTTPBinUrl() {
     return process.env.APIFY_HTTPBIN_TOKEN
@@ -69,7 +70,24 @@ const cases = [
             },
         ],
     ],
-];
+    [
+        'CDP',
+        [
+            {
+                name: 'Chrome',
+                launcher: puppeteer,
+                options: {
+                    args: ['--no-sandbox', '--use-gl=desktop'],
+                    channel: 'chrome',
+                    debuggingPort: 9222,
+                },
+                fingerprintGeneratorOptions: {
+                    browsers: [{ name: 'chrome', minVersion: 90 }],
+                },
+            },
+        ],
+    ],
+] as const;
 
 describe('FingerprintInjector', () => {
     let fpInjector: FingerprintInjector;
@@ -82,7 +100,6 @@ describe('FingerprintInjector', () => {
         // eslint-disable-next-line dot-notation
         expect(fpInjector['utilsJs']).toBeTruthy();
     });
-    // @ts-expect-error test only
     describe.each(cases)('%s', (frameworkName, testCases) => {
         // @ts-expect-error test only
         describe.each(testCases)(
@@ -96,6 +113,7 @@ describe('FingerprintInjector', () => {
                 let fingerprintWithHeaders: BrowserFingerprintWithHeaders;
                 let fingerprint: Fingerprint;
                 let context: any;
+                let client: CDP.Client | undefined;
 
                 beforeAll(async () => {
                     fingerprintGenerator = new FingerprintGenerator({
@@ -144,11 +162,121 @@ describe('FingerprintInjector', () => {
                         response = await page.goto(
                             `file://${__dirname}/test.html`,
                         );
+                    } else if (frameworkName === 'CDP') {
+                        browser = await launcher.launch({
+                            headless: false,
+                            debuggingPort: 9222,
+                            ...options,
+                        });
+
+                        const client = await CDP({
+                            target: browser.wsEndpoint(),
+                        });
+
+                        const { targetInfos } =
+                            await client.Target.getTargets();
+
+                        const ctx_client = await CDP({
+                            target: targetInfos[0].targetId,
+                        });
+
+                        const { Page, Network, Emulation, Runtime, Target } =
+                            ctx_client;
+
+                        await Page.enable();
+                        await Network.enable();
+
+                        // TODO: remove after testing, undefined on per-case runs
+                        // fpInjector ??= new FingerprintInjector();
+
+                        await fpInjector.attachFingerprintToCDP(
+                            {
+                                page: Page,
+                                network: Network,
+                                emulation: Emulation,
+                                browser: client.Browser,
+                            },
+                            fingerprintWithHeaders,
+                        );
+
+                        const requestHeaders = new Map<
+                            string,
+                            Record<string, string>
+                        >();
+                        Network.requestWillBeSent((params) => {
+                            if (params.type === 'Document') {
+                                let lowerCase: Record<string, string> = {};
+                                for (const header of Object.keys(
+                                    params.request.headers,
+                                )) {
+                                    lowerCase[header.toLowerCase()] =
+                                        params.request.headers[header];
+                                }
+                                requestHeaders.set(params.frameId, lowerCase);
+                            }
+                        });
+
+                        page = {
+                            evaluate: async (
+                                fn: (...args: unknown[]) => unknown,
+                                ...args: unknown[]
+                            ) => {
+                                const stringified = stringifyFunction(fn);
+                                const { targetInfo: ti } =
+                                    await Target.getTargetInfo();
+                                const { sessionId } =
+                                    await Target.attachToTarget({
+                                        targetId: ti.targetId,
+                                        flatten: true,
+                                    });
+                                ctx_client.send(
+                                    'Runtime.enable',
+                                    undefined,
+                                    sessionId,
+                                );
+                                const ctx =
+                                    await Runtime.executionContextCreated();
+                                const evaluated = await Runtime.callFunctionOn(
+                                    {
+                                        functionDeclaration: stringified,
+                                        executionContextId: ctx.context.id,
+                                        arguments: args.map((a) => ({
+                                            value: a,
+                                        })),
+                                        awaitPromise: true,
+
+                                        returnByValue: true,
+                                    },
+                                    sessionId,
+                                );
+                                await Runtime.disable();
+                                return evaluated.result.value;
+                            },
+                            goto: async (url: string) => {
+                                const { frameId } = await Page.navigate({
+                                    url,
+                                });
+                                await Page.loadEventFired();
+
+                                return {
+                                    request: () => ({
+                                        headers: () =>
+                                            requestHeaders.get(frameId),
+                                    }),
+                                };
+                            },
+                        };
+                        response = await page.goto(
+                            `file://${__dirname}/test.html`,
+                        );
                     }
                     return await setTimeout(2000);
                 });
 
                 afterAll(async () => {
+                    if (client) {
+                        await client.close();
+                    }
                     if (browser) {
                         await browser.close();
                     }
@@ -414,7 +542,6 @@ describe('FingerprintInjector', () => {
         );
     });
 
-    // @ts-expect-error test only
     describe.each(cases)('%s', (frameworkName, testCases) => {
         // @ts-expect-error test only
         describe.each(testCases)(
@@ -444,6 +571,51 @@ describe('FingerprintInjector', () => {
                         const page = await (browser as PPBrowser).newPage();
                         await fpInjector.attachFingerprintToPuppeteer(page, fp);
                         return page;
+                    }
+                    if (frameworkName === 'CDP') {
+                        const orig_close = browser.close;
+                        const client = await CDP({
+                            target: (browser as PPBrowser).wsEndpoint(),
+                        });
+                        const { targetInfos } =
+                            await client.Target.getTargets();
+
+                        const ctx_client = await CDP({
+                            target: targetInfos[0].targetId,
+                        });
+
+                        browser.close = async () => {
+                            await client.close();
+                            await ctx_client.close();
+                            return orig_close.call(browser);
+                        };
+
+                        const { Page, Network, Emulation, Runtime } =
+                            ctx_client;
+                        await Page.enable();
+                        await Network.enable();
+                        await fpInjector.attachFingerprintToCDP(
+                            {
+                                page: Page,
+                                network: Network,
+                                emulation: Emulation,
+                                browser: client.Browser,
+                            },
+                            fp,
+                        );
+                        return {
+                            goto: async (url: string) => {
+                                await Page.navigate({ url });
+                            },
+
+                            $: async (selector: string) => {
+                                const { result } = await Runtime.evaluate({
+                                    expression: `document.querySelector('${selector}')`,
+                                    returnByValue: true,
+                                });
+                                return result.value;
+                            },
+                        };
                     }
                     throw new Error(`Unknown framework name ${frameworkName}`);
                 };
@@ -620,3 +792,36 @@ describe('FingerprintInjector', () => {
         });
     });
 });
+
+// from https://github.com/puppeteer/puppeteer/blob/main/packages/puppeteer-core/src/util/Function.ts#L30
+function stringifyFunction(fn: (...args: never) => unknown): string {
+    let value = fn.toString();
+    try {
+        new Function(`(${value})`);
+    } catch (err) {
+        if (
+            (err as Error).message.includes(
+                `Refused to evaluate a string as JavaScript because 'unsafe-eval' is not an allowed source of script in the following Content Security Policy directive`,
+            )
+        ) {
+            // The content security policy does not allow Function eval. Let's
+            // assume the value might be valid as is.
+            return value;
+        }
+        // This means we might have a function shorthand (e.g. `test(){}`). Let's
+        // try prefixing.
+        let prefix = 'function ';
+        if (value.startsWith('async ')) {
+            prefix = `async ${prefix}`;
+            value = value.substring('async '.length);
+        }
+        value = `${prefix}${value}`;
+        try {
+            new Function(`(${value})`);
+        } catch {
+            // We tried hard to serialize, but there's a weird beast here.
+            throw new Error('Passed function cannot be serialized!');
+        }
+    }
+    return value;
+}

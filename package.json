@@ -56,6 +56,7 @@
         "@types/puppeteer": "^7.0.0",
         "@types/useragent": "^2.3.1",
         "browserslist": "^4.21.1",
+        "chrome-remote-interface": "^0.33.3",
         "eslint": "^9.23.0",
         "eslint-config-prettier": "^10.1.1",
         "fast-csv": "^5.0.0",
