@@ -11,7 +11,7 @@ import type {
   BrowserFingerprintWithHeaders,
   Fingerprint
 } from 'fingerprint-generator';
-// Импортируем типы из header-generator, который используется fingerprint-generator
+
 import type { 
   BrowserName,
   Device,
@@ -37,17 +37,15 @@ async function startServer() {
         app.set('views', resolve(__dirname, '../static'));
 
         app.get('/', (req, res) => {
-            // Получаем параметры из запроса
+            
             const browser = req.query.browser as string || 'chrome';
             const device = req.query.device as string || 'desktop';
             const os = req.query.os as string || 'windows';
             
-            // Настройка валидных значений с типами
             const validBrowsers: BrowserName[] = ['chrome', 'firefox', 'safari', 'edge'];
             const validDevices: Device[] = ['desktop', 'mobile'];
             const validOS: OS[] = ['windows', 'macos', 'linux', 'android', 'ios'];
             
-            // Проверка и использование значений по умолчанию, если параметры невалидны
             const selectedBrowser = validBrowsers.includes(browser as BrowserName) ? browser as BrowserName : 'chrome';
             const selectedDevice = validDevices.includes(device as Device) ? device as Device : 'desktop';
             const selectedOS = validOS.includes(os as OS) ? os as OS : 'windows';
@@ -56,17 +54,14 @@ async function startServer() {
             
             const fingerprintInjector = new FingerprintInjector();
             
-            // Используем типизированные опции для генератора
             const options: Partial<FingerprintGeneratorOptions> = {
                 browsers: [selectedBrowser],
                 devices: [selectedDevice],
                 operatingSystems: [selectedOS],
             };
             
-            // Получаем типизированный результат
             const generatorResult: BrowserFingerprintWithHeaders = new FingerprintGenerator().getFingerprint(options);
             
-            // Типизированный fingerprint
             const fingerprint: Fingerprint = generatorResult.fingerprint;
             
             res.render('layout', {

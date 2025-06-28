@@ -10,7 +10,7 @@ export default defineConfig({
     extensions: ['.ts', '.js']
   },
   build: {
-    outDir: '../dist',
+    outDir: './dist',
     rollupOptions: {
       input: {
         main: resolve(__dirname, 'static/index.html')

@@ -14,11 +14,6 @@
       "ES2020",
       "WebWorker"
     ],
-    "paths": {
-      "fingerprint-generator": [
-        "./node_modules/fingerprint-generator"
-      ]
-    }
   },
   "include": [
     "src/**/*",
