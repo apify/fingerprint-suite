@@ -73,7 +73,6 @@ const cases = [
                 options: {
                     args: ['--no-sandbox', '--use-gl=desktop'],
                     channel: 'chrome',
-                    headless: false,
                     debuggingPort: 9222,
                 },
                 fingerprintGeneratorOptions: {

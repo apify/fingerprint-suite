@@ -216,6 +216,8 @@ export class FingerprintInjector {
 
         await page.addScriptToEvaluateOnNewDocument({
             source: this.getInjectableFingerprintFunction(enhancedFingerprint),
+            // @ts-ignore unfortunately types are too old, its essential to guarantee script is executed immediately
+            runImmediately: true,
         });
     }
 
@@ -427,19 +429,4 @@ export async function newInjectedPage(
     await injector.attachFingerprintToPuppeteer(page, fingerprintWithHeaders);
 
     return page;
-}
-
-export async function newCDPInjector(
-    args: AttachFingerprintToCDPparams,
-    options?: {
-        fingerprint?: BrowserFingerprintWithHeaders;
-        fingerprintOptions?: Partial<FingerprintGeneratorOptions>;
-    },
-): Promise<void> {
-    const generator = new FingerprintGenerator();
-    const fingerprintWithHeaders =
-        options?.fingerprint ??
-        generator.getFingerprint(options?.fingerprintOptions ?? {});
-    const injector = new FingerprintInjector();
-    await injector.attachFingerprintToCDP(args, fingerprintWithHeaders);
 }

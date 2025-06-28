@@ -22,13 +22,17 @@
     },
     "peerDependencies": {
         "playwright": "^1.22.2",
-        "puppeteer": ">= 9.x"
+        "puppeteer": ">= 9.x",
+        "@types/chrome-remote-interface": "^0.31.14"
     },
     "peerDependenciesMeta": {
         "playwright": {
             "optional": true
         },
         "puppeteer": {
+            "optional": true
+        },
+        "@types/chrome-remote-interface" : {
             "optional": true
         }
     },
