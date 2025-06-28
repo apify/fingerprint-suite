@@ -50,8 +50,6 @@ async function startServer() {
             const selectedDevice = validDevices.includes(device as Device) ? device as Device : 'desktop';
             const selectedOS = validOS.includes(os as OS) ? os as OS : 'windows';
             
-            console.log(`Generating fingerprint for: ${selectedBrowser}, ${selectedDevice}, ${selectedOS}`);
-            
             const fingerprintInjector = new FingerprintInjector();
             
             const options: Partial<FingerprintGeneratorOptions> = {
