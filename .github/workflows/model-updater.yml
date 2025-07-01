@@ -130,8 +130,6 @@ jobs:
             - uses: actions/download-artifact@v4
               with:
                   name: new-models
-                  run-id: 15709043154
-                  github-token: ${{ secrets.APIFY_SERVICE_ACCOUNT_GITHUB_TOKEN }}
 
             - name: Bump package version numbers
               id: bump_version
