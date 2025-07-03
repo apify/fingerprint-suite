@@ -13,6 +13,15 @@ import {
 import playwright, { chromium, type Browser as PWBrowser } from 'playwright';
 import puppeteer, { Browser as PPBrowser } from 'puppeteer';
 
+import {
+    describe,
+    expect,
+    test,
+    beforeEach,
+    afterAll,
+    beforeAll,
+} from 'vitest';
+
 function getHTTPBinUrl() {
     return process.env.APIFY_HTTPBIN_TOKEN
         ? `https://httpbin.apify.actor/get?token=${process.env.APIFY_HTTPBIN_TOKEN}`

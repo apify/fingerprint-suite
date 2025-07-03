@@ -1,6 +1,8 @@
 import { FingerprintGenerator, PRESETS } from 'fingerprint-generator';
 import { HeaderGeneratorOptions } from 'header-generator';
 
+import { describe, expect, test } from 'vitest';
+
 describe('Generation tests', () => {
     const fingerprintGenerator = new FingerprintGenerator();
     test('Basic functionality', () => {
