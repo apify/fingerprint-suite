@@ -18,7 +18,10 @@ export default defineConfig({
         testTimeout: 60_000,
         hookTimeout: 60_000,
         alias: {
-            "header-generator/src/utils": join(__dirname, "packages/header-generator/src/utils.ts"),
-        }
+            'header-generator/src/utils': join(
+                __dirname,
+                'packages/header-generator/src/utils.ts',
+            ),
+        },
     },
 });
