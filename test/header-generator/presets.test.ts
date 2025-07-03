@@ -4,6 +4,8 @@ import {
     PRESETS,
 } from 'header-generator';
 
+import { describe, expect, test } from 'vitest';
+
 describe('presets', () => {
     const generator = new HeaderGenerator();
     const presets = Object.entries(PRESETS);

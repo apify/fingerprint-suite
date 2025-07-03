@@ -3,6 +3,8 @@ import * as path from 'path';
 import { BayesianNetwork } from 'generative-bayesian-network';
 import { parseFile } from 'fast-csv';
 
+import { describe, expect, test } from 'vitest';
+
 const testNetworkDefinitionPath = path.join(
     __dirname,
     './testNetworkDefinition.zip',

@@ -38,7 +38,7 @@
         "postbuild": "node ./scripts/typescript_fixes.mjs",
         "prerelease": "npm run build -- --force && turbo run copy --force --concurrency=1",
         "release": "./scripts/publish.sh",
-        "test": "jest --silent",
+        "test": "vitest",
         "lint": "eslint && prettier . --check",
         "lint:fix": "eslint --fix && prettier . --write",
         "buildNetwork": "turbo run build && ./scripts/netgen.sh && turbo run build",
@@ -50,7 +50,6 @@
         "@eslint/eslintrc": "^3.3.1",
         "@eslint/js": "^9.23.0",
         "@types/adm-zip": "^0.5.0",
-        "@types/jest": "^29.0.0",
         "@types/node": "^22.0.0",
         "@types/node-fetch": "^2.6.1",
         "@types/puppeteer": "^7.0.0",
@@ -71,11 +70,12 @@
         "puppeteer-extra-plugin-user-preferences": "^2.4.1",
         "rimraf": "^6.0.0",
         "semver": "^7.3.8",
-        "ts-jest": "^29.0.0",
         "ts-node": "^10.8.0",
         "turbo": "^2.4.4",
         "typescript": "^5.0.0",
-        "typescript-eslint": "^8.28.0"
+        "typescript-eslint": "^8.28.0",
+        "vite-tsconfig-paths": "^5.1.4",
+        "vitest": "^3.2.4"
     },
     "overrides": {
         "eslint-config-airbnb-base": {

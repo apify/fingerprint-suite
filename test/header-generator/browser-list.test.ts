@@ -1,6 +1,8 @@
 import browsersList from 'browserslist';
 import { getBrowsersFromQuery } from 'header-generator/src/utils';
 
+import { describe, expect, test } from 'vitest';
+
 describe('browserList generation', () => {
     test('Should work with simple query', () => {
         const browsers = getBrowsersFromQuery('last 2 firefox versions');
