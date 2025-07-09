@@ -1,0 +1,106 @@
+body {
+  font-family: Arial, sans-serif;
+  margin: 20px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+  font-size: 14px;
+}
+
+th, td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: left;
+}
+
+th {
+  background-color: #f2f2f2;
+  position: sticky;
+  top: 0;
+}
+
+tr.mismatch {
+  background-color: #ffcccc;
+}
+
+pre {
+  margin: 0;
+  white-space: pre-wrap;
+  background-color: #f5f5f5;
+  padding: 5px;
+  border-radius: 3px;
+  overflow: visible;
+}
+
+.code {
+  font-family: monospace;
+  background-color: #f0f0f0;
+  padding: 2px 4px;
+  border-radius: 3px;
+}
+
+.raw-data {
+  margin-top: 30px;
+  width: 100%;
+}
+
+#fingerprint-data {
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+#comparison-table-container {
+  width: 100%;
+}
+
+/* Styles for the fingerprint configuration panel */
+.config-panel {
+  background-color: #f8f9fa;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  padding: 15px;
+  margin-bottom: 20px;
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form-group label {
+  display: inline-block;
+  width: 150px;
+  font-weight: bold;
+}
+
+.form-group select {
+  padding: 5px;
+  width: 200px;
+  border-radius: 3px;
+  border: 1px solid #ccc;
+}
+
+.form-group button {
+  padding: 8px 15px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-right: 10px;
+}
+
+.form-group button:hover {
+  background-color: #45a049;
+}
+
+#random-config {
+  background-color: #2196F3;
+}
+
+#random-config:hover {
+  background-color: #0b7dda;
+}
