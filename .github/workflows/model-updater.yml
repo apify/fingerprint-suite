@@ -88,7 +88,7 @@ jobs:
               run: npm ci
 
             - name: Download artifacts
-              uses: actions/download-artifact@v4
+              uses: actions/download-artifact@v5
               with:
                   name: new-models
 
@@ -127,7 +127,7 @@ jobs:
             - name: Install Dependencies
               run: npm ci
 
-            - uses: actions/download-artifact@v4
+            - uses: actions/download-artifact@v5
               with:
                   name: new-models
 
