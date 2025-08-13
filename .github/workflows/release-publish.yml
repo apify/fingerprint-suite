@@ -14,7 +14,7 @@ jobs:
         needs: [test_and_sync]
         steps:
             - name: Checkout Source code
-              uses: actions/checkout@v4
+              uses: actions/checkout@v5
               with:
                   token: ${{ secrets.APIFY_SERVICE_ACCOUNT_GITHUB_TOKEN }}
 
