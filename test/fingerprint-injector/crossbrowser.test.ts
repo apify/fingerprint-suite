@@ -4,7 +4,7 @@ import puppeteer from 'puppeteer';
 
 import { describe, test } from 'vitest';
 
-function generateCartesianMatrix(A: any, B: any) {
+function everyAeveryB(A: any, B: any) {
     const matrix = [];
     for (const a of A) {
         for (const b of B) {
@@ -27,7 +27,7 @@ describe('Playwright controlled instances', () => {
         'edge',
     ] as const;
 
-    test.each(generateCartesianMatrix(runnableBrowsers, fingerprintBrowsers))(
+    test.each(everyAeveryB(runnableBrowsers, fingerprintBrowsers))(
         `[%s] should inject %s fingerprint`,
         async (
             browserType: (typeof runnableBrowsers)[number],
@@ -43,7 +43,7 @@ describe('Playwright controlled instances', () => {
 
             const page = await context.newPage();
 
-            await page.goto('https://example.com');
+            await page.goto('https://crawlee.dev');
             await browser.close();
         },
     );
@@ -58,7 +58,7 @@ describe('Puppeteer controlled instances', () => {
         'edge',
     ] as const;
 
-    test.each(generateCartesianMatrix(runnableBrowsers, fingerprintBrowsers))(
+    test.each(everyAeveryB(runnableBrowsers, fingerprintBrowsers))(
         `[%s] should inject %s fingerprint`,
         async (
             browserType: (typeof runnableBrowsers)[number],
@@ -74,7 +74,7 @@ describe('Puppeteer controlled instances', () => {
                 },
             });
 
-            await page.goto('https://example.com');
+            await page.goto('https://crawlee.dev');
             await browser.close();
         },
     );
