@@ -368,7 +368,7 @@ describe('FingerprintInjector', () => {
                 });
 
                 test('should override locales', async () => {
-                    response = await page.goto(`https://example.org`);
+                    response = await page.goto(`https://crawlee.dev`);
                     const requestHeaders = response.request().headers();
 
                     expect(
@@ -387,7 +387,7 @@ describe('FingerprintInjector', () => {
                 });
 
                 test('should override other browser headers', async () => {
-                    response = await page.goto(`https://example.org`);
+                    response = await page.goto(`https://crawlee.dev`);
                     const requestObject = await response.request();
                     const requestHeaders =
                         (await requestObject.allHeaders?.()) ??
