@@ -339,7 +339,7 @@ export async function newInjectedContext(
     const generator = new FingerprintGenerator();
     const fingerprintWithHeaders =
         options?.fingerprint ??
-        generator.getFingerprint(options?.fingerprintOptions ?? {});
+        generator.getFingerprint(options?.fingerprintOptions);
 
     const { fingerprint, headers } = fingerprintWithHeaders;
     const context = await browser.newContext({
@@ -376,7 +376,7 @@ export async function newInjectedPage(
     const generator = new FingerprintGenerator();
     const fingerprintWithHeaders =
         options?.fingerprint ??
-        generator.getFingerprint(options?.fingerprintOptions ?? {});
+        generator.getFingerprint(options?.fingerprintOptions);
 
     const page = await browser.newPage();
 
