@@ -44,4 +44,5 @@ jobs:
                   author_name: Apify Release Bot
                   author_email: noreply@apify.com
                   message: "chore(release): Update Python package changelog and package version [skip ci]"
+                  remove: './uv.lock'
                   new_branch: "ci-test-branch" # Temp for test, delete later
