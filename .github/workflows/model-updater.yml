@@ -161,29 +161,29 @@ jobs:
               uses: stefanzweifel/git-auto-commit-action@v6
               with:
                   commit_message: '[auto] fingerprint/header model update'
-                  branch: ci-test-branch
-                  #tagging_message: 'v${{ steps.bump_version.outputs.version }}'
+                  branch: master
+                  tagging_message: 'v${{ steps.bump_version.outputs.version }}'
 
                   file_pattern: './packages/ ./package.json ./package-lock.json ./apify_fingerprint_datapoints/CHANGELOG.md ./pyproject.toml'
 
                   commit_user_name: 'modelmaker[bot] ⚒️'
                   commit_user_email: modelmaker[bot]@users.noreply.github.com
 
-# Temp comment for test
-#            - name: Create release
-#              uses: actions/create-release@v1
-#              env:
-#                  GITHUB_TOKEN: ${{ secrets.APIFY_SERVICE_ACCOUNT_GITHUB_TOKEN }}
-#              with:
-#                  tag_name: 'v${{ steps.bump_version.outputs.version }}'
-#                  release_name: 'v${{ steps.bump_version.outputs.version }}'
-#                  body: |
-#                      This is an automated release of the model used by the `fingerprint-suite`.
-#
-#                      The only difference between this release and the previous one is the model used to generate fingerprints.
 
-#    release_python:
-#        name: Public new Python package to PyPI
-#        needs: commit_model
-#        uses: .github/workflows/release_python.yaml
-#        secrets: inherit
+            - name: Create release
+              uses: actions/create-release@v1
+              env:
+                  GITHUB_TOKEN: ${{ secrets.APIFY_SERVICE_ACCOUNT_GITHUB_TOKEN }}
+              with:
+                  tag_name: 'v${{ steps.bump_version.outputs.version }}'
+                  release_name: 'v${{ steps.bump_version.outputs.version }}'
+                  body: |
+                      This is an automated release of the model used by the `fingerprint-suite`.
+
+                      The only difference between this release and the previous one is the model used to generate fingerprints.
+
+    release_python:
+        name: Public new Python package to PyPI
+        needs: commit_model
+        uses: .github/workflows/release_python.yaml
+        secrets: inherit
