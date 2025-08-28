@@ -155,7 +155,8 @@ jobs:
                   # Bump python project version
                   uv version --bump minor
                   # Update changelog
-                  sed -i "5i## $(uv version --short) - ($(date "+%Y-%m-%d"))\n- Updated data. Same as npm package \`fingerprint-generator\` version \`$version\`\n " CHANGELOG.md
+                  sed -i "5i## $(uv version --short) - ($(date "+%Y-%m-%d"))\n
+                  - Updated data. Same as npm package \`fingerprint-generator\` version \`$version\`\n " CHANGELOG.md
 
             - name: Push new model
               uses: stefanzweifel/git-auto-commit-action@v6
@@ -164,7 +165,12 @@ jobs:
                   branch: master
                   tagging_message: 'v${{ steps.bump_version.outputs.version }}'
 
-                  file_pattern: './packages/ ./package.json ./package-lock.json ./apify_fingerprint_datapoints/CHANGELOG.md ./pyproject.toml'
+                  file_pattern: |
+                    ./packages/
+                    ./package.json
+                    ./package-lock.json
+                    ./apify_fingerprint_datapoints/CHANGELOG.md
+                    ./pyproject.toml'
 
                   commit_user_name: 'modelmaker[bot] ⚒️'
                   commit_user_email: modelmaker[bot]@users.noreply.github.com
