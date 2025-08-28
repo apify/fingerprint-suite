@@ -2,6 +2,9 @@ name: Bump Python package after module update
 on:
     workflow_dispatch:
     workflow_call:
+    push:
+        branches:
+            - automatic-python-package-rel-flow
 
 jobs:
     bump_change_log_and_version:
@@ -21,19 +24,16 @@ jobs:
               run: npm ci
 
             - uses: actions/checkout@v4
-            - uses: actions/setup-python@v5
-              with:
-                  python-version: '3.13'
             - uses: astral-sh/setup-uv@v5
 
             - name: Bump project version and change log
               shell: bash
               run: |
+                  # Get related npm package version for changelog
+                  version=$(node -p "require('./package.json').version")
                   cd apify_fingerprint_datapoints
                   # Bump python project version
                   uv version --bump minor
-                  # Get related npm package version for changelog
-                  version=$(node -p "require('./package.json').version")
                   # Update changelog
                   sed -i "5i## $(uv version --short) - ($(date "+%Y-%m-%d"))\n- Updated data. Same as npm package \`fingerprint-generator\` version \`$version\`\n " CHANGELOG.md
 
