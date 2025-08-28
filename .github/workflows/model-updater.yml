@@ -144,6 +144,19 @@ jobs:
             - name: Print new version
               run: 'echo new version: ${{ steps.bump_version.outputs.version }}'
 
+            - uses: astral-sh/setup-uv@v6
+
+            - name: Bump Python package version and change log
+              shell: bash
+              run: |
+                  # Get related npm package version for changelog
+                  version=${{ steps.bump_version.outputs.version }}
+                  cd apify_fingerprint_datapoints
+                  # Bump python project version
+                  uv version --bump minor
+                  # Update changelog
+                  sed -i "5i## $(uv version --short) - ($(date "+%Y-%m-%d"))\n- Updated data. Same as npm package \`fingerprint-generator\` version \`$version\`\n " CHANGELOG.md
+
             - name: Push new model
               uses: stefanzweifel/git-auto-commit-action@v6
               with:
@@ -151,7 +164,7 @@ jobs:
                   branch: master
                   tagging_message: 'v${{ steps.bump_version.outputs.version }}'
 
-                  file_pattern: './packages/ ./package.json ./package-lock.json'
+                  file_pattern: './packages/ ./package.json ./package-lock.json ./apify_fingerprint_datapoints/CHANGELOG.md ./pyproject.toml'
 
                   commit_user_name: 'modelmaker[bot] ⚒️'
                   commit_user_email: modelmaker[bot]@users.noreply.github.com
@@ -167,3 +180,9 @@ jobs:
                       This is an automated release of the model used by the `fingerprint-suite`.
 
                       The only difference between this release and the previous one is the model used to generate fingerprints.
+
+    release_python:
+        name: Public new Python package to PyPI
+        needs: commit_model
+        uses: .github/workflows/release_python.yaml
+        secrets: inherit
