@@ -1,8 +1,6 @@
-import { inspect } from 'util';
-
 import { HeaderGenerator, HeaderGeneratorOptions } from 'header-generator';
-import headersOrder from 'header-generator/src/data_files/headers-order.json';
-import { getUserAgent, getBrowser } from 'header-generator/src/utils';
+
+import { describe, expect, test } from 'vitest';
 
 function extractLocalesFromAcceptLanguageHeader(
     acceptLanguageHeader: string,

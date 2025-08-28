@@ -1,6 +1,6 @@
-/* eslint-disable */
-import * as path from 'path';
 import { GeneratorNetworksCreator } from 'generator-networks-creator';
+
+import { describe, expect, test } from 'vitest';
 
 describe('Processing browser data', () => {
     const networkGenerator = new GeneratorNetworksCreator();
