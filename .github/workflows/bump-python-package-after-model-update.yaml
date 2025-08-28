@@ -1,0 +1,47 @@
+name: Bump Python package after module update
+on:
+    workflow_dispatch:
+    workflow_call:
+
+jobs:
+    bump_change_log_and_version:
+        name: Bump change log and version
+        runs-on: ubuntu-22.04
+        steps:
+            - uses: actions/checkout@v4
+              with:
+                  token: ${{ secrets.APIFY_SERVICE_ACCOUNT_GITHUB_TOKEN }}
+
+            - name: Use Node.js 22
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 22
+
+            - name: Install Dependencies
+              run: npm ci
+
+            - uses: actions/checkout@v4
+            - uses: actions/setup-python@v5
+              with:
+                  python-version: '3.13'
+            - uses: astral-sh/setup-uv@v5
+
+            - name: Bump project version and change log
+              shell: bash
+              run: |
+                  cd apify_fingerprint_datapoints
+                  # Bump python project version
+                  uv version --bump minor
+                  # Get related npm package version for changelog
+                  version=$(node -p "require('./package.json').version")
+                  # Update changelog
+                  sed -i "5i## $(uv version --short) - ($(date "+%Y-%m-%d"))\n- Updated data. Same as npm package \`fingerprint-generator\` version \`$version\`\n " CHANGELOG.md
+
+
+            - name: Commit changes
+              uses: EndBug/add-and-commit@v9
+              with:
+                  author_name: Apify Release Bot
+                  author_email: noreply@apify.com
+                  message: "chore(release): Update Python package changelog and package version [skip ci]"
+                  new_branch: "ci-test-branch" # Temp for test, delete later

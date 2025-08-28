@@ -1,5 +1,7 @@
 name: Create a release
-on: workflow_dispatch
+on:
+    workflow_dispatch:
+    workflow_call:
 
 jobs:
     publish_to_pypi:
