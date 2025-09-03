@@ -155,7 +155,7 @@ jobs:
                   # Bump python project version
                   uv version --bump minor
                   # Update changelog
-                  sed -i "5i## $(uv version --short) - ($(date "+%Y-%m-%d"))\n- Updated data. Same as npm package \`fingerprint-generator\` version \`$version\`\n " CHANGELOG.md
+                  sed -i "5i## $(uv version --short) - ($(date "+%Y-%m-%d"))\n\n- Updated data. Same as npm package \`fingerprint-generator\` version \`$version\`\n" CHANGELOG.md
 
             - name: Push new model
               uses: stefanzweifel/git-auto-commit-action@v6
