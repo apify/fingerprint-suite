@@ -184,5 +184,5 @@ jobs:
     release_python:
         name: Public new Python package to PyPI
         needs: commit_model
-        uses: .github/workflows/release_python.yaml
+        uses: ./.github/workflows/release_python.yaml
         secrets: inherit
