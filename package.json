@@ -83,5 +83,5 @@
             "eslint": "$eslint"
         }
     },
-    "packageManager": "npm@11.5.2"
+    "packageManager": "npm@11.6.0"
 }
