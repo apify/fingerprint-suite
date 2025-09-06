@@ -58,3 +58,8 @@ export const MODERN_ANDROID = {
     ...MODERN_MOBILE,
     operatingSystems: ['android'],
 } satisfies Partial<HeaderGeneratorOptions>;
+
+export const MODERN_IOS = {
+    ...MODERN_MOBILE,
+    operatingSystems: ['ios'],
+} satisfies Partial<HeaderGeneratorOptions>;
