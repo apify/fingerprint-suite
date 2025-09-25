@@ -180,27 +180,3 @@ jobs:
                       This is an automated release of the model used by the `fingerprint-suite`.
 
                       The only difference between this release and the previous one is the model used to generate fingerprints.
-
-    publish_to_pypi: # Duplicate of release_python.yaml due to https://github.com/pypa/gh-action-pypi-publish/issues/166
-        name: Publish to PyPI
-        needs: commit_model
-        runs-on: ubuntu-latest
-        permissions:
-            contents: write
-            id-token: write # Required for OIDC authentication.
-        environment:
-            name: pypi
-            url: https://pypi.org/project/crawlee
-        steps:
-            - uses: actions/checkout@v5
-            - uses: actions/setup-python@v6
-              with:
-                  python-version: '3.13'
-            - uses: astral-sh/setup-uv@v6
-            - name: Build project
-              shell: bash
-              run: uv build
-
-            # Publishes the package to PyPI using PyPA official GitHub action with OIDC authentication.
-            - name: Publish package to PyPI
-              uses: pypa/gh-action-pypi-publish@release/v1
