@@ -183,6 +183,7 @@ jobs:
 
     publish_to_pypi: # Duplicate of release_python.yaml due to https://github.com/pypa/gh-action-pypi-publish/issues/166
         name: Publish to PyPI
+        needs: commit_model
         runs-on: ubuntu-latest
         permissions:
             contents: write
