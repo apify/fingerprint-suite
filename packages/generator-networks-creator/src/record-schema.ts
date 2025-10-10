@@ -199,6 +199,19 @@ export async function getRecordSchema() {
                             ),
                             mobile: z.boolean(),
                             platform: z.string(),
+                            architecture: z.string().optional(),
+                            bitness: z.string().optional(),
+                            model: z.string().optional(),
+                            platformVersion: z.string().optional(),
+                            uaFullVersion: z.string().optional(),
+                            fullVersionList: z
+                                .array(
+                                    z.object({
+                                        brand: z.string(),
+                                        version: z.string(),
+                                    }),
+                                )
+                                .optional(),
                         })
                         .optional()
                         .nullable(),
