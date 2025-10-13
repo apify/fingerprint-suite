@@ -1,6 +1,6 @@
 {
     "name": "fingerprint-generator",
-    "version": "2.1.74",
+    "version": "2.1.75",
     "description": "NodeJS package for generating realistic browser fingerprints.",
     "homepage": "https://github.com/apify/fingerprint-suite",
     "engines": {
@@ -33,8 +33,8 @@
         "url": "https://github.com/apify/fingerprint-suite/issues"
     },
     "dependencies": {
-        "generative-bayesian-network": "^2.1.74",
-        "header-generator": "^2.1.74",
+        "generative-bayesian-network": "^2.1.75",
+        "header-generator": "^2.1.75",
         "tslib": "^2.4.0"
     }
 }
