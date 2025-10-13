@@ -158,7 +158,7 @@ jobs:
                   sed -i "5i## $(uv version --short) - ($(date "+%Y-%m-%d"))\n\n- Updated data. Same as npm package \`fingerprint-generator\` version \`$version\`\n" CHANGELOG.md
 
             - name: Push new model
-              uses: stefanzweifel/git-auto-commit-action@v6
+              uses: stefanzweifel/git-auto-commit-action@v7
               with:
                   commit_message: '[auto] fingerprint/header model update'
                   branch: master
