@@ -22,7 +22,7 @@ jobs:
                   uv add "browserforge[all]==1.2.3"
 
             - name: Download artifacts
-              uses: actions/download-artifact@v5
+              uses: actions/download-artifact@v6
               with:
                   name: new-models
                   path: ./new-models
