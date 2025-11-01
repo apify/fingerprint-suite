@@ -1,7 +1,7 @@
 {
     "name": "fingerprint-suite",
     "private": true,
-    "version": "2.1.75",
+    "version": "2.1.76",
     "description": "",
     "workspaces": [
         "packages/*"
