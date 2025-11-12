@@ -3,6 +3,10 @@ on:
     release:
         types: [published]
 
+permissions:
+    contents: write
+    id-token: write # Required for OIDC authentication.
+
 jobs:
     test_and_sync:
         uses: apify/fingerprint-suite/.github/workflows/test-and-sync.yml@master
@@ -18,11 +22,12 @@ jobs:
               with:
                   token: ${{ secrets.APIFY_SERVICE_ACCOUNT_GITHUB_TOKEN }}
 
-            - name: Use Node.js 22
+            - name: Use Node.js
               uses: actions/setup-node@v5
               with:
-                  node-version: 22
+                  node-version: 24
                   cache: 'npm'
+                  registry-url: 'https://registry.npmjs.org/'
                   cache-dependency-path: 'package-lock.json'
 
             - name: Turbo cache
@@ -42,15 +47,8 @@ jobs:
                   git config --global user.name 'Apify Release Bot'
                   git config --global user.email 'noreply@apify.com'
 
-                  echo "access=public" >> ~/.npmrc
-                  echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" >> ~/.npmrc
-
                   export GIT_TAG=$(echo $GITHUB_REF | sed 's/refs\/tags\///g')
                   npm run release
-              env:
-                  NPM_TOKEN: ${{ secrets.APIFY_SERVICE_ACCOUNT_NPM_TOKEN }}
-                  GIT_USER: 'noreply@apify.com:${{ secrets.APIFY_SERVICE_ACCOUNT_GITHUB_TOKEN }}'
-                  GH_TOKEN: ${{ secrets.APIFY_SERVICE_ACCOUNT_GITHUB_TOKEN }}
 
             - name: Commit the version bump
               uses: stefanzweifel/git-auto-commit-action@v7
@@ -64,24 +62,10 @@ jobs:
 
     publish_to_pypi:
         name: Publish to PyPI
-        needs: publish_latest # Publish only if publishing to JS worked.
+        needs: [publish_latest]
         runs-on: ubuntu-latest
-        permissions:
-            contents: write
-            id-token: write # Required for OIDC authentication.
-        environment:
-            name: pypi
-            url: https://pypi.org/project/crawlee
         steps:
-            - uses: actions/checkout@v5
-            - uses: actions/setup-python@v6
+            - name: Execute publish workflow
+              uses: apify/workflows/execute-workflow@main
               with:
-                  python-version: '3.14'
-            - uses: astral-sh/setup-uv@v7
-            - name: Build project
-              shell: bash
-              run: uv build
-
-            # Publishes the package to PyPI using PyPA official GitHub action with OIDC authentication.
-            - name: Publish package to PyPI
-              uses: pypa/gh-action-pypi-publish@release/v1
+                  workflow: release_python.yaml
