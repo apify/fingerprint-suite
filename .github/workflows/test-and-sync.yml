@@ -63,6 +63,9 @@ jobs:
                       node_modules
                   key: cache-${{ github.run_id }}
 
+            - name: Install Dependencies
+              run: npm ci
+
             - name: Install Playwright deps
               run: npx playwright install --with-deps
 
