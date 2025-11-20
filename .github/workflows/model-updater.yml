@@ -13,7 +13,7 @@ jobs:
             version: ${{ steps.get_version.outputs.version }}
 
         steps:
-            - uses: actions/checkout@v5
+            - uses: actions/checkout@v6
               with:
                   token: ${{ secrets.APIFY_SERVICE_ACCOUNT_GITHUB_TOKEN }}
             - name: Use Node.js 22
@@ -75,7 +75,7 @@ jobs:
         runs-on: ubuntu-22.04
         needs: build_model
         steps:
-            - uses: actions/checkout@v5
+            - uses: actions/checkout@v6
               with:
                   token: ${{ secrets.APIFY_SERVICE_ACCOUNT_GITHUB_TOKEN }}
 
@@ -115,7 +115,7 @@ jobs:
         needs: [build_model, test_model_js, test_model_py]
         runs-on: ubuntu-22.04
         steps:
-            - uses: actions/checkout@v5
+            - uses: actions/checkout@v6
               with:
                   token: ${{ secrets.APIFY_SERVICE_ACCOUNT_GITHUB_TOKEN }}
 
