@@ -798,3 +798,45 @@ function overrideStatic() {
         console.error(e);
     }
 }
+
+function overrideWebWorker(navigatorFingerprint) {
+    const worker = `
+            Object.defineProperties(navigator, {
+                userAgent: {
+                    get: () => "${navigatorFingerprint.userAgent}"
+                },
+                deviceMemory: {
+                    get: () => ${navigatorFingerprint.deviceMemory}
+                },
+                platform: {
+                    get: () => "${navigatorFingerprint.platform}"
+                },
+                hardwareConcurrency: {
+                    get: () => ${navigatorFingerprint.hardwareConcurrency}
+                },
+                languages: {
+                    get: () => ${JSON.stringify(navigatorFingerprint.languages)}
+                },
+                appVersion: {
+                    get: () => "${navigatorFingerprint.appVersion}"
+                }
+            });
+
+            if(navigator.userAgentData){
+                Object.defineProperty(navigator, 'userAgentData', {
+                    get: function(){
+                        return ${JSON.stringify(navigatorFingerprint.userAgentData)}
+                    }
+                });
+            }
+            \n`;
+    // eslint-disable-next-line
+    const createObjectURL = URL.createObjectURL;
+    URL.createObjectURL = function (blob) {
+        if (blob.type === 'application/javascript') {
+            // eslint-disable-next-line
+            blob = new Blob([worker, blob], { type: blob.type });
+        }
+        return createObjectURL.call(this, blob);
+    };
+}
