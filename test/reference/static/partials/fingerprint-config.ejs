@@ -1,0 +1,63 @@
+<div class="config-panel">
+  <h2>Fingerprint Configuration</h2>
+  <form id="fingerprint-config-form" method="get">
+    <div class="form-group">
+      <label for="browser">Browser:</label>
+      <select id="browser" name="browser">
+        <option value="chrome" <%= browser === 'chrome' ? 'selected' : '' %>>Chrome</option>
+        <option value="firefox" <%= browser === 'firefox' ? 'selected' : '' %>>Firefox</option>
+        <option value="safari" <%= browser === 'safari' ? 'selected' : '' %>>Safari</option>
+        <option value="edge" <%= browser === 'edge' ? 'selected' : '' %>>Edge</option>
+      </select>
+    </div>
+    
+    <div class="form-group">
+      <label for="device">Device:</label>
+      <select id="device" name="device">
+        <option value="desktop" <%= device === 'desktop' ? 'selected' : '' %>>Desktop</option>
+        <option value="mobile" <%= device === 'mobile' ? 'selected' : '' %>>Mobile</option>
+      </select>
+    </div>
+    
+    <div class="form-group">
+      <label for="os">Operating System:</label>
+      <select id="os" name="os">
+        <option value="windows" <%= os === 'windows' ? 'selected' : '' %>>Windows</option>
+        <option value="macos" <%= os === 'macos' ? 'selected' : '' %>>macOS</option>
+        <option value="linux" <%= os === 'linux' ? 'selected' : '' %>>Linux</option>
+        <option value="android" <%= os === 'android' ? 'selected' : '' %>>Android</option>
+        <option value="ios" <%= os === 'ios' ? 'selected' : '' %>>iOS</option>
+      </select>
+    </div>
+    
+    <div class="form-group">
+      <button type="submit">Generate Fingerprint</button>
+      <button type="button" id="regenerate-fingerprint">Regenerate Fingerprint</button>
+      <button type="button" id="random-config">Random Configuration</button>
+    </div>
+    
+    <input type="hidden" name="timestamp" id="timestamp" value="<%= Date.now() %>">
+  </form>
+</div>
+
+<script>
+  document.getElementById('random-config').addEventListener('click', function() {
+    const browsers = ['chrome', 'firefox', 'safari', 'edge'];
+    const devices = ['desktop', 'mobile'];
+    const operatingSystems = ['windows', 'macos', 'linux', 'android', 'ios'];
+    
+    document.getElementById('browser').value = browsers[Math.floor(Math.random() * browsers.length)];
+    document.getElementById('device').value = devices[Math.floor(Math.random() * devices.length)];
+    document.getElementById('os').value = operatingSystems[Math.floor(Math.random() * operatingSystems.length)];
+    
+    
+    document.getElementById('fingerprint-config-form').submit();
+  });
+  
+  document.getElementById('regenerate-fingerprint').addEventListener('click', function() {
+    
+    document.getElementById('timestamp').value = Date.now();
+    
+    document.getElementById('fingerprint-config-form').submit();
+  });
+</script>
