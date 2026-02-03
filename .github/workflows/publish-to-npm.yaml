@@ -62,10 +62,24 @@ jobs:
 
     publish_to_pypi:
         name: Publish to PyPI
-        needs: [publish_latest]
+        needs: publish_latest # Publish only if publishing to JS worked.
         runs-on: ubuntu-latest
+        permissions:
+            contents: write
+            id-token: write # Required for OIDC authentication.
+        environment:
+            name: pypi
+            url: https://pypi.org/project/crawlee
         steps:
-            - name: Execute publish workflow
-              uses: apify/workflows/execute-workflow@main
+            - uses: actions/checkout@v5
+            - uses: actions/setup-python@v6
               with:
-                  workflow: release_python.yaml
+                  python-version: '3.14'
+            - uses: astral-sh/setup-uv@v7
+            - name: Build project
+              shell: bash
+              run: uv build
+
+            # Publishes the package to PyPI using PyPA official GitHub action with OIDC authentication.
+            - name: Publish package to PyPI
+              uses: pypa/gh-action-pypi-publish@release/v1
