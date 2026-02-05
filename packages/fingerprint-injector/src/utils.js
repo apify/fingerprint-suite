@@ -798,3 +798,70 @@ function overrideStatic() {
         console.error(e);
     }
 }
+
+function overrideWebWorker(navigatorFingerprint) {
+    const navigatorWorker = `
+            Object.defineProperties(navigator, {
+                userAgent: {
+                    get: () => "${navigatorFingerprint.userAgent}"
+                },
+                deviceMemory: {
+                    get: () => ${navigatorFingerprint.deviceMemory}
+                },
+                platform: {
+                    get: () => "${navigatorFingerprint.platform}"
+                },
+                hardwareConcurrency: {
+                    get: () => ${navigatorFingerprint.hardwareConcurrency}
+                },
+                languages: {
+                    get: () => ${JSON.stringify(navigatorFingerprint.languages)}
+                },
+                appVersion: {
+                    get: () => "${navigatorFingerprint.appVersion}"
+                }
+            });
+
+            if(navigator.userAgentData){
+                Object.defineProperty(navigator, 'userAgentData', {
+                    get: function(){
+                        return ${JSON.stringify(navigatorFingerprint.userAgentData)}
+                    }
+                });
+            }
+            \n`;
+
+    const DefaultWorker = window.Worker;
+    window.Worker = class extends DefaultWorker {
+        constructor(scriptURL, options) {
+            const xhr = new XMLHttpRequest();
+            xhr.open('GET', scriptURL, false);
+            xhr.send();
+            if (xhr.status === 200) {
+                const blob = new Blob([navigatorWorker, xhr.response], {
+                    type: 'application/javascript',
+                });
+                super(URL.createObjectURL(blob), options);
+                return;
+            }
+            super(scriptURL, options);
+        }
+    };
+
+    const DefaultSharedWorker = window.SharedWorker;
+    window.SharedWorker = class extends DefaultSharedWorker {
+        constructor(scriptURL, options) {
+            const xhr = new XMLHttpRequest();
+            xhr.open('GET', scriptURL, false);
+            xhr.send();
+            if (xhr.status === 200) {
+                const blob = new Blob([navigatorWorker, xhr.response], {
+                    type: 'application/javascript',
+                });
+                super(URL.createObjectURL(blob), options);
+                return;
+            }
+            super(scriptURL, options);
+        }
+    };
+}
