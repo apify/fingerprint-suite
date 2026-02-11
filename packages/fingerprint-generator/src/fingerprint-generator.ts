@@ -82,7 +82,7 @@ export type VideoCard = {
 };
 
 export type Fingerprint = {
-    screen: ScreenFingerprint;
+    screen: ScreenFingerprint | null;
     navigator: NavigatorFingerprint;
     videoCodecs: Record<string, string>;
     audioCodecs: Record<string, string>;
@@ -119,6 +119,13 @@ export interface FingerprintGeneratorOptions extends HeaderGeneratorOptions {
      * Try enabling this if you are experiencing performance issues with the fingerprint injection.
      */
     slim?: boolean;
+    /**
+     * When set to true, allows fingerprint generation without screen properties.
+     * This can be useful when screen fingerprint is not required or to avoid fingerprint generation issue.
+     *
+     * **Note:** When enabled, the `screen` property in the generated fingerprint will be null.
+     */
+    skipScreenFingerprint?: boolean;
 }
 
 /**
@@ -242,7 +249,14 @@ export class FingerprintGenerator extends HeaderGenerator {
                 }
             }
 
-            if (!fingerprint.screen) continue; // fix? sometimes, fingerprints are generated 90% empty/null. This is just a workaround.
+            if (!fingerprint.screen) {
+                // If skipScreenFingerprint is enabled, allow fingerprint without screen
+                if (options.skipScreenFingerprint) {
+                    fingerprint.screen = null;
+                } else {
+                    continue; // fix? sometimes, fingerprints are generated 90% empty/null. This is just a workaround.
+                }
+            }
 
             // Manually add the set of accepted languages required by the input
             const acceptLanguageHeaderValue =
