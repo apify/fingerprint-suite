@@ -1,4 +1,5 @@
 import AdmZip = require('adm-zip');
+import { existsSync } from 'fs';
 
 import { BayesianNode } from './bayesian-node';
 
@@ -13,6 +14,9 @@ export class BayesianNetwork {
     private nodesByName: Record<string, BayesianNode> = {};
 
     constructor({ path }: { path: string }) {
+        if (!existsSync(path)) {
+            throw new Error(`Unable to find ${path}`);
+        }
         const zip = new AdmZip(path);
         const zipEntries = zip.getEntries();
 

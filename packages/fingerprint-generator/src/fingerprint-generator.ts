@@ -141,7 +141,7 @@ export class FingerprintGenerator extends HeaderGenerator {
             slim: options.slim,
         };
         this.fingerprintGeneratorNetwork = new BayesianNetwork({
-            path: `${__dirname}/data_files/fingerprint-network-definition.zip`,
+            path: process.env.FINGERPRINT_NETWORK_DEFINITION_PATH || `${__dirname}/data_files/fingerprint-network-definition.zip`,
         });
     }
 
