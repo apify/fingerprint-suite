@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "apify_fingerprint_datapoints"
-version = "0.10.0"
+version = "0.11.0"
 description = "Browser fingerprint datapoints collected by Apify"
 authors = [{ name = "Apify Technologies s.r.o.", email = "support@apify.com" }]
 license = { file = "LICENSE.md" }
