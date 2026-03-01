@@ -5,6 +5,7 @@ import {
     Fingerprint,
     FingerprintGenerator,
     FingerprintGeneratorOptions,
+    NavigatorFingerprint,
     type UserAgentData,
 } from 'fingerprint-generator';
 import {
@@ -42,6 +43,7 @@ declare function overrideIntlAPI(language: string): void;
 declare function overrideStatic(): void;
 declare function runHeadlessFixes(): void;
 declare function blockWebRTC(): void;
+declare function overrideWebWorker(navigatorFingerprint: NavigatorFingerprint): void;
 
 /**
  * Fingerprint injector class.
@@ -251,6 +253,8 @@ export class FingerprintInjector {
                 clientWidth,
             };
 
+            // @ts-expect-error internal browser code
+            overrideWebWorker(fp.navigator);
             runHeadlessFixes();
 
             if (mockWebRTC) blockWebRTC();
