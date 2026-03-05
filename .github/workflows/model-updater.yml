@@ -59,7 +59,7 @@ jobs:
                   APIFY_FINGERPRINT_DATASET_ID: ${{ secrets.APIFY_FINGERPRINT_DATASET_ID }}
 
             - name: Upload models as artifacts
-              uses: actions/upload-artifact@v6
+              uses: actions/upload-artifact@v7
               with:
                   name: new-models
                   path: |
@@ -88,7 +88,7 @@ jobs:
               run: npm ci
 
             - name: Download artifacts
-              uses: actions/download-artifact@v7
+              uses: actions/download-artifact@v8
               with:
                   name: new-models
 
@@ -127,7 +127,7 @@ jobs:
             - name: Install Dependencies
               run: npm ci
 
-            - uses: actions/download-artifact@v7
+            - uses: actions/download-artifact@v8
               with:
                   name: new-models
 
