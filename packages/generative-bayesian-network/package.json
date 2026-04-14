@@ -29,7 +29,7 @@
         "url": "git+https://github.com/apify/fingerprint-suite.git"
     },
     "scripts": {
-        "build": "npm run clean && npm run compile",
+        "build": "pnpm clean && pnpm compile",
         "postbuild": "cp ./README.md dist/",
         "clean": "rimraf ./dist",
         "compile": "tsc -p tsconfig.build.json && gen-esm-wrapper ./dist/index.js ./dist/index.mjs",

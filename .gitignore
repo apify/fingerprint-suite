@@ -23,4 +23,3 @@ docs/typedefs
 .docusaurus
 tsconfig.tsbuildinfo
 .turbo
-.npmrc

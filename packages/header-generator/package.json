@@ -10,7 +10,7 @@
     "homepage": "https://github.com/apify/fingerprint-suite",
     "license": "Apache-2.0",
     "engines": {
-        "node": ">=16.0.0"
+        "node": ">=18.0.0"
     },
     "main": "dist/index.js",
     "module": "dist/index.mjs",
@@ -24,12 +24,12 @@
     },
     "dependencies": {
         "browserslist": "^4.21.1",
-        "generative-bayesian-network": "^2.1.82",
+        "generative-bayesian-network": "workspace:*",
         "ow": "^0.28.1",
         "tslib": "^2.4.0"
     },
     "scripts": {
-        "build": "npm run clean && npm run compile",
+        "build": "pnpm clean && pnpm compile",
         "postbuild": "cp -r src/data_files/ dist/ && cp ./README.md dist/",
         "clean": "rimraf ./dist",
         "compile": "tsc -p tsconfig.build.json && gen-esm-wrapper ./dist/index.js ./dist/index.mjs",

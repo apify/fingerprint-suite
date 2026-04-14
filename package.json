@@ -3,9 +3,6 @@
     "private": true,
     "version": "2.1.82",
     "description": "",
-    "workspaces": [
-        "packages/*"
-    ],
     "keywords": [
         "apify",
         "headless",
@@ -36,7 +33,7 @@
         "clean": "turbo run clean",
         "build": "turbo run build",
         "postbuild": "node ./scripts/typescript_fixes.mjs",
-        "prerelease": "npm run build -- --force && turbo run copy --force --concurrency=1",
+        "prerelease": "pnpm build -- --force && turbo run copy --force --concurrency=1",
         "release": "./scripts/publish.sh",
         "test": "vitest",
         "lint": "eslint && prettier . --check",
@@ -83,5 +80,5 @@
             "eslint": "$eslint"
         }
     },
-    "packageManager": "npm@11.11.1"
+    "packageManager": "pnpm@10.24.0"
 }

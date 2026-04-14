@@ -21,19 +21,10 @@ jobs:
               with:
                   node-version: 24
 
-            - name: Cache node modules + browsers
-              uses: actions/cache@v5
-              with:
-                  path: |
-                      ~/.npm
-                      ~/.cache/ms-playwright
-                  key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
-
-            - name: Install Dependencies
-              run: npm ci
+            - uses: ./.github/actions/pnpm-install
 
             - name: Install Playwright deps
-              run: npx playwright install
+              run: pnpm exec playwright install
 
             - name: Install xvfb
               run: |
@@ -42,19 +33,19 @@ jobs:
 
             - name: Install Playwright browsers
               run: |
-                  npx playwright install webkit
-                  npx playwright install chrome
-                  npx playwright install msedge
+                  pnpm exec playwright install webkit
+                  pnpm exec playwright install chrome
+                  pnpm exec playwright install msedge
 
             - name: Install Playwright deps v2
-              run: npx playwright install-deps
+              run: pnpm exec playwright install-deps
 
             - name: Collect HTTP header orders
               run: |
                   xvfb-run -- node ./packages/header-order-collector/collector.js | tee ./packages/header-generator/src/data_files/headers-order.json
 
             - name: Generate model
-              run: npm run buildNetwork
+              run: pnpm buildNetwork
               env:
                   APIFY_FINGERPRINT_DATASET_ID: ${{ secrets.APIFY_FINGERPRINT_DATASET_ID }}
 
@@ -69,7 +60,7 @@ jobs:
                       ./packages/header-generator/src/data_files/input-network-definition.zip
                       ./packages/fingerprint-generator/src/data_files/fingerprint-network-definition.zip
                       ./package.json
-                      ./package-lock.json
+                      ./pnpm-lock.yaml
 
     test_model_js:
         runs-on: ubuntu-22.04
@@ -84,8 +75,7 @@ jobs:
               with:
                   node-version: 24
 
-            - name: Install Dependencies
-              run: npm ci
+            - uses: ./.github/actions/pnpm-install
 
             - name: Download artifacts
               uses: actions/download-artifact@v8
@@ -99,12 +89,12 @@ jobs:
 
             - name: Test model changes (Node.JS packages)
               run: |
-                  npx playwright install --with-deps
-                  npx puppeteer browsers install chrome
-                  npx puppeteer browsers install firefox
+                  pnpm exec playwright install --with-deps
+                  pnpm exec puppeteer browsers install chrome
+                  pnpm exec puppeteer browsers install firefox
 
-                  npm run build
-                  xvfb-run --auto-servernum -- npm test
+                  pnpm build
+                  xvfb-run --auto-servernum -- pnpm test
 
     test_model_py:
         needs: build_model
@@ -124,8 +114,7 @@ jobs:
               with:
                   node-version: 24
 
-            - name: Install Dependencies
-              run: npm ci
+            - uses: ./.github/actions/pnpm-install
 
             - uses: actions/download-artifact@v8
               with:
@@ -134,10 +123,10 @@ jobs:
             - name: Bump package version numbers
               id: bump_version
               run: |
-                  npm version patch --git-tag-version=false
+                  pnpm version patch --git-tag-version=false
                   export GIT_TAG=$(node -p "require('./package.json').version")
 
-                  npm run prerelease
+                  pnpm prerelease
 
                   echo "version=${GIT_TAG}" >> $GITHUB_OUTPUT
 
@@ -164,7 +153,7 @@ jobs:
                   branch: master
                   tagging_message: 'v${{ steps.bump_version.outputs.version }}'
 
-                  file_pattern: './packages/ ./package.json ./package-lock.json ./apify_fingerprint_datapoints/CHANGELOG.md ./pyproject.toml'
+                  file_pattern: './packages/ ./package.json ./pnpm-lock.yaml ./apify_fingerprint_datapoints/CHANGELOG.md ./pyproject.toml'
 
                   commit_user_name: 'modelmaker[bot] ⚒️'
                   commit_user_email: modelmaker[bot]@users.noreply.github.com
