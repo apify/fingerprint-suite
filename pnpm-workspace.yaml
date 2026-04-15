@@ -13,5 +13,3 @@ onlyBuiltDependencies:
     - playwright-core
     - puppeteer
 
-overrides:
-    std-env: "^3.10.0"
