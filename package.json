@@ -80,5 +80,12 @@
             "eslint": "$eslint"
         }
     },
-    "packageManager": "pnpm@10.24.0"
+    "packageManager": "pnpm@10.24.0",
+    "devEngines": {
+        "packageManager": {
+            "name": "pnpm",
+            "version": "10.x",
+            "onFail": "error"
+        }
+    }
 }
