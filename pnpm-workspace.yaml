@@ -17,3 +17,8 @@ onlyBuiltDependencies:
     - playwright-core
     - puppeteer
 
+nodeLinker: hoisted
+linkWorkspacePackages: true
+preferWorkspacePackages: true
+publicHoistPattern:
+    - "*"
