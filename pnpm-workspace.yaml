@@ -5,3 +5,10 @@ minimumReleaseAge: 1440
 minimumReleaseAgeExclude:
     - '@apify/*'
     - '@crawlee/*'
+
+onlyBuiltDependencies:
+    - "@swc/core"
+    - esbuild
+    - playwright
+    - playwright-core
+    - puppeteer
