@@ -21,7 +21,7 @@ jobs:
               with:
                   node-version: 24
 
-            - uses: ./.github/actions/pnpm-install
+            - uses: apify/workflows/pnpm-install@main
 
             - name: Install Playwright deps
               run: pnpm exec playwright install
@@ -75,7 +75,7 @@ jobs:
               with:
                   node-version: 24
 
-            - uses: ./.github/actions/pnpm-install
+            - uses: apify/workflows/pnpm-install@main
 
             - name: Download artifacts
               uses: actions/download-artifact@v8
@@ -114,7 +114,7 @@ jobs:
               with:
                   node-version: 24
 
-            - uses: ./.github/actions/pnpm-install
+            - uses: apify/workflows/pnpm-install@main
 
             - uses: actions/download-artifact@v8
               with:
