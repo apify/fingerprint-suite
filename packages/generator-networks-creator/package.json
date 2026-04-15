@@ -2,7 +2,7 @@
     "name": "generator-networks-creator",
     "version": "2.1.82",
     "engines": {
-        "node": ">=18.0.0"
+        "node": ">=16.0.0"
     },
     "private": true,
     "main": "dist/index.js",
