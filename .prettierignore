@@ -6,4 +6,3 @@ coverage
 # pnpm
 pnpm-lock.yaml
 pnpm-workspace.yaml
-.github/actions/pnpm-install/action.yml
