@@ -1,11 +1,33 @@
 /* eslint-disable no-unused-vars */
-const isHeadlessChromium =
-    /headless/i.test(navigator.userAgent) && navigator.plugins.length === 0;
-const isChrome = navigator.userAgent.includes('Chrome');
-const isFirefox = navigator.userAgent.includes('Firefox');
-const isSafari =
-    navigator.userAgent.includes('Safari') &&
-    !navigator.userAgent.includes('Chrome');
+
+/**
+ * Check if we're running in headless Chromium - evaluated DYNAMICALLY at call time,
+ * not at module load time. This is critical because:
+ * 1. isHeadlessChromium is evaluated when the init script runs (plugins.length may be 0)
+ * 2. fixPluginArray() runs LATER and adds plugins
+ * 3. If we used a static check, plugins.length=0 → isHeadlessChromium=true → fixes run ✓
+ *    But if plugins.length>0 at load time (e.g. real Chrome with extensions), the static
+ *    check would be false even though we're actually headless
+ * By checking dynamically inside runHeadlessFixes(), we get the correct state at fix time.
+ */
+function isHeadlessChrome() {
+    return /headless/i.test(navigator.userAgent);
+}
+
+function isChrome() {
+    return navigator.userAgent.includes('Chrome');
+}
+
+function isFirefox() {
+    return navigator.userAgent.includes('Firefox');
+}
+
+function isSafari() {
+    return (
+        navigator.userAgent.includes('Safari') &&
+        !navigator.userAgent.includes('Chrome')
+    );
+}
 
 let slim = null;
 function getSlim() {
@@ -611,7 +633,7 @@ function overrideUserAgentData(userAgentData) {
 }
 
 function fixWindowChrome() {
-    if (isChrome && !window.chrome) {
+    if (isChrome() && !window.chrome) {
         Object.defineProperty(window, 'chrome', {
             writable: true,
             enumerable: true,
@@ -755,7 +777,8 @@ function fixIframeContentWindow() {
 }
 
 function fixPluginArray() {
-    if (window.navigator.plugins.length !== 0) {
+    // Only add fake plugins if plugins array is empty (headless detection vector)
+    if (navigator.plugins.length !== 0) {
         return;
     }
 
@@ -780,7 +803,11 @@ function fixPluginArray() {
 
 function runHeadlessFixes() {
     try {
-        if (isHeadlessChromium) {
+        // FIX: Check isHeadlessChrome() DYNAMICALLY at call time, not at module load time.
+        // The old code had `isHeadlessChromium` as a static variable evaluated when the
+        // script loaded (when navigator.plugins.length might still be 0 in headless mode).
+        // By moving to a function call here, we get the actual current state.
+        if (isHeadlessChrome()) {
             fixWindowChrome();
             fixPermissions();
             fixIframeContentWindow();
@@ -795,6 +822,6 @@ function overrideStatic() {
     try {
         window.SharedArrayBuffer = undefined;
     } catch (e) {
-        console.error(e);
+        console.warn(e);
     }
 }
