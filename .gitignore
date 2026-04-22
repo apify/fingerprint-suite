@@ -14,6 +14,7 @@ pids
 .idea
 .vscode
 yarn.lock
+.yarn
 tmp
 jsconfig.json
 types
@@ -23,4 +24,3 @@ docs/typedefs
 .docusaurus
 tsconfig.tsbuildinfo
 .turbo
-.npmrc

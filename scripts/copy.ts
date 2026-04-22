@@ -1,4 +1,4 @@
-import { copyFileSync, readFileSync, writeFileSync, readdirSync } from 'fs';
+import { copyFileSync, readFileSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import { execSync } from 'node:child_process';
 import semver from 'semver';
@@ -18,13 +18,11 @@ function rewrite(p: string, replacer: (from: string) => string): void {
 }
 
 function getProjectVersion(packageName: string) {
-    const version = execSync(`npm show ${packageName} version`)
+    const version = execSync(`pnpm show ${packageName} version`)
         .toString()
         .trim();
     return version;
 }
-
-const localPackages = readdirSync(join(__dirname, '../packages'));
 
 if (!process.env.GIT_TAG || semver.valid(process.env.GIT_TAG) === null) {
     throw new Error(
@@ -42,7 +40,7 @@ const currentLocalVersion = getProjectVersion(process.cwd());
 
 if (semver.gt(targetVersion!, rootVersion)) {
     execSync(
-        `cd ${__dirname}/../ && npm version ${targetVersion} --git-tag-version=false`,
+        `cd ${__dirname}/../ && pnpm version ${targetVersion} --no-git-tag-version`,
         {
             encoding: 'utf-8',
         },
@@ -57,21 +55,15 @@ if (
     semver.gt(rootVersion, currentLocalVersion)
 ) {
     execSync(
-        `cd ${process.cwd()} && npm version ${rootVersion} --git-tag-version=false`,
+        `cd ${process.cwd()} && pnpm version ${rootVersion} --no-git-tag-version`,
         {
             encoding: 'utf-8',
         },
     );
 }
 
-// eslint-disable-next-line
-const localDependencies = Object.keys(
-    require(join(process.cwd(), 'package.json')).dependencies,
-).filter((dep: string) => localPackages.includes(dep));
-
-execSync(`cd ${process.cwd()} && npm install ${localDependencies.join(' ')}`, {
-    encoding: 'utf-8',
-});
+// pnpm publish automatically resolves workspace:* dependencies to real versions,
+// so no explicit install step is needed to pin them before copying.
 
 // as we publish only the dist folder, we need to copy some meta files inside (readme/license/package.json)
 // also changes paths inside the copied `package.json` (`dist/index.js` -> `index.js`)

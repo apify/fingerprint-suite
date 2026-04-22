@@ -17,7 +17,7 @@
     },
     "license": "Apache-2.0",
     "dependencies": {
-        "generative-bayesian-network": "^2.1.82",
+        "generative-bayesian-network": "workspace:*",
         "node-fetch": "^2.6.7",
         "tslib": "^2.4.0",
         "ua-parser-js": "^2.0.0",
@@ -29,7 +29,7 @@
     },
     "homepage": "https://github.com/apify/fingerprint-suite",
     "scripts": {
-        "build": "npm run compile && npm run copyfiles",
+        "build": "pnpm compile && pnpm copyfiles",
         "clean": "rimraf ./dist",
         "compile": "tsc -p tsconfig.build.json && gen-esm-wrapper ./dist/index.js ./dist/index.mjs",
         "copyfiles": "cp -r ./src/network_structures ./dist",

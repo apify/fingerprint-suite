@@ -4,14 +4,13 @@
     "separateMajorMinor": false,
     "dependencyDashboard": false,
     "semanticCommits": "enabled",
+    "minimumReleaseAge": "1 day",
+    "internalChecksFilter": "strict",
     "lockFileMaintenance": {
         "enabled": true,
         "schedule": ["before 2am"],
         "automerge": true,
         "automergeType": "branch"
-    },
-    "constraints": {
-        "npm": "^7.0.0"
     },
     "packageRules": [
         {
@@ -21,6 +20,10 @@
             "groupSlug": "minor-deps",
             "automerge": true,
             "automergeType": "branch"
+        },
+        {
+            "matchPackageNames": ["@apify/*", "@crawlee/*", "apify-client", "apify", "crawlee", "got-scraping"],
+            "minimumReleaseAge": "0 days"
         }
     ],
     "schedule": ["every weekday"]

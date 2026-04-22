@@ -9,7 +9,7 @@ for FOLDER in $SCRIPT_DIR/../packages/*; do
     if [[ " ${PACKAGES_TO_PUBLISH[@]} " =~ " ${PACKAGE_NAME} " ]]; then
       echo "Publishing $PACKAGE_NAME"
       cd $FOLDER/dist
-      npm publish
+      pnpm publish --no-git-checks
 
       cd $SCRIPT_DIR/../
     fi

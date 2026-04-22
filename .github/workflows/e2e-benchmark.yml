@@ -17,24 +17,16 @@ jobs:
               with:
                   node-version: 24
 
-            - name: Cache Node Modules
-              uses: actions/cache@v5
-              with:
-                  path: |
-                      node_modules
-                  key: cache-${{ github.run_id }}
-
-            - name: Install Dependencies
-              run: npm ci
+            - uses: apify/workflows/pnpm-install@main
 
             - name: Install browsers
-              run: npx playwright install
+              run: pnpm exec playwright install
 
             - name: Build the project
-              run: npm run build
+              run: pnpm build
 
             - name: Run benchmarks
-              run: npm run benchmark
+              run: pnpm benchmark
 
             - name: Update the benchmark report
               uses: stefanzweifel/git-auto-commit-action@v7
