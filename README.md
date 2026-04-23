@@ -79,6 +79,15 @@ import { newInjectedPage } from 'fingerprint-injector';
 })();
 ```
 
+## Environment Variables
+
+The following environment variables can be used to customize file paths used by the fingerprinting tools:
+
+- `FINGERPRINT_NETWORK_DEFINITION_PATH`: Custom path to the fingerprint network definition zip file. If not set, defaults to the bundled file in `fingerprint-generator`. The default file can be found at `fingerprint-generator/data_files/fingerprint-network-definition.zip`.
+- `FINGERPRINT_INJECTOR_UTILS_PATH`: Custom path to the fingerprint injector utils.js file. If not set, defaults to the bundled file in `fingerprint-injector`. The default file can be found at `fingerprint-injector/utils.js`.
+
+You can copy these files to custom locations and provide their paths via these environment variables if needed.
+
 ## Support
 
 If you find any bug or issue with any of the fingerprinting tools, please [submit an issue on GitHub](https://github.com/apify/fingerprint-suite/issues).
