@@ -33,7 +33,7 @@
         "clean": "turbo run clean",
         "build": "turbo run build",
         "postbuild": "node ./scripts/typescript_fixes.mjs",
-        "prerelease": "pnpm build -- --force && turbo run copy --force --concurrency=1",
+        "prerelease": "pnpm build --force && turbo run copy --force --concurrency=1",
         "release": "./scripts/publish.sh",
         "test": "vitest",
         "lint": "eslint && prettier . --check",
