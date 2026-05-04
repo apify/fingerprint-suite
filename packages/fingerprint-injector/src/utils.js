@@ -1,6 +1,9 @@
 /* eslint-disable no-unused-vars */
-const isHeadlessChromium =
-    /headless/i.test(navigator.userAgent) && navigator.plugins.length === 0;
+
+// navigator.userAgent does not change at runtime, so these can remain static.
+// The original bug was that isHeadlessChromium also checked `plugins.length === 0`,
+// which was unreliable — fixPluginArray() already guards against empty plugins on its own.
+const isHeadlessChromium = /headless/i.test(navigator.userAgent);
 const isChrome = navigator.userAgent.includes('Chrome');
 const isFirefox = navigator.userAgent.includes('Firefox');
 const isSafari =
@@ -755,6 +758,7 @@ function fixIframeContentWindow() {
 }
 
 function fixPluginArray() {
+    // Only add fake plugins if plugins array is empty (headless detection vector)
     if (window.navigator.plugins.length !== 0) {
         return;
     }
@@ -780,6 +784,11 @@ function fixPluginArray() {
 
 function runHeadlessFixes() {
     try {
+        // FIX: Removed the `plugins.length === 0` check from isHeadlessChromium.
+        // The original code was: /headless/i.test(navigator.userAgent) && navigator.plugins.length === 0
+        // The `plugins.length` part was unreliable — fixPluginArray() already handles the
+        // empty-plugins case independently, and the plugins state may differ between
+        // module load time and when runHeadlessFixes() actually executes.
         if (isHeadlessChromium) {
             fixWindowChrome();
             fixPermissions();
