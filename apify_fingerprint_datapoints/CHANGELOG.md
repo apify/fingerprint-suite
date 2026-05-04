@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.13.0 - (2026-05-04)
+
+- Updated data. Same as npm package `fingerprint-generator` version `2.1.83`
+
 ## 0.12.0 - (2026-04-01)
 
 - Updated data. Same as npm package `fingerprint-generator` version `2.1.82`
