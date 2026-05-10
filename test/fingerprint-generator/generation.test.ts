@@ -84,6 +84,29 @@ describe('Generation tests', () => {
             expect(field).toBeDefined();
         }
     });
+
+    test('Generates non-zero viewport dimensions for desktop Chrome fingerprints', () => {
+        const fingerprintGenerator = new FingerprintGenerator({
+            devices: ['desktop'],
+            browsers: ['chrome'],
+            operatingSystems: ['macos'],
+        });
+
+        for (let x = 0; x < 100; x++) {
+            const {
+                fingerprint: { screen },
+            } = fingerprintGenerator.getFingerprint();
+
+            expect(screen.innerWidth).toBeGreaterThan(0);
+            expect(screen.innerHeight).toBeGreaterThan(0);
+            expect(screen.clientWidth).toBeGreaterThan(0);
+            expect(screen.clientHeight).toBeGreaterThan(0);
+            expect(screen.innerWidth).toBeLessThanOrEqual(screen.outerWidth);
+            expect(screen.innerHeight).toBeLessThanOrEqual(screen.outerHeight);
+            expect(screen.clientWidth).toBeLessThanOrEqual(screen.innerWidth);
+            expect(screen.clientHeight).toBeLessThanOrEqual(screen.innerHeight);
+        }
+    });
 });
 
 describe('Generate fingerprints with basic constraints', () => {

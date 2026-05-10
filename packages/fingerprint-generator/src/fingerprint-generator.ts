@@ -341,7 +341,7 @@ export class FingerprintGenerator extends HeaderGenerator {
         };
 
         return {
-            screen,
+            screen: this.normalizeScreenFingerprint(screen),
             navigator,
             audioCodecs,
             videoCodecs,
@@ -351,5 +351,46 @@ export class FingerprintGenerator extends HeaderGenerator {
             multimediaDevices,
             fonts,
         } as Fingerprint;
+    }
+
+    private normalizeScreenFingerprint(
+        screen: ScreenFingerprint,
+    ): ScreenFingerprint {
+        const outerWidth =
+            this.positiveFiniteNumber(screen.outerWidth) ??
+            this.positiveFiniteNumber(screen.width) ??
+            1;
+        const outerHeight =
+            this.positiveFiniteNumber(screen.outerHeight) ??
+            this.positiveFiniteNumber(screen.height) ??
+            1;
+        const innerWidth = Math.min(
+            this.positiveFiniteNumber(screen.innerWidth) ?? outerWidth,
+            outerWidth,
+        );
+        const innerHeight = Math.min(
+            this.positiveFiniteNumber(screen.innerHeight) ?? outerHeight,
+            outerHeight,
+        );
+
+        return {
+            ...screen,
+            outerWidth,
+            outerHeight,
+            innerWidth,
+            innerHeight,
+            clientWidth: Math.min(
+                this.positiveFiniteNumber(screen.clientWidth) ?? innerWidth,
+                innerWidth,
+            ),
+            clientHeight: Math.min(
+                this.positiveFiniteNumber(screen.clientHeight) ?? innerHeight,
+                innerHeight,
+            ),
+        };
+    }
+
+    private positiveFiniteNumber(value: number): number | undefined {
+        return Number.isFinite(value) && value > 0 ? value : undefined;
     }
 }

@@ -43,6 +43,22 @@ declare function overrideStatic(): void;
 declare function runHeadlessFixes(): void;
 declare function blockWebRTC(): void;
 
+function getViewportFromScreen(screen: Fingerprint['screen']): {
+    width: number;
+    height: number;
+} {
+    return {
+        width:
+            Number.isFinite(screen.innerWidth) && screen.innerWidth > 0
+                ? screen.innerWidth
+                : screen.width,
+        height:
+            Number.isFinite(screen.innerHeight) && screen.innerHeight > 0
+                ? screen.innerHeight
+                : screen.height,
+    };
+}
+
 /**
  * Fingerprint injector class.
  * @class
@@ -141,6 +157,7 @@ export class FingerprintInjector {
         const { fingerprint, headers } = browserFingerprintWithHeaders;
         const enhancedFingerprint = this._enhanceFingerprint(fingerprint);
         const { screen, userAgent } = enhancedFingerprint;
+        const viewport = getViewportFromScreen(screen);
 
         await page.setUserAgent(userAgent);
 
@@ -152,8 +169,8 @@ export class FingerprintInjector {
             ).send('Page.setDeviceMetricsOverride', {
                 screenHeight: screen.height,
                 screenWidth: screen.width,
-                width: screen.width,
-                height: screen.height,
+                width: viewport.width,
+                height: viewport.height,
                 mobile: /phone|android|mobile/i.test(userAgent),
                 screenOrientation:
                     screen.height > screen.width
@@ -342,13 +359,14 @@ export async function newInjectedContext(
         generator.getFingerprint(options?.fingerprintOptions);
 
     const { fingerprint, headers } = fingerprintWithHeaders;
+    const viewport = getViewportFromScreen(fingerprint.screen);
     const context = await browser.newContext({
         userAgent: fingerprint.navigator.userAgent,
         colorScheme: 'dark',
         ...options?.newContextOptions,
         viewport: {
-            width: fingerprint.screen.width,
-            height: fingerprint.screen.height,
+            width: viewport.width,
+            height: viewport.height,
             ...options?.newContextOptions?.viewport,
         },
         extraHTTPHeaders: {
