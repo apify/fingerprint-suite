@@ -39,8 +39,7 @@
         "lint": "eslint && prettier . --check",
         "lint:fix": "eslint --fix && prettier . --write",
         "buildNetwork": "turbo run build && ./scripts/netgen.sh && turbo run build",
-        "benchmark": "ts-node ./test/antibot-services/live-testing/cloudflare.ts",
-        "preinstall": "npx only-allow pnpm"
+        "benchmark": "ts-node ./test/antibot-services/live-testing/cloudflare.ts"
     },
     "devDependencies": {
         "@apify/eslint-config": "^1.0.0",
@@ -82,5 +81,12 @@
             "eslint": "$eslint"
         }
     },
-    "packageManager": "pnpm@10.24.0"
+    "packageManager": "pnpm@10.33.4",
+    "devEngines": {
+        "packageManager": {
+            "name": "pnpm",
+            "version": "10.33.4",
+            "onFail": "warn"
+        }
+    }
 }
