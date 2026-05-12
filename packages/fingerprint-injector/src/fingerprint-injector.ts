@@ -62,6 +62,7 @@ export class FingerprintInjector {
     ): Record<string, string> {
         const requestHeaders = [
             'accept-encoding',
+            'accept-language',
             'accept',
             'cache-control',
             'pragma',
@@ -341,10 +342,11 @@ export async function newInjectedContext(
         options?.fingerprint ??
         generator.getFingerprint(options?.fingerprintOptions);
 
-    const { fingerprint, headers } = fingerprintWithHeaders;
+    const { fingerprint } = fingerprintWithHeaders;
     const context = await browser.newContext({
         userAgent: fingerprint.navigator.userAgent,
         colorScheme: 'dark',
+        locale: fingerprint.navigator.language,
         ...options?.newContextOptions,
         viewport: {
             width: fingerprint.screen.width,
@@ -352,7 +354,6 @@ export async function newInjectedContext(
             ...options?.newContextOptions?.viewport,
         },
         extraHTTPHeaders: {
-            'accept-language': headers['accept-language'],
             ...options?.newContextOptions?.extraHTTPHeaders,
         },
     });

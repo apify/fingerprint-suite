@@ -17,6 +17,7 @@ import {
     describe,
     expect,
     test,
+    vi,
     beforeEach,
     afterAll,
     beforeAll,
@@ -91,6 +92,57 @@ describe('FingerprintInjector', () => {
         // eslint-disable-next-line dot-notation
         expect(fpInjector['utilsJs']).toBeTruthy();
     });
+
+    test('does not inject accept-language as an extra HTTP header', () => {
+        const filteredHeaders = fpInjector['onlyInjectableHeaders']({
+            'accept-language': 'cs-CZ,cs;q=0.9',
+            'user-agent': 'Mozilla/5.0 Test',
+        });
+
+        expect(filteredHeaders).not.toHaveProperty('accept-language');
+        expect(filteredHeaders['user-agent']).toBe('Mozilla/5.0 Test');
+    });
+
+    test('creates Playwright contexts with native locale instead of injected accept-language', async () => {
+        const fingerprintWithHeaders = new FingerprintGenerator({
+            devices: ['desktop'],
+            operatingSystems: ['linux'],
+            browsers: [{ name: 'chrome', minVersion: 90 }],
+            locales: ['cs-CZ'],
+        }).getFingerprint();
+        const setExtraHTTPHeaders = vi.fn();
+        const context = {
+            browser: () => ({
+                browserType: () => ({
+                    name: () => 'chromium',
+                }),
+            }),
+            setExtraHTTPHeaders,
+            on: vi.fn(),
+            addInitScript: vi.fn(),
+        } as unknown as import('playwright').BrowserContext;
+        const newContext = vi.fn().mockResolvedValue(context);
+        const browser = {
+            newContext,
+        } as unknown as PWBrowser;
+
+        await newInjectedContext(browser, {
+            fingerprint: fingerprintWithHeaders,
+        });
+
+        const newContextOptions = newContext.mock.calls[0][0];
+
+        expect(newContextOptions.locale).toBe(
+            fingerprintWithHeaders.fingerprint.navigator.language,
+        );
+        expect(newContextOptions.extraHTTPHeaders).not.toHaveProperty(
+            'accept-language',
+        );
+        expect(setExtraHTTPHeaders.mock.calls[0][0]).not.toHaveProperty(
+            'accept-language',
+        );
+    });
+
     // @ts-expect-error test only
     describe.each(cases)('%s', (frameworkName, testCases) => {
         // @ts-expect-error test only
@@ -368,13 +420,6 @@ describe('FingerprintInjector', () => {
                 });
 
                 test('should override locales', async () => {
-                    response = await page.goto(`https://crawlee.dev`);
-                    const requestHeaders = response.request().headers();
-
-                    expect(
-                        requestHeaders['accept-language']?.includes('cs'),
-                    ).toBe(true);
-
                     const {
                         navigator: { language },
                     } = fingerprint;
