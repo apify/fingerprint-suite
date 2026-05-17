@@ -247,10 +247,10 @@ export async function getRecordSchema() {
                             height: z.number().positive(),
                             availWidth: z.number().positive(),
                             availHeight: z.number().positive(),
-                            clientWidth: z.number().nonnegative(),
-                            clientHeight: z.number().nonnegative(),
-                            innerWidth: z.number().nonnegative(),
-                            innerHeight: z.number().nonnegative(),
+                            clientWidth: z.number().positive(),
+                            clientHeight: z.number().positive(),
+                            innerWidth: z.number().positive(),
+                            innerHeight: z.number().positive(),
                             outerWidth: z.number().positive(),
                             outerHeight: z.number().positive(),
                             colorDepth: z.number().positive().optional(),
@@ -268,6 +268,12 @@ export async function getRecordSchema() {
                                 data.innerWidth <= data.outerWidth &&
                                 data.innerHeight <= data.outerHeight,
                             'Inner width and height should be less than or equal to outer width and height',
+                        )
+                        .refine(
+                            (data) =>
+                                data.clientWidth <= data.innerWidth &&
+                                data.clientHeight <= data.innerHeight,
+                            'Client width and height should be less than or equal to inner width and height',
                         )
                         .refine(
                             (data) =>
