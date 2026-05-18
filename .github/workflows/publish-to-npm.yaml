@@ -28,7 +28,7 @@ jobs:
                   node-version: 24
                   registry-url: 'https://registry.npmjs.org/'
 
-            - uses: apify/workflows/pnpm-install@main
+            - uses: apify/actions/pnpm-install@v1.0.0
 
             - name: Turbo cache
               id: turbo-cache

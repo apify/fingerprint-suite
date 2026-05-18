@@ -27,7 +27,7 @@ jobs:
               with:
                   node-version: 24
 
-            - uses: apify/workflows/pnpm-install@main
+            - uses: apify/actions/pnpm-install@v1.0.0
 
             - run: pnpm lint
 
@@ -48,7 +48,7 @@ jobs:
               with:
                   node-version: ${{ matrix.node-version }}
 
-            - uses: apify/workflows/pnpm-install@main
+            - uses: apify/actions/pnpm-install@v1.0.0
 
             - name: Install Playwright deps
               run: pnpm exec playwright install --with-deps
