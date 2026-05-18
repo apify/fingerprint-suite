@@ -17,7 +17,7 @@ jobs:
               with:
                   node-version: 24
 
-            - uses: apify/actions/pnpm-install@v1.0.0
+            - uses: apify/actions/pnpm-install@v1.1.0
 
             - name: Install browsers
               run: pnpm exec playwright install
