@@ -91,6 +91,48 @@ describe('FingerprintInjector', () => {
         // eslint-disable-next-line dot-notation
         expect(fpInjector['utilsJs']).toBeTruthy();
     });
+
+    test('should preserve iframe srcdoc after installing contentWindow fix', async () => {
+        const browser = await chromium.launch();
+
+        try {
+            const page = await browser.newPage();
+            // eslint-disable-next-line dot-notation
+            const utilsJs = fpInjector['utilsJs'];
+            const result = await page.evaluate((utils) => {
+                const script = document.createElement('script');
+                script.textContent = `${utils}\nfixIframeContentWindow();`;
+                document.documentElement.append(script);
+                script.remove();
+
+                const iframe = document.createElement('iframe');
+                (document.body ?? document.documentElement).append(iframe);
+
+                const srcdoc = '<p id="loaded">loaded</p>';
+                let errorMessage: string | null = null;
+
+                try {
+                    iframe.srcdoc = srcdoc;
+                } catch (error) {
+                    errorMessage =
+                        error instanceof Error ? error.message : String(error);
+                }
+
+                return {
+                    attribute: iframe.getAttribute('srcdoc'),
+                    errorMessage,
+                    property: iframe.srcdoc,
+                };
+            }, utilsJs);
+
+            expect(result.errorMessage).toBeNull();
+            expect(result.attribute).toBe('<p id="loaded">loaded</p>');
+            expect(result.property).toBe('<p id="loaded">loaded</p>');
+        } finally {
+            await browser.close();
+        }
+    });
+
     // @ts-expect-error test only
     describe.each(cases)('%s', (frameworkName, testCases) => {
         // @ts-expect-error test only
