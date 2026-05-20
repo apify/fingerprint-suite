@@ -84,6 +84,63 @@ const KNOWN_OS_FONTS = {
     ],
 };
 
+function isPositiveNumber(value: unknown): value is number {
+    return typeof value === 'number' && Number.isFinite(value) && value > 0;
+}
+
+function normalizeScreenViewport(screen: any) {
+    if (!screen || typeof screen !== 'object') return screen;
+
+    const normalized = { ...screen };
+    const outerWidth = isPositiveNumber(normalized.outerWidth)
+        ? normalized.outerWidth
+        : normalized.width;
+    const outerHeight = isPositiveNumber(normalized.outerHeight)
+        ? normalized.outerHeight
+        : normalized.height;
+    const screenWidth = isPositiveNumber(normalized.width)
+        ? normalized.width
+        : outerWidth;
+    const screenHeight = isPositiveNumber(normalized.height)
+        ? normalized.height
+        : outerHeight;
+    const availableHeight = isPositiveNumber(normalized.availHeight)
+        ? normalized.availHeight
+        : screenHeight;
+
+    if (
+        !isPositiveNumber(normalized.innerWidth) &&
+        isPositiveNumber(screenWidth) &&
+        isPositiveNumber(outerWidth)
+    ) {
+        normalized.innerWidth = Math.min(screenWidth, outerWidth);
+    }
+
+    if (
+        !isPositiveNumber(normalized.innerHeight) &&
+        isPositiveNumber(availableHeight) &&
+        isPositiveNumber(outerHeight)
+    ) {
+        normalized.innerHeight = Math.min(availableHeight, outerHeight);
+    }
+
+    if (
+        !isPositiveNumber(normalized.clientWidth) &&
+        isPositiveNumber(normalized.innerWidth)
+    ) {
+        normalized.clientWidth = normalized.innerWidth;
+    }
+
+    if (
+        !isPositiveNumber(normalized.clientHeight) &&
+        isPositiveNumber(normalized.innerHeight)
+    ) {
+        normalized.clientHeight = normalized.innerHeight;
+    }
+
+    return normalized;
+}
+
 export async function getRecordSchema() {
     const robotUserAgents = (await fetch(
         'https://raw.githubusercontent.com/atmire/COUNTER-Robots/master/COUNTER_Robots_list.json',
@@ -115,6 +172,12 @@ export async function getRecordSchema() {
 
                 return {
                     ...castRecord,
+                    browserFingerprint: {
+                        ...castRecord.browserFingerprint,
+                        screen: normalizeScreenViewport(
+                            castRecord.browserFingerprint.screen,
+                        ),
+                    },
                     userAgentProps: {
                         parsedUserAgent,
                         isDesktop: !['wearable', 'mobile'].includes(
@@ -247,10 +310,10 @@ export async function getRecordSchema() {
                             height: z.number().positive(),
                             availWidth: z.number().positive(),
                             availHeight: z.number().positive(),
-                            clientWidth: z.number().nonnegative(),
-                            clientHeight: z.number().nonnegative(),
-                            innerWidth: z.number().nonnegative(),
-                            innerHeight: z.number().nonnegative(),
+                            clientWidth: z.number().positive(),
+                            clientHeight: z.number().positive(),
+                            innerWidth: z.number().positive(),
+                            innerHeight: z.number().positive(),
                             outerWidth: z.number().positive(),
                             outerHeight: z.number().positive(),
                             colorDepth: z.number().positive().optional(),
