@@ -84,6 +84,73 @@ describe('Generation tests', () => {
             expect(field).toBeDefined();
         }
     });
+
+    test('rejects generated fingerprints with impossible viewport dimensions', () => {
+        const {
+            fingerprint: { screen },
+        } = fingerprintGenerator.getFingerprint({
+            browsers: [{ name: 'chrome', minVersion: 100, maxVersion: 100 }],
+            devices: ['desktop'],
+            operatingSystems: ['macos'],
+        });
+        const isPlausibleScreenFingerprint = (
+            fingerprintGenerator as any
+        ).isPlausibleScreenFingerprint.bind(fingerprintGenerator);
+
+        expect(isPlausibleScreenFingerprint(screen)).toBe(true);
+        expect(
+            isPlausibleScreenFingerprint({
+                ...screen,
+                clientWidth: 0,
+            }),
+        ).toBe(false);
+        expect(
+            isPlausibleScreenFingerprint({
+                ...screen,
+                innerHeight: 0,
+            }),
+        ).toBe(false);
+        expect(
+            isPlausibleScreenFingerprint({
+                ...screen,
+                clientWidth: screen.innerWidth + 1,
+            }),
+        ).toBe(false);
+        expect(
+            isPlausibleScreenFingerprint({
+                ...screen,
+                innerHeight: screen.outerHeight + 1,
+            }),
+        ).toBe(false);
+    });
+
+    test('normalizes zero viewport dimensions from generated screen data', () => {
+        const {
+            fingerprint: { screen },
+        } = fingerprintGenerator.getFingerprint({
+            browsers: [{ name: 'chrome', minVersion: 100, maxVersion: 100 }],
+            devices: ['desktop'],
+            operatingSystems: ['macos'],
+        });
+        const normalizeScreenFingerprint = (
+            fingerprintGenerator as any
+        ).normalizeScreenFingerprint.bind(fingerprintGenerator);
+
+        const normalizedScreen = normalizeScreenFingerprint({
+            ...screen,
+            clientWidth: 0,
+            clientHeight: 0,
+            innerWidth: 0,
+            innerHeight: 0,
+        });
+
+        expect(normalizedScreen.innerWidth).toBeGreaterThan(0);
+        expect(normalizedScreen.innerHeight).toBeGreaterThan(0);
+        expect(normalizedScreen.clientWidth).toBe(normalizedScreen.innerWidth);
+        expect(normalizedScreen.clientHeight).toBe(
+            normalizedScreen.innerHeight,
+        );
+    });
 });
 
 describe('Generate fingerprints with basic constraints', () => {

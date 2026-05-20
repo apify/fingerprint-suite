@@ -244,6 +244,13 @@ export class FingerprintGenerator extends HeaderGenerator {
 
             if (!fingerprint.screen) continue; // fix? sometimes, fingerprints are generated 90% empty/null. This is just a workaround.
 
+            fingerprint.screen = this.normalizeScreenFingerprint(
+                fingerprint.screen,
+            );
+
+            if (!this.isPlausibleScreenFingerprint(fingerprint.screen))
+                continue; // fix? sometimes, fingerprints are generated 90% empty/null. This is just a workaround.
+
             // Manually add the set of accepted languages required by the input
             const acceptLanguageHeaderValue =
                 'Accept-Language' in headers
@@ -351,5 +358,52 @@ export class FingerprintGenerator extends HeaderGenerator {
             multimediaDevices,
             fonts,
         } as Fingerprint;
+    }
+
+    private normalizeScreenFingerprint(
+        screen: ScreenFingerprint,
+    ): ScreenFingerprint {
+        const outerWidth = screen.outerWidth || screen.width;
+        const outerHeight = screen.outerHeight || screen.height;
+        const innerWidth =
+            screen.innerWidth || Math.min(screen.width, outerWidth);
+        const innerHeight =
+            screen.innerHeight || Math.min(screen.availHeight, outerHeight);
+
+        return {
+            ...screen,
+            outerWidth,
+            outerHeight,
+            innerWidth,
+            innerHeight,
+            clientWidth: screen.clientWidth || innerWidth,
+            clientHeight: screen.clientHeight || innerHeight,
+        };
+    }
+
+    private isPlausibleScreenFingerprint(screen: Partial<ScreenFingerprint>) {
+        const positiveViewportFields = [
+            screen.clientWidth,
+            screen.clientHeight,
+            screen.innerWidth,
+            screen.innerHeight,
+            screen.outerWidth,
+            screen.outerHeight,
+        ];
+
+        if (
+            positiveViewportFields.some(
+                (value) => typeof value !== 'number' || value <= 0,
+            )
+        ) {
+            return false;
+        }
+
+        return (
+            screen.clientWidth! <= screen.innerWidth! &&
+            screen.clientHeight! <= screen.innerHeight! &&
+            screen.innerWidth! <= screen.outerWidth! &&
+            screen.innerHeight! <= screen.outerHeight!
+        );
     }
 }
