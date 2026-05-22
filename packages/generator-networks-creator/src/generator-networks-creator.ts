@@ -3,6 +3,10 @@ import path from 'path';
 
 import { BayesianNetwork } from 'generative-bayesian-network';
 import { getRecordSchema } from './record-schema';
+import {
+    hasZeroViewportDimensions,
+    normalizeFingerprintRecordScreenViewport,
+} from './screen-viewport';
 
 const browserHttpNodeName = '*BROWSER_HTTP';
 const httpVersionNodeName = '*HTTP_VERSION';
@@ -27,8 +31,12 @@ async function prepareRecords(
     preprocessingType: string,
 ): Promise<Record<string, any>[]> {
     const recordSchema = await getRecordSchema();
+    const sourceRecords =
+        preprocessingType === 'fingerprints'
+            ? records.map(normalizeFingerprintRecordScreenViewport)
+            : records;
 
-    const cleanedRecords = records
+    const cleanedRecords = sourceRecords
         .map((x) => recordSchema.safeParse(x))
         .filter((record) => record.success)
         .map((record) => record.data);
@@ -37,7 +45,7 @@ async function prepareRecords(
         `Found ${cleanedRecords.length}/${records.length} valid records.`,
     );
 
-    const deconstructedRecords = cleanedRecords
+    let deconstructedRecords = cleanedRecords
         .map((record) => {
             if (preprocessingType === 'headers') {
                 const { httpVersion, headers } = record.requestFingerprint;
@@ -49,6 +57,22 @@ async function prepareRecords(
             }
         })
         .filter((x) => x);
+
+    if (preprocessingType === 'fingerprints') {
+        const recordsWithZeroViewport = deconstructedRecords.filter((record) =>
+            hasZeroViewportDimensions(record.screen),
+        );
+
+        if (recordsWithZeroViewport.length > 0) {
+            console.log(
+                `Dropped ${recordsWithZeroViewport.length} fingerprint records with unrepaired zero viewport dimensions.`,
+            );
+        }
+
+        deconstructedRecords = deconstructedRecords.filter(
+            (record) => !hasZeroViewportDimensions(record.screen),
+        );
+    }
 
     const attributes = new Set<keyof (typeof deconstructedRecords)[number]>(
         deconstructedRecords.flatMap((record) =>
