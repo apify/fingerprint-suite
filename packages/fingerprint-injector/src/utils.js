@@ -1,6 +1,4 @@
 /* eslint-disable no-unused-vars */
-const isHeadlessChromium =
-    /headless/i.test(navigator.userAgent) && navigator.plugins.length === 0;
 const isChrome = navigator.userAgent.includes('Chrome');
 const isFirefox = navigator.userAgent.includes('Firefox');
 const isSafari =
@@ -779,9 +777,27 @@ function fixPluginArray() {
     });
 }
 
+function fixWebdriver() {
+    const navigatorPrototype = Object.getPrototypeOf(navigator);
+    const webdriverDescriptor = Object.getOwnPropertyDescriptor(
+        navigatorPrototype,
+        'webdriver',
+    );
+
+    if (webdriverDescriptor?.configurable) {
+        delete navigatorPrototype.webdriver;
+    }
+}
+
 function runHeadlessFixes() {
     try {
-        if (isHeadlessChromium) {
+        const hasHeadlessChromiumSignals =
+            /headless/i.test(navigator.userAgent) ||
+            !window.chrome ||
+            navigator.plugins.length === 0;
+
+        if (isChrome && hasHeadlessChromiumSignals) {
+            fixWebdriver();
             fixWindowChrome();
             fixPermissions();
             fixIframeContentWindow();

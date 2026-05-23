@@ -19,6 +19,64 @@ interface EnhancedFingerprint extends Fingerprint {
     historyLength: number;
 }
 
+function getChromiumCompatibleFingerprintOptions(
+    options: Partial<FingerprintGeneratorOptions> | undefined,
+): Partial<FingerprintGeneratorOptions> {
+    return {
+        httpVersion: '1',
+        ...options,
+    };
+}
+
+function quoteClientHintValue(value: string): string {
+    return `"${value.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`;
+}
+
+function inferPlatformClientHint(platform: string): string {
+    if (/win/i.test(platform)) return 'Windows';
+    if (/mac/i.test(platform)) return 'macOS';
+    if (/iphone|ipad|ios/i.test(platform)) return 'iOS';
+    if (/android/i.test(platform)) return 'Android';
+    if (/linux/i.test(platform)) return 'Linux';
+
+    return platform;
+}
+
+function getChromiumClientHintHeaders(
+    fingerprint: Fingerprint,
+): Record<string, string> {
+    const { userAgent, userAgentData, platform } = fingerprint.navigator;
+    const brands =
+        userAgentData?.brands?.length > 0
+            ? userAgentData.brands
+            : (() => {
+                  const majorVersion =
+                      userAgent.match(/(?:Chrome|Chromium)\/(\d+)/)?.[1] ?? '';
+                  if (!majorVersion) return [];
+
+                  return [
+                      { brand: 'Google Chrome', version: majorVersion },
+                      { brand: 'Chromium', version: majorVersion },
+                      { brand: 'Not.A/Brand', version: '8' },
+                  ];
+              })();
+
+    if (brands.length === 0) return {};
+
+    return {
+        'sec-ch-ua': brands
+            .map(
+                ({ brand, version }) =>
+                    `${quoteClientHintValue(brand)};v=${quoteClientHintValue(version)}`,
+            )
+            .join(', '),
+        'sec-ch-ua-mobile': userAgentData?.mobile ? '?1' : '?0',
+        'sec-ch-ua-platform': quoteClientHintValue(
+            userAgentData?.platform || inferPlatformClientHint(platform),
+        ),
+    };
+}
+
 declare function overrideInstancePrototype<T>(
     instance: T,
     overrideObj: Partial<T>,
@@ -61,7 +119,9 @@ export class FingerprintInjector {
         browserName?: string,
     ): Record<string, string> {
         const requestHeaders = [
+            'connection',
             'accept-encoding',
+            'accept-language',
             'accept',
             'cache-control',
             'pragma',
@@ -74,14 +134,20 @@ export class FingerprintInjector {
 
         const filteredHeaders = { ...headers };
 
-        requestHeaders.forEach((header) => {
-            delete filteredHeaders[header];
+        Object.keys(filteredHeaders).forEach((header) => {
+            if (requestHeaders.includes(header.toLowerCase())) {
+                delete filteredHeaders[header];
+            }
         });
 
         // Chromium-based controlled browsers do not support `te` header.
         // Probably needs more investigation, but for now, we can just remove it.
         if (!(browserName?.toLowerCase().includes('firefox') ?? false)) {
-            delete filteredHeaders.te;
+            Object.keys(filteredHeaders).forEach((header) => {
+                if (header.toLowerCase() === 'te') {
+                    delete filteredHeaders[header];
+                }
+            });
         }
 
         return filteredHeaders;
@@ -107,6 +173,9 @@ export class FingerprintInjector {
         const browserName = browserContext.browser()?.browserType().name();
 
         await browserContext.setExtraHTTPHeaders({
+            ...(browserName === 'chromium'
+                ? getChromiumClientHintHeaders(fingerprint)
+                : {}),
             ...this.onlyInjectableHeaders(headers, browserName),
             ...Object.fromEntries(
                 // @ts-expect-error Accessing private property
@@ -162,9 +231,10 @@ export class FingerprintInjector {
                 deviceScaleFactor: screen.devicePixelRatio,
             });
 
-            await page.setExtraHTTPHeaders(
-                this.onlyInjectableHeaders(headers, browserVersion),
-            );
+            await page.setExtraHTTPHeaders({
+                ...getChromiumClientHintHeaders(fingerprint),
+                ...this.onlyInjectableHeaders(headers, browserVersion),
+            });
 
             await page.emulateMediaFeatures([
                 { name: 'prefers-color-scheme', value: 'dark' },
@@ -293,14 +363,42 @@ export class FingerprintInjector {
     }
 
     private _enhanceFingerprint(fingerprint: Fingerprint): EnhancedFingerprint {
-        const { navigator, ...rest } = fingerprint;
+        const { navigator, screen, ...rest } = fingerprint;
 
         return {
             ...rest,
+            screen: this._normalizeScreenDimensions(screen),
             navigator,
             userAgent: navigator.userAgent,
             historyLength: this._randomInRange(2, 6),
         };
+    }
+
+    private _normalizeScreenDimensions(
+        screen: Fingerprint['screen'],
+    ): Fingerprint['screen'] {
+        const normalizedScreen = { ...screen };
+        const topLevelDimensions = {
+            outerWidth: 'width',
+            outerHeight: 'height',
+            innerWidth: 'width',
+            innerHeight: 'height',
+            clientWidth: 'width',
+            clientHeight: 'height',
+        } as const;
+
+        for (const [dimension, fallback] of Object.entries(
+            topLevelDimensions,
+        ) as [
+            keyof typeof topLevelDimensions,
+            (typeof topLevelDimensions)[keyof typeof topLevelDimensions],
+        ][]) {
+            if (normalizedScreen[dimension] <= 1) {
+                normalizedScreen[dimension] = normalizedScreen[fallback];
+            }
+        }
+
+        return normalizedScreen;
     }
 
     /**
@@ -339,12 +437,19 @@ export async function newInjectedContext(
     const generator = new FingerprintGenerator();
     const fingerprintWithHeaders =
         options?.fingerprint ??
-        generator.getFingerprint(options?.fingerprintOptions);
+        generator.getFingerprint(
+            browser.browserType().name() === 'chromium'
+                ? getChromiumCompatibleFingerprintOptions(
+                      options?.fingerprintOptions,
+                  )
+                : options?.fingerprintOptions,
+        );
 
-    const { fingerprint, headers } = fingerprintWithHeaders;
+    const { fingerprint } = fingerprintWithHeaders;
     const context = await browser.newContext({
         userAgent: fingerprint.navigator.userAgent,
         colorScheme: 'dark',
+        locale: fingerprint.navigator.language,
         ...options?.newContextOptions,
         viewport: {
             width: fingerprint.screen.width,
@@ -352,7 +457,9 @@ export async function newInjectedContext(
             ...options?.newContextOptions?.viewport,
         },
         extraHTTPHeaders: {
-            'accept-language': headers['accept-language'],
+            ...(browser.browserType().name() === 'chromium'
+                ? getChromiumClientHintHeaders(fingerprint)
+                : {}),
             ...options?.newContextOptions?.extraHTTPHeaders,
         },
     });
@@ -374,9 +481,16 @@ export async function newInjectedPage(
     },
 ): Promise<Page> {
     const generator = new FingerprintGenerator();
+    const browserVersion = await browser.version();
     const fingerprintWithHeaders =
         options?.fingerprint ??
-        generator.getFingerprint(options?.fingerprintOptions);
+        generator.getFingerprint(
+            browserVersion.toLowerCase().includes('chrome')
+                ? getChromiumCompatibleFingerprintOptions(
+                      options?.fingerprintOptions,
+                  )
+                : options?.fingerprintOptions,
+        );
 
     const page = await browser.newPage();
 

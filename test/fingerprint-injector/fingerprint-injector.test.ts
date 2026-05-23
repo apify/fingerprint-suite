@@ -20,6 +20,7 @@ import {
     beforeEach,
     afterAll,
     beforeAll,
+    vi,
 } from 'vitest';
 
 function getHTTPBinUrl() {
@@ -128,6 +129,148 @@ describe('FingerprintInjector', () => {
             expect(result.errorMessage).toBeNull();
             expect(result.attribute).toBe('<p id="loaded">loaded</p>');
             expect(result.property).toBe('<p id="loaded">loaded</p>');
+        } finally {
+            await browser.close();
+        }
+    });
+
+    test('filters request headers case-insensitively', () => {
+        // eslint-disable-next-line dot-notation
+        const onlyInjectable =
+            fpInjector['onlyInjectableHeaders'].bind(fpInjector);
+
+        expect(
+            onlyInjectable(
+                {
+                    Accept: 'text/html',
+                    'Accept-Encoding': 'gzip, deflate, br',
+                    'Accept-Language': 'en-US',
+                    Connection: 'keep-alive',
+                    'Sec-Fetch-Dest': 'document',
+                    TE: 'trailers',
+                    'User-Agent': 'Mozilla/5.0',
+                    'X-Keep': '1',
+                },
+                'chromium',
+            ),
+        ).toEqual({
+            'User-Agent': 'Mozilla/5.0',
+            'X-Keep': '1',
+        });
+    });
+
+    test('Playwright helper uses native locale for HTTP/1 fingerprints', async () => {
+        const fingerprintWithHttp1Headers = {
+            fingerprint: {
+                navigator: {
+                    language: 'en-US',
+                    userAgent: 'Mozilla/5.0',
+                },
+                screen: {
+                    width: 1280,
+                    height: 720,
+                },
+            } as Fingerprint,
+            headers: {
+                'Accept-Language': 'en-US',
+                'User-Agent': 'Mozilla/5.0',
+            },
+        };
+
+        const browser = {
+            browserType: () => ({ name: () => 'chromium' }),
+            newContext: vi.fn(),
+        };
+        const context = {
+            _options: { extraHTTPHeaders: [] },
+            addInitScript: vi.fn().mockResolvedValue(undefined),
+            browser: () => browser,
+            on: vi.fn(),
+            setExtraHTTPHeaders: vi.fn().mockResolvedValue(undefined),
+        };
+        browser.newContext.mockResolvedValue(context);
+
+        await newInjectedContext(browser as unknown as PWBrowser, {
+            fingerprint: fingerprintWithHttp1Headers,
+        });
+
+        expect(browser.newContext).toHaveBeenCalledWith(
+            expect.objectContaining({
+                locale: 'en-US',
+                extraHTTPHeaders: {},
+            }),
+        );
+    });
+
+    test('Playwright helper defaults Chromium-generated fingerprints to HTTP/1 headers', async () => {
+        const browser = {
+            browserType: () => ({ name: () => 'chromium' }),
+            newContext: vi.fn(),
+        };
+        const context = {
+            _options: { extraHTTPHeaders: [] },
+            addInitScript: vi.fn().mockResolvedValue(undefined),
+            browser: () => browser,
+            on: vi.fn(),
+            setExtraHTTPHeaders: vi.fn().mockResolvedValue(undefined),
+        };
+        browser.newContext.mockResolvedValue(context);
+
+        await newInjectedContext(browser as unknown as PWBrowser, {
+            fingerprintOptions: {
+                browsers: ['chrome'],
+                devices: ['desktop'],
+                operatingSystems: ['linux'],
+            },
+        });
+
+        expect(context.setExtraHTTPHeaders).toHaveBeenCalledWith(
+            expect.objectContaining({
+                'sec-ch-ua': expect.stringContaining('Chromium'),
+            }),
+        );
+        expect(context.setExtraHTTPHeaders.mock.calls[0][0]).not.toHaveProperty(
+            'Accept-Language',
+        );
+        expect(context.setExtraHTTPHeaders.mock.calls[0][0]).not.toHaveProperty(
+            'accept-language',
+        );
+        expect(
+            context.setExtraHTTPHeaders.mock.calls[0][0]['sec-ch-ua'],
+        ).not.toContain('Headless');
+    });
+
+    test('Playwright helper applies headless Chromium fixes after user agent spoofing', async () => {
+        const browser = await chromium.launch();
+
+        try {
+            const context = await newInjectedContext(browser, {
+                fingerprintOptions: {
+                    browsers: ['chrome'],
+                    devices: ['desktop'],
+                    operatingSystems: ['linux'],
+                },
+            });
+            const page = await context.newPage();
+            await page.goto(`file://${__dirname}/test.html`, {
+                waitUntil: 'commit',
+            });
+
+            const result = await page.evaluate(() => ({
+                chrome: Boolean(window.chrome),
+                outerHeight,
+                outerWidth,
+                plugins: navigator.plugins.length,
+                webdriverPresent: 'webdriver' in navigator,
+            }));
+
+            expect(result.chrome).toBe(true);
+            expect(result.outerHeight).toBeGreaterThan(1);
+            expect(result.outerWidth).toBeGreaterThan(1);
+            expect(result.plugins).toBeGreaterThan(0);
+            expect(result.webdriverPresent).toBe(false);
+
+            await context.close();
         } finally {
             await browser.close();
         }
@@ -410,13 +553,6 @@ describe('FingerprintInjector', () => {
                 });
 
                 test('should override locales', async () => {
-                    response = await page.goto(`https://crawlee.dev`);
-                    const requestHeaders = response.request().headers();
-
-                    expect(
-                        requestHeaders['accept-language']?.includes('cs'),
-                    ).toBe(true);
-
                     const {
                         navigator: { language },
                     } = fingerprint;
