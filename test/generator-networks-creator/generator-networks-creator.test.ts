@@ -1,6 +1,12 @@
 import { GeneratorNetworksCreator } from 'generator-networks-creator';
 
-import { describe, expect, test } from 'vitest';
+import { describe, expect, test, vi } from 'vitest';
+
+import { getRecordSchema } from '../../packages/generator-networks-creator/src/record-schema';
+
+vi.mock('node-fetch', () => ({
+    default: vi.fn(async () => ({ json: async () => [] })),
+}));
 
 describe('Processing browser data', () => {
     const networkGenerator = new GeneratorNetworksCreator();
@@ -167,4 +173,113 @@ describe('Processing browser data', () => {
             expect(deviceType).toBe(testCase.expectedDeviceType);
         }
     });
+});
+
+describe('Browser fingerprint record schema', () => {
+    const userAgent =
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36';
+
+    const createRecord = () => ({
+        requestFingerprint: {
+            httpVersion: '2',
+            headers: {
+                'user-agent': userAgent,
+                'accept-language': 'en-US',
+            },
+        },
+        browserFingerprint: {
+            webdriver: false,
+            appVersion: userAgent,
+            hardwareConcurrency: 8,
+            multimediaDevices: {
+                speakers: [],
+                micros: [],
+                webcams: [],
+            },
+            extraProperties: {},
+            plugins: [],
+            mimeTypes: [],
+            deviceMemory: 8,
+            oscpu: null,
+            battery: null,
+            platform: 'MacIntel',
+            doNotTrack: null,
+            audioCodecs: {
+                ogg: 'probably',
+                mp3: 'probably',
+                wav: 'probably',
+                m4a: 'maybe',
+                aac: 'probably',
+            },
+            videoCodecs: {
+                ogg: 'probably',
+                h264: 'probably',
+                webm: 'probably',
+            },
+            userAgentData: {
+                brands: [
+                    { brand: 'Chromium', version: '100' },
+                    { brand: 'Google Chrome', version: '100' },
+                ],
+                mobile: false,
+                platform: 'macOS',
+            },
+            language: 'en-US',
+            languages: ['en-US'],
+            product: 'Gecko',
+            appName: 'Netscape',
+            appCodeName: 'Mozilla',
+            maxTouchPoints: 0,
+            productSub: '20030107',
+            vendor: 'Google Inc.',
+            vendorSub: '',
+            videoCard: {
+                renderer:
+                    'ANGLE (ATI Technologies Inc., AMD Radeon Pro 455 OpenGL Engine, OpenGL 4.1)',
+                vendor: 'Google Inc. (ATI Technologies Inc.)',
+            },
+            fonts: [],
+            screen: {
+                availTop: 25,
+                availLeft: 0,
+                pageXOffset: 0,
+                pageYOffset: 0,
+                screenX: 0,
+                hasHDR: false,
+                width: 1440,
+                height: 900,
+                availWidth: 1440,
+                availHeight: 875,
+                clientWidth: 1284,
+                clientHeight: 858,
+                innerWidth: 1284,
+                innerHeight: 858,
+                outerWidth: 1284,
+                outerHeight: 858,
+                colorDepth: 24,
+                pixelDepth: 24,
+                devicePixelRatio: 2,
+            },
+            userAgent,
+        },
+    });
+
+    test('accepts records with non-zero viewport dimensions', async () => {
+        const recordSchema = await getRecordSchema();
+
+        expect(recordSchema.safeParse(createRecord()).success).toBe(true);
+    });
+
+    test.each(['clientWidth', 'clientHeight', 'innerWidth', 'innerHeight'])(
+        'rejects zero %s in screen records',
+        async (screenProperty) => {
+            const recordSchema = await getRecordSchema();
+            const record = createRecord();
+            record.browserFingerprint.screen[
+                screenProperty as keyof typeof record.browserFingerprint.screen
+            ] = 0 as never;
+
+            expect(recordSchema.safeParse(record).success).toBe(false);
+        },
+    );
 });
