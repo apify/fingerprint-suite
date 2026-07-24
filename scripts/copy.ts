@@ -62,8 +62,9 @@ if (
     );
 }
 
-// pnpm publish automatically resolves workspace:* dependencies to real versions,
-// so no explicit install step is needed to pin them before copying.
+// `pnpm publish` only resolves the `workspace:*` protocol when run from within the
+// workspace, but we publish the standalone `dist` folder, so pin the workspace deps
+// to the current version (all packages are versioned in lockstep) ourselves.
 
 // as we publish only the dist folder, we need to copy some meta files inside (readme/license/package.json)
 // also changes paths inside the copied `package.json` (`dist/index.js` -> `index.js`)
@@ -74,6 +75,9 @@ copy('README.md', root, target);
 copy('LICENSE.md', root, target);
 copy('package.json', process.cwd(), target);
 rewrite(join(target, 'package.json'), (pkg) => pkg.replace(/dist\//g, ''));
+rewrite(join(target, 'package.json'), (pkg) =>
+    pkg.replace(/workspace:\*/g, rootVersion),
+);
 rewrite(join(target, 'utils.js'), (pkg) =>
     pkg.replace('../package.json', './package.json'),
 );
