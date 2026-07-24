@@ -11,6 +11,9 @@ on:
     workflow_call:
     workflow_dispatch:
 
+permissions:
+    contents: read
+
 env:
     APIFY_HTTPBIN_TOKEN: ${{ secrets.APIFY_HTTPBIN_TOKEN }}
 

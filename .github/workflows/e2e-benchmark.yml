@@ -4,6 +4,9 @@ on:
     # Triggers the workflow every Monday at 5am
     workflow_dispatch:
 
+permissions:
+    contents: write
+
 jobs:
     run_benchmark:
         runs-on: ubuntu-22.04
