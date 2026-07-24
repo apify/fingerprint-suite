@@ -3,6 +3,8 @@ name: Test Browserforge compatibility
 on:
     workflow_call:
 
+permissions: {}
+
 jobs:
     test:
         runs-on: ubuntu-22.04

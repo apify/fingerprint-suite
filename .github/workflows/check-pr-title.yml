@@ -4,6 +4,8 @@ on:
     pull_request_target:
         types: [opened, edited, synchronize]
 
+permissions: {}
+
 jobs:
     check_pr_title:
         name: 'Check PR title'
