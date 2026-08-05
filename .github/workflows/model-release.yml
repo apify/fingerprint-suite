@@ -1,0 +1,62 @@
+name: Model release
+
+# Second half of the automated model update. `model-updater.yml` builds, verifies and
+# proposes a model as a `model-update/*` pull request; this workflow tags and releases it
+# once a human merges that PR. Creating the release is what triggers publish-to-npm.yaml,
+# so the publish is gated on the merge.
+#
+# Split out as part of the fix for https://github.com/apify/fingerprint-suite/issues/564,
+# where the updater pushed, tagged and released a degraded model unattended.
+
+on:
+    pull_request:
+        types: [closed]
+        branches: [master]
+
+permissions:
+    contents: read
+
+jobs:
+    release:
+        name: Tag and release merged model
+        if: >-
+            github.event.pull_request.merged == true &&
+            startsWith(github.event.pull_request.head.ref, 'model-update/')
+        runs-on: ubuntu-22.04
+        permissions:
+            contents: write
+        steps:
+            - uses: actions/checkout@v6
+              with:
+                  ref: master
+                  token: ${{ secrets.APIFY_SERVICE_ACCOUNT_GITHUB_TOKEN }}
+
+            - name: Read merged version
+              id: version
+              run: |
+                  set -euo pipefail
+                  VERSION=$(node -p "require('./package.json').version")
+                  echo "version=${VERSION}" >> $GITHUB_OUTPUT
+                  echo "Releasing v${VERSION}"
+
+            - name: Create tag and release
+              env:
+                  GH_TOKEN: ${{ secrets.APIFY_SERVICE_ACCOUNT_GITHUB_TOKEN }}
+                  VERSION: ${{ steps.version.outputs.version }}
+                  PR_NUMBER: ${{ github.event.pull_request.number }}
+              run: |
+                  set -euo pipefail
+
+                  if gh release view "v${VERSION}" >/dev/null 2>&1; then
+                      echo "Release v${VERSION} already exists; nothing to do."
+                      exit 0
+                  fi
+
+                  gh release create "v${VERSION}" \
+                      --target master \
+                      --title "v${VERSION}" \
+                      --notes "This is an automated release of the model used by the \`fingerprint-suite\`.
+
+                  The only difference between this release and the previous one is the model used to generate fingerprints.
+
+                  Reviewed and merged in #${PR_NUMBER}."

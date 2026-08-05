@@ -22,20 +22,75 @@ const STRINGIFIED_PREFIX = '*STRINGIFIED*';
 
 const PLUGIN_CHARACTERISTICS_ATTRIBUTES = ['plugins', 'mimeTypes'];
 
+/**
+ * Below this share of input records passing schema validation, the input dataset is
+ * treated as broken rather than merely noisy. A model built from that little data is
+ * not worth shipping, and silently shipping one is how a degraded collector reaches
+ * npm unnoticed.
+ */
+const MIN_VALID_RECORD_RATIO = 0.25;
+
+/** Absolute floor on usable records, regardless of ratio. */
+const MIN_VALID_RECORDS = 2000;
+
 async function prepareRecords(
     records: Record<string, any>[],
     preprocessingType: string,
 ): Promise<Record<string, any>[]> {
     const recordSchema = await getRecordSchema();
 
-    const cleanedRecords = records
-        .map((x) => recordSchema.safeParse(x))
+    const parsed = records.map((x) => recordSchema.safeParse(x));
+    const cleanedRecords = parsed
         .filter((record) => record.success)
         .map((record) => record.data);
 
+    const ratio =
+        records.length === 0 ? 0 : cleanedRecords.length / records.length;
+
     console.log(
-        `Found ${cleanedRecords.length}/${records.length} valid records.`,
+        `Found ${cleanedRecords.length}/${records.length} valid records (${(
+            ratio * 100
+        ).toFixed(1)}%).`,
     );
+
+    // Attribute the rejections. Without this, a validation change or a collector
+    // regression that quietly discards most of the input is invisible in the logs.
+    const reasons = new Map<string, number>();
+    for (const record of parsed) {
+        if (record.success) continue;
+        const seen = new Set<string>();
+        for (const issue of record.error.issues) {
+            const key = `${issue.path.join('.') || '<root>'}: ${issue.message}`;
+            seen.add(key);
+        }
+        for (const key of seen) reasons.set(key, (reasons.get(key) ?? 0) + 1);
+    }
+
+    if (reasons.size > 0) {
+        console.log('Top rejection reasons:');
+        for (const [reason, count] of [...reasons.entries()]
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 15)) {
+            console.log(`  ${String(count).padStart(6)}  ${reason}`);
+        }
+    }
+
+    if (
+        cleanedRecords.length < MIN_VALID_RECORDS ||
+        ratio < MIN_VALID_RECORD_RATIO
+    ) {
+        throw new Error(
+            `Refusing to build the ${preprocessingType} model: only ${
+                cleanedRecords.length
+            }/${records.length} (${(ratio * 100).toFixed(
+                1,
+            )}%) input records are valid, below the ${MIN_VALID_RECORDS}-record / ${(
+                MIN_VALID_RECORD_RATIO * 100
+            ).toFixed(
+                0,
+            )}% floor. Either the source dataset is degraded or the record schema needs updating — see the rejection reasons above.`,
+        );
+    }
 
     const deconstructedRecords = cleanedRecords
         .map((record) => {
@@ -115,8 +170,12 @@ export class GeneratorNetworksCreator {
             /opr|yabrowser|SamsungBrowser|UCBrowser|vivaldi/i;
         const edge = /(edg(a|ios|e)?)\/([0-9.]*)/i;
         const safari = /Version\/([\d.]+)( Mobile\/[a-z0-9]+)? Safari/i;
-        const supportedBrowsers =
-            /(firefox|fxios|chrome|crios|safari)\/([0-9.]*)/i;
+        // `safari` is deliberately absent here: the `Safari/x.y.z` token carries the
+        // WebKit build number, not the Safari version. Only the `Version/x.y` token
+        // (handled by `safari` above) does. Matching `Safari/...` as a fallback would
+        // mint bogus browsers like `safari/605.1` that no browserslist query can ever
+        // select, silently corrupting the model.
+        const supportedBrowsers = /(firefox|fxios|chrome|crios)\/([0-9.]*)/i;
 
         if (unsupportedBrowsers.test(userAgent)) {
             return missingValueDatasetToken;
