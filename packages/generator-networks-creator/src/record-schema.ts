@@ -175,7 +175,12 @@ export async function getRecordSchema() {
                         .object({
                             charging: z.boolean(),
                             chargingTime: z.number().nullable(),
-                            dischargingTime: z.boolean().nullable(),
+                            // Seconds of battery life remaining, per the Battery Status
+                            // API — not a boolean. Declaring this `z.boolean()` rejected
+                            // every record from a device actually running on battery
+                            // (~24% of the dataset), biasing the model towards charging
+                            // and battery-less machines.
+                            dischargingTime: z.number().nullable(),
                             level: z.number().min(0).max(1),
                         })
                         .nullable(),

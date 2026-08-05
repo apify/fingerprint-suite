@@ -139,6 +139,24 @@ describe('Processing browser data', () => {
             expectedOS: 'windows',
             expectedDeviceType: 'desktop',
         },
+        // Safari without a `Version/` token: the `Safari/x.y.z` number is the WebKit
+        // build, not the browser version. Reading it as a version produced the bogus
+        // `safari/605.1` entries that corrupted the model in #564, so these must be
+        // rejected outright rather than guessed at.
+        {
+            userAgent:
+                'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Safari/605.1.15',
+            expectedBrowser: '*MISSING_VALUE*',
+            expectedOS: 'macos',
+            expectedDeviceType: 'desktop',
+        },
+        {
+            userAgent:
+                'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 Safari/604.1',
+            expectedBrowser: '*MISSING_VALUE*',
+            expectedOS: 'ios',
+            expectedDeviceType: 'mobile',
+        },
     ];
 
     test('Extracts browser name/version from User-Agent', () => {

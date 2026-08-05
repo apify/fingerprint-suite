@@ -24,3 +24,9 @@ docs/typedefs
 .docusaurus
 tsconfig.tsbuildinfo
 .turbo
+
+# Raw fingerprint dataset downloaded by scripts/netgen.sh. Hundreds of MB, and
+# never belongs in the repository.
+scripts/dataset.json
+# Model build report written by scripts/verify-model.ts.
+model-summary.md

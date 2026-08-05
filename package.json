@@ -38,7 +38,8 @@
         "test": "vitest",
         "lint": "eslint && prettier . --check",
         "lint:fix": "eslint --fix && prettier . --write",
-        "buildNetwork": "turbo run build && ./scripts/netgen.sh && turbo run build",
+        "buildNetwork": "turbo run build && ./scripts/netgen.sh && turbo run build && pnpm verifyModel",
+        "verifyModel": "ts-node ./scripts/verify-model.ts",
         "benchmark": "ts-node ./test/antibot-services/live-testing/cloudflare.ts"
     },
     "devDependencies": {
