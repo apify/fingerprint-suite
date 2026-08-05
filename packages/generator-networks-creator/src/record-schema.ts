@@ -247,7 +247,11 @@ export async function getRecordSchema() {
                             pageXOffset: z.number().nonnegative(),
                             pageYOffset: z.number().nonnegative(),
                             screenX: z.number().nonnegative(),
-                            hasHDR: z.boolean().optional(),
+                            // Browsers that can't determine HDR support report `null`
+                            // (not just omit the field). Same bug class as
+                            // `battery.dischargingTime` below: typing this without
+                            // `.nullable()` silently rejected every such record.
+                            hasHDR: z.boolean().nullable().optional(),
                             width: z.number().positive(),
                             height: z.number().positive(),
                             availWidth: z.number().positive(),
