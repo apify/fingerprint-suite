@@ -9,6 +9,9 @@ on:
 permissions:
     contents: read
 
+env:
+    APIFY_HTTPBIN_TOKEN: ${{ secrets.APIFY_HTTPBIN_TOKEN }}
+
 jobs:
     build_model:
         runs-on: ubuntu-22.04
