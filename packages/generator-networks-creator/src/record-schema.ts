@@ -247,7 +247,8 @@ export async function getRecordSchema() {
                             pageXOffset: z.number().nonnegative(),
                             pageYOffset: z.number().nonnegative(),
                             screenX: z.number().nonnegative(),
-                            hasHDR: z.boolean().optional(),
+                            // Browsers report `null`, not just a missing key, when HDR support is unknown.
+                            hasHDR: z.boolean().nullable().optional(),
                             width: z.number().positive(),
                             height: z.number().positive(),
                             availWidth: z.number().positive(),

@@ -9,6 +9,9 @@ on:
 permissions:
     contents: read
 
+env:
+    APIFY_HTTPBIN_TOKEN: ${{ secrets.APIFY_HTTPBIN_TOKEN }}
+
 jobs:
     build_model:
         runs-on: ubuntu-22.04
@@ -90,7 +93,7 @@ jobs:
             - name: Use Node.js 22
               uses: actions/setup-node@v6
               with:
-                  node-version: 24
+                  node-version: 22
 
             - uses: apify/actions/pnpm-install@v1.1.2
 
@@ -195,7 +198,7 @@ jobs:
                       exit 0
                   fi
 
-                  git commit -m '[auto] fingerprint/header model update'
+                  git commit -m 'chore: fingerprint/header model update'
                   git push --force origin "${BRANCH}"
                   echo "changed=true" >> $GITHUB_OUTPUT
 
@@ -220,10 +223,10 @@ jobs:
                   } > pr-body.md
 
                   # Reuse the existing PR if this workflow already ran for this version.
-                  if ! gh pr edit "${BRANCH}" --title "[auto] fingerprint/header model update (v${VERSION})" --body-file pr-body.md 2>/dev/null; then
+                  if ! gh pr edit "${BRANCH}" --title "chore: fingerprint/header model update (v${VERSION})" --body-file pr-body.md 2>/dev/null; then
                       gh pr create \
                           --base master \
                           --head "${BRANCH}" \
-                          --title "[auto] fingerprint/header model update (v${VERSION})" \
+                          --title "chore: fingerprint/header model update (v${VERSION})" \
                           --body-file pr-body.md
                   fi
