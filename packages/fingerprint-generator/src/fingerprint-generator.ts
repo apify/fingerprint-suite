@@ -110,7 +110,7 @@ const normalizeScreenFingerprint = (
     const innerHeight =
         screen.innerHeight > 0
             ? screen.innerHeight
-            : Math.min(screen.availHeight, screen.outerHeight);
+            : Math.min(screen.height, screen.outerHeight);
 
     return {
         ...screen,
