@@ -12,11 +12,11 @@ jobs:
         runs-on: ubuntu-22.04
 
         steps:
-            - uses: actions/checkout@v6
+            - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
               with:
                   token: ${{ secrets.APIFY_SERVICE_ACCOUNT_GITHUB_TOKEN }}
             - name: Use Node.js 22
-              uses: actions/setup-node@v6
+              uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
               with:
                   node-version: 24
 
@@ -32,7 +32,7 @@ jobs:
               run: pnpm benchmark
 
             - name: Update the benchmark report
-              uses: stefanzweifel/git-auto-commit-action@v7
+              uses: stefanzweifel/git-auto-commit-action@4a55954c782fc1ea30b9056cd3e7a2b40ca8887d # v7.2.0
               with:
                   commit_message: 'chore: [skip-ci] update benchmark results'
                   branch: master
