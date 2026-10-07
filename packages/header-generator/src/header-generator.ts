@@ -1,7 +1,7 @@
 import { readFileSync } from 'fs';
 
 import { BayesianNetwork, utils } from 'generative-bayesian-network';
-import ow from 'ow';
+import type { Ow } from 'ow';
 
 import {
     SUPPORTED_BROWSERS,
@@ -22,29 +22,53 @@ import {
     shuffleArray,
 } from './utils';
 
-const browserSpecificationShape = {
-    name: ow.string,
-    minVersion: ow.optional.number,
-    maxVersion: ow.optional.number,
-    httpVersion: ow.optional.string,
+// `ow` is slow to load, so it and the shape below are created on first use.
+const getOw = (): Ow => require('ow').default;
+
+const createHeaderGeneratorOptionsShape = (ow: Ow) => {
+    const browserSpecificationShape = {
+        name: ow.string,
+        minVersion: ow.optional.number,
+        maxVersion: ow.optional.number,
+        httpVersion: ow.optional.string,
+    };
+
+    return {
+        browsers: ow.optional.array.ofType(
+            ow.any(
+                ow.object.exactShape(browserSpecificationShape),
+                ow.string.oneOf(SUPPORTED_BROWSERS),
+            ),
+        ),
+        operatingSystems: ow.optional.array.ofType(
+            ow.string.oneOf(SUPPORTED_OPERATING_SYSTEMS),
+        ),
+        devices: ow.optional.array.ofType(ow.string.oneOf(SUPPORTED_DEVICES)),
+        locales: ow.optional.array.ofType(ow.string),
+        httpVersion: ow.optional.string.oneOf(SUPPORTED_HTTP_VERSIONS),
+        browserListQuery: ow.optional.string,
+        strict: ow.optional.boolean,
+    };
 };
 
-export const headerGeneratorOptionsShape = {
-    browsers: ow.optional.array.ofType(
-        ow.any(
-            ow.object.exactShape(browserSpecificationShape),
-            ow.string.oneOf(SUPPORTED_BROWSERS),
-        ),
-    ),
-    operatingSystems: ow.optional.array.ofType(
-        ow.string.oneOf(SUPPORTED_OPERATING_SYSTEMS),
-    ),
-    devices: ow.optional.array.ofType(ow.string.oneOf(SUPPORTED_DEVICES)),
-    locales: ow.optional.array.ofType(ow.string),
-    httpVersion: ow.optional.string.oneOf(SUPPORTED_HTTP_VERSIONS),
-    browserListQuery: ow.optional.string,
-    strict: ow.optional.boolean,
-};
+type HeaderGeneratorOptionsShape = ReturnType<
+    typeof createHeaderGeneratorOptionsShape
+>;
+
+let shape: HeaderGeneratorOptionsShape | undefined;
+const getShape = () => (shape ??= createHeaderGeneratorOptionsShape(getOw()));
+
+export const headerGeneratorOptionsShape = new Proxy(
+    {} as HeaderGeneratorOptionsShape,
+    {
+        get: (_, key) => Reflect.get(getShape(), key),
+        set: (_, key, value) => Reflect.set(getShape(), key, value),
+        has: (_, key) => Reflect.has(getShape(), key),
+        ownKeys: () => Reflect.ownKeys(getShape()),
+        getOwnPropertyDescriptor: (_, key) =>
+            Reflect.getOwnPropertyDescriptor(getShape(), key),
+    },
+);
 
 /**
  * String specifying the HTTP version to use.
@@ -182,6 +206,7 @@ export class HeaderGenerator {
      * @param options Default header generation options used - unless overridden.
      */
     constructor(options: Partial<HeaderGeneratorOptions> = {}) {
+        const ow: Ow = getOw();
         ow(
             options,
             'HeaderGeneratorOptions',
@@ -252,6 +277,7 @@ export class HeaderGenerator {
         requestDependentHeaders: Headers = {},
         userAgentValues?: string[],
     ): Headers {
+        const ow: Ow = getOw();
         ow(
             options,
             'HeaderGeneratorOptions',
