@@ -1,4 +1,4 @@
-import browsersList from 'browserslist';
+import type browsersList from 'browserslist';
 
 import { SUPPORTED_BROWSERS } from './constants';
 import { BrowserName, BrowserSpecification } from './header-generator';
@@ -84,7 +84,10 @@ const getOptimizedVersionDistribution = (
 export const getBrowsersFromQuery = (
     browserListQuery: string,
 ): BrowserSpecification[] => {
-    const browserList = browsersList(browserListQuery);
+    // `browserslist` is slow to load and only needed for `browserListQuery`.
+    const browserList = (require('browserslist') as typeof browsersList)(
+        browserListQuery,
+    );
     const browsersWithVersions = getBrowsersWithVersions(browserList);
     return getOptimizedVersionDistribution(browsersWithVersions);
 };
