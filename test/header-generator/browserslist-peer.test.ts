@@ -1,9 +1,11 @@
+import type * as NodeModule from 'node:module';
+
 import { HeaderGenerator, PRESETS } from 'header-generator';
 import { describe, expect, test, vi } from 'vitest';
 
 // Simulates an installation without the optional `browserslist` peer dependency.
 vi.mock('node:module', async (importOriginal) => {
-    const actual = await importOriginal<typeof import('node:module')>();
+    const actual = await importOriginal<typeof NodeModule>();
 
     return {
         ...actual,

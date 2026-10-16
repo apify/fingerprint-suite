@@ -1,10 +1,6 @@
 import { FingerprintGenerator } from 'fingerprint-generator';
-import {
-    ArgumentValidationError,
-    HeaderGenerator,
-    headerGeneratorOptionsSchema,
-} from 'header-generator';
-import type { HeaderGeneratorOptions } from 'header-generator';
+import { ArgumentValidationError, HeaderGenerator } from 'header-generator';
+import type { HeaderGeneratorOptions, headerGeneratorOptionsSchema } from 'header-generator';
 import { describe, expect, expectTypeOf, test } from 'vitest';
 import type { z } from 'zod';
 

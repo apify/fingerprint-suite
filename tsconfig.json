@@ -1,6 +1,7 @@
 {
     "extends": "./tsconfig.build.json",
     "compilerOptions": {
+        "noEmit": true,
         "sourceMap": true,
         "paths": {
             "header-generator": ["./packages/header-generator/src/index.ts"],

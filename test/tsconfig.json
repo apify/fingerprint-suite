@@ -5,6 +5,7 @@
         "../packages/*/src/**/*"
     ],
     "compilerOptions": {
+        "noEmit": true,
         "sourceMap": true,
         "noUnusedLocals": false,
         "noUnusedParameters": false,

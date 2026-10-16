@@ -14,7 +14,8 @@ import {
 } from 'fingerprint-injector';
 import { onlyInjectableHeaders } from 'fingerprint-injector/src/injectable-headers.js';
 import playwright, { chromium, type Browser as PWBrowser } from 'playwright';
-import puppeteer, { Browser as PPBrowser } from 'puppeteer';
+import puppeteer from 'puppeteer';
+import type { Browser as PPBrowser, Page as PPPage } from 'puppeteer';
 
 import {
     describe,
@@ -177,7 +178,7 @@ describe('FingerprintInjector', () => {
                         browser = (await launcher.launch({
                             headless: false,
                             ...options,
-                        })) as import('playwright').Browser;
+                        })) as PWBrowser;
 
                         context = await browser.newContext();
                         await fpInjector.attachFingerprintToPlaywright(
@@ -197,7 +198,7 @@ describe('FingerprintInjector', () => {
                         });
 
                         page =
-                            (await browser.newPage()) as import('puppeteer').Page;
+                            (await browser.newPage()) as PPPage;
                         await fpInjector.attachFingerprintToPuppeteer(
                             page,
                             fingerprintWithHeaders,

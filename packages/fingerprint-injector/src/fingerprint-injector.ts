@@ -75,6 +75,7 @@ export class FingerprintInjector {
             ...onlyInjectableHeaders(headers, browserName),
             ...Object.fromEntries(
                 // @ts-expect-error Accessing private property
+                // eslint-disable-next-line no-underscore-dangle
                 (browserContext._options?.extraHTTPHeaders ?? []).map(
                     ({ name, value }: { name: string; value: string }) => [
                         name,

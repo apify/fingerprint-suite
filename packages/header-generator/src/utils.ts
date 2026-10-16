@@ -17,7 +17,7 @@ const loadBrowserslist = (): typeof browsersList => {
     } catch (error) {
         if (
             (error as NodeJS.ErrnoException).code === 'MODULE_NOT_FOUND' &&
-            /Cannot find module 'browserslist'/.test((error as Error).message)
+            (error as Error).message.includes("Cannot find module 'browserslist'")
         ) {
             throw new Error(
                 'The `browserListQuery` option (used by the `PRESETS` as well) needs the `browserslist` package, ' +

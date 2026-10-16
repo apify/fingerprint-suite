@@ -1,0 +1,27 @@
+{
+    "$schema": "https://raw.githubusercontent.com/oxc-project/oxc/main/npm/oxfmt/configuration_schema.json",
+    "printWidth": 120,
+    "tabWidth": 4,
+    "useTabs": false,
+    "singleQuote": true,
+    "semi": true,
+    "trailingComma": "all",
+    "quoteProps": "preserve",
+    "endOfLine": "lf",
+    "ignorePatterns": [
+        "**/node_modules",
+        "**/dist",
+        "**/coverage",
+        "**/.turbo",
+        "**/*.d.ts",
+        "**/package.json",
+        "**/*.md",
+        "**/*.json",
+        "**/*.yml",
+        "**/*.yaml",
+        "pnpm-lock.yaml",
+        "packages/header-order-collector",
+        "packages/fingerprint-injector/src/utils.js",
+        "test/antibot-services/live-testing/report.html"
+    ]
+}

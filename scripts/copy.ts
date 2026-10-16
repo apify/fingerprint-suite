@@ -18,11 +18,9 @@ function rewrite(p: string, replacer: (from: string) => string): void {
     }
 }
 
-function getProjectVersion(packageName: string) {
-    const version = execSync(`pnpm show ${packageName} version`)
-        .toString()
-        .trim();
-    return version;
+function getProjectVersion(directory: string) {
+    return JSON.parse(readFileSync(join(directory, 'package.json'), 'utf8'))
+        .version as string;
 }
 
 if (!process.env.GIT_TAG || semver.valid(process.env.GIT_TAG) === null) {
@@ -41,7 +39,7 @@ const currentLocalVersion = getProjectVersion(process.cwd());
 
 if (semver.gt(targetVersion!, rootVersion)) {
     execSync(
-        `cd ${import.meta.dirname}/../ && pnpm version ${targetVersion} --no-git-tag-version`,
+        `cd ${import.meta.dirname}/../ && pnpm version ${targetVersion} --no-git-tag-version --no-git-checks`,
         {
             encoding: 'utf-8',
         },
@@ -56,7 +54,7 @@ if (
     semver.gt(rootVersion, currentLocalVersion)
 ) {
     execSync(
-        `cd ${process.cwd()} && pnpm version ${rootVersion} --no-git-tag-version`,
+        `cd ${process.cwd()} && pnpm version ${rootVersion} --no-git-tag-version --no-git-checks`,
         {
             encoding: 'utf-8',
         },

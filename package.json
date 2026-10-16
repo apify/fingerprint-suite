@@ -39,33 +39,32 @@
         "postbuild": "node ./scripts/typescript_fixes.mjs",
         "prerelease": "pnpm build --force && turbo run copy --force --concurrency=1",
         "release": "./scripts/publish.sh",
-        "test": "vitest",
-        "lint": "eslint && prettier . --check",
-        "lint:fix": "eslint --fix && prettier . --write",
+        "test": "vitest run --silent",
         "buildNetwork": "turbo run build && ./scripts/netgen.sh && turbo run build && pnpm verifyModel",
         "verifyModel": "tsx ./scripts/verify-model.ts",
         "benchmark": "tsx ./test/antibot-services/live-testing/cloudflare.ts",
-        "tsc-check-tests": "tsc --noEmit --project test/tsconfig.json"
+        "tsc-check-tests": "tsc --noEmit --project test/tsconfig.json",
+        "lint": "oxlint --type-aware",
+        "lint:fix": "oxlint --type-aware --fix",
+        "format": "oxfmt",
+        "format:check": "oxfmt --check",
+        "prepare": "husky"
     },
     "devDependencies": {
-        "@apify/eslint-config": "^1.0.0",
+        "@apify/oxlint-config": "^0.3.0",
         "@apify/tsconfig": "^0.2.0",
-        "@eslint/eslintrc": "^3.3.1",
-        "@eslint/js": "^9.23.0",
         "@types/node": "^24.0.0",
-        "@types/puppeteer": "^7.0.0",
-        "@types/useragent": "^2.3.1",
         "browserslist": "^4.28.8",
-        "eslint": "^9.23.0",
-        "eslint-config-prettier": "^10.1.1",
         "fast-csv": "^5.0.0",
         "generator-networks-creator": "workspace:*",
-        "globals": "^17.0.0",
         "globby": "^15.0.0",
-        "husky": "^9.0.0",
+        "husky": "^9.1.7",
+        "lint-staged": "^17.6.0",
+        "oxfmt": "0.72.0",
+        "oxlint": "1.88.0",
+        "oxlint-tsgolint": "7.0.2004",
         "playwright": "^1.51.1",
         "playwright-extra": "^4.3.6",
-        "prettier": "3.8.1",
         "puppeteer": "^24.4.0",
         "puppeteer-extra-plugin-stealth": "^2.11.2",
         "puppeteer-extra-plugin-user-preferences": "^2.4.1",
@@ -73,23 +72,22 @@
         "semver": "^7.3.8",
         "tsx": "^4.23.15",
         "turbo": "^2.9.14",
-        "typescript": "^5.0.0",
-        "typescript-eslint": "^8.28.0",
-        "vite": "^7.3.6",
-        "vite-tsconfig-paths": "^6.1.1",
-        "vitest": "^4.1.10"
+        "typescript": "^7.0.2",
+        "vite": "^8.3.3",
+        "vitest": "^5.0.2"
     },
-    "overrides": {
-        "eslint-config-airbnb-base": {
-            "eslint": "$eslint"
-        }
-    },
-    "packageManager": "pnpm@10.33.4",
+    "packageManager": "pnpm@12.11.2",
     "devEngines": {
         "packageManager": {
             "name": "pnpm",
-            "version": "10.33.4",
+            "version": "12.11.2",
             "onFail": "warn"
         }
+    },
+    "lint-staged": {
+        "*.{ts,mts,cts,js,mjs,cjs}": [
+            "oxfmt --write --no-error-on-unmatched-pattern",
+            "oxlint --type-aware --fix --no-error-on-unmatched-pattern"
+        ]
     }
 }
