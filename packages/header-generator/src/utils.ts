@@ -7,6 +7,28 @@ import type { BrowserName, BrowserSpecification } from './header-generator.js';
 
 const require = createRequire(import.meta.url);
 
+/**
+ * `browserslist` is an optional peer dependency (its data is several MB), and it is only needed to resolve
+ * a `browserListQuery`. It is loaded on first use, and a missing installation is reported with a hint.
+ */
+const loadBrowserslist = (): typeof browsersList => {
+    try {
+        return require('browserslist');
+    } catch (error) {
+        if (
+            (error as NodeJS.ErrnoException).code === 'MODULE_NOT_FOUND' &&
+            /Cannot find module 'browserslist'/.test((error as Error).message)
+        ) {
+            throw new Error(
+                'The `browserListQuery` option (used by the `PRESETS` as well) needs the `browserslist` package, ' +
+                    'which is an optional peer dependency of `header-generator`. Install it with `npm install browserslist`.',
+                { cause: error },
+            );
+        }
+        throw error;
+    }
+};
+
 export const getUserAgent = (
     headers: Record<string, string>,
 ): string | undefined => {
@@ -88,10 +110,7 @@ const getOptimizedVersionDistribution = (
 export const getBrowsersFromQuery = (
     browserListQuery: string,
 ): BrowserSpecification[] => {
-    // `browserslist` is slow to load and only needed for `browserListQuery`.
-    const browserList = (require('browserslist') as typeof browsersList)(
-        browserListQuery,
-    );
+    const browserList = loadBrowserslist()(browserListQuery);
     const browsersWithVersions = getBrowsersWithVersions(browserList);
     return getOptimizedVersionDistribution(browsersWithVersions);
 };
