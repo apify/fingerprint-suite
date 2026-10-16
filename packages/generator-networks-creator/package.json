@@ -18,7 +18,6 @@
     "license": "Apache-2.0",
     "dependencies": {
         "generative-bayesian-network": "workspace:*",
-        "node-fetch": "^2.6.7",
         "ua-parser-js": "^2.0.10",
         "zod": "^4.0.0"
     },
