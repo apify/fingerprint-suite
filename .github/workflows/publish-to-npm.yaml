@@ -9,7 +9,7 @@ permissions:
 
 jobs:
     test_and_sync:
-        uses: apify/fingerprint-suite/.github/workflows/test-and-sync.yml@master
+        uses: ./.github/workflows/test-and-sync.yml
         secrets: inherit
 
     publish_latest:
@@ -18,21 +18,22 @@ jobs:
         needs: [test_and_sync]
         steps:
             - name: Checkout Source code
-              uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
               with:
                   token: ${{ secrets.APIFY_SERVICE_ACCOUNT_GITHUB_TOKEN }}
 
             - name: Use Node.js
-              uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
+              uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
               with:
                   node-version: 24
                   registry-url: 'https://registry.npmjs.org/'
+                  package-manager-cache: false
 
-            - uses: apify/actions/pnpm-install@v1.1.2
+            - uses: apify/actions/pnpm-install@v1.6.2
 
             - name: Turbo cache
               id: turbo-cache
-              uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25 # v5.1.0
+              uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
               with:
                   path: .turbo
                   key: turbo-${{ github.job }}-${{ github.ref_name }}-${{ github.sha }}
@@ -68,7 +69,7 @@ jobs:
             name: pypi
             url: https://pypi.org/project/crawlee
         steps:
-            - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+            - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
             - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
               with:
                   python-version: '3.14'

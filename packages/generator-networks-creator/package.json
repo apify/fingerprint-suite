@@ -27,7 +27,7 @@
     },
     "homepage": "https://github.com/apify/fingerprint-suite",
     "scripts": {
-        "build": "pnpm compile && pnpm copyfiles",
+        "build": "pnpm clean && pnpm compile && pnpm copyfiles",
         "clean": "rimraf ./dist",
         "compile": "tsc -p tsconfig.build.json",
         "copyfiles": "cp -r ./src/network_structures ./dist",

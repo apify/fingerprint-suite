@@ -1,6 +1,6 @@
 {
-    "extends": ["config:base", ":semanticCommitTypeAll(chore)"],
-    "pinVersions": false,
+    "extends": ["config:recommended", ":semanticCommitTypeAll(chore)"],
+    "rangeStrategy": "replace",
     "separateMajorMinor": false,
     "dependencyDashboard": false,
     "semanticCommits": "enabled",
@@ -14,15 +14,22 @@
     },
     "packageRules": [
         {
-            "matchUpdateTypes": ["minor"],
+            "matchUpdateTypes": ["patch", "minor"],
             "matchCurrentVersion": "!/^0/",
-            "groupName": "minor dependencies",
-            "groupSlug": "minor-deps",
+            "groupName": "patch/minor dependencies",
+            "groupSlug": "all-non-major",
             "automerge": true,
             "automergeType": "branch"
         },
         {
-            "matchPackageNames": ["@apify/*", "@crawlee/*", "apify-client", "apify", "crawlee", "got-scraping"],
+            "matchPackageNames": [
+                "@apify/*",
+                "@crawlee/*",
+                "apify-client",
+                "apify",
+                "crawlee",
+                "got-scraping"
+            ],
             "minimumReleaseAge": "0 days"
         }
     ],
