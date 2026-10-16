@@ -23,9 +23,6 @@ importers:
       '@eslint/js':
         specifier: ^9.23.0
         version: 9.39.4
-      '@types/adm-zip':
-        specifier: ^0.5.0
-        version: 0.5.8
       '@types/node':
         specifier: ^24.0.0
         version: 24.12.2
@@ -129,11 +126,7 @@ importers:
         specifier: '>= 9.x'
         version: 24.40.0(typescript@5.9.3)
 
-  packages/generative-bayesian-network:
-    dependencies:
-      adm-zip:
-        specifier: ^0.6.0
-        version: 0.6.0
+  packages/generative-bayesian-network: {}
 
   packages/generator-networks-creator:
     dependencies:
@@ -636,9 +629,6 @@ packages:
     cpu: [arm64]
     os: [win32]
 
-  '@types/adm-zip@0.5.8':
-    resolution: {integrity: sha512-RVVH7QvZYbN+ihqZ4kX/dMiowf6o+Jk1fNwiSdx0NahBJLU787zkULhGhJM8mf/obmLGmgdMM0bXsQTmyfbR7Q==}
-
   '@types/chai@5.2.3':
     resolution: {integrity: sha512-Mw558oeA9fFbv65/y4mHtXDs9bPnFMZAL/jxdPFUpOHHIXX91mcgEHbS5Lahr+pwZFR8A7GQleRWeI6cGFC2UA==}
 
@@ -780,10 +770,6 @@ packages:
     resolution: {integrity: sha512-UVJyE9MttOsBQIDKw1skb9nAwQuR5wuGD3+82K6JgJlm/Y+KI92oNsMNGZCYdDsVtRHSak0pcV5Dno5+4jh9sw==}
     engines: {node: '>=0.4.0'}
     hasBin: true
-
-  adm-zip@0.6.0:
-    resolution: {integrity: sha512-XleryMhbuksdKtofnWZ9Sk+4CUTbms4Mb/EU32SZwToAyZ5RgVos/ki8n+yr0LWHOGKuakbXTuuYNHLQjhddgg==}
-    engines: {node: '>=14.0'}
 
   agent-base@7.1.4:
     resolution: {integrity: sha512-MnA+YT8fwfJPgBx3m60MNqakm30XOkyIoH1y6huTQvC0PwZG7ki8NacLBcrPbNoo8vEZy7Jpuk7+jMO+CUovTQ==}
@@ -3010,10 +2996,6 @@ snapshots:
   '@turbo/windows-arm64@2.9.14':
     optional: true
 
-  '@types/adm-zip@0.5.8':
-    dependencies:
-      '@types/node': 24.12.2
-
   '@types/chai@5.2.3':
     dependencies:
       '@types/deep-eql': 4.0.2
@@ -3205,8 +3187,6 @@ snapshots:
       acorn: 8.16.0
 
   acorn@8.16.0: {}
-
-  adm-zip@0.6.0: {}
 
   agent-base@7.1.4: {}
 

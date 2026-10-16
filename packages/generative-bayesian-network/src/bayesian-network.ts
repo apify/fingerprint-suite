@@ -1,6 +1,7 @@
-import AdmZip from 'adm-zip';
+import { readFileSync, writeFileSync } from 'node:fs';
 
 import { BayesianNode } from './bayesian-node.js';
+import { createZip, readZip } from './zip.js';
 
 export type RecordList = Record<string, any>[];
 
@@ -12,13 +13,19 @@ export class BayesianNetwork {
     #nodesInSamplingOrder: BayesianNode[] = [];
     #nodesByName: Record<string, BayesianNode> = {};
 
-    constructor({ path }: { path: string }) {
-        const zip = new AdmZip(path);
-        const zipEntries = zip.getEntries();
+    /**
+     * @param options.path Path (or `file:` URL) of the `.zip` file with the network definition.
+     */
+    constructor({ path }: { path: string | URL }) {
+        const [definition] = readZip(readFileSync(path));
 
-        const networkDefinition = JSON.parse(
-            zipEntries[0].getData().toString('utf8'),
-        );
+        if (!definition) {
+            throw new Error(
+                `The network definition ${path} is an empty ZIP archive.`,
+            );
+        }
+
+        const networkDefinition = JSON.parse(definition.data.toString('utf8'));
         this.#nodesInSamplingOrder = networkDefinition.nodes.map(
             (nodeDefinition: any) => new BayesianNode(nodeDefinition),
         );
@@ -137,18 +144,19 @@ export class BayesianNetwork {
      * Saves the network definition to the specified file path to be used later.
      * @param networkDefinitionFilePath File path where the network definition should be saved.
      */
-    saveNetworkDefinition({ path }: { path: string }) {
+    saveNetworkDefinition({ path }: { path: string | URL }) {
         const network = {
             nodes: this.#nodesInSamplingOrder,
         };
 
-        // creating archives
-        const zip = new AdmZip();
-
-        zip.addFile(
-            'network.json',
-            Buffer.from(JSON.stringify(network), 'utf8'),
+        writeFileSync(
+            path,
+            createZip([
+                {
+                    name: 'network.json',
+                    data: Buffer.from(JSON.stringify(network), 'utf8'),
+                },
+            ]),
         );
-        zip.writeZip(path);
     }
 }
