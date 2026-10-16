@@ -13,6 +13,7 @@
 - [Installation](#installation)
 - [Usage](#usage)
 - [Presets](#presets)
+- [Validation errors](#validation-errors)
 - [Result example](#result-example)
 - [API Reference](#api-reference)
 
@@ -20,7 +21,9 @@
 
 ## Installation
 
-Run the `npm install header-generator` command. No further setup is needed afterwards.
+Run the `npm install header-generator` command. The package is an ES module and needs Node.js 22.13 or newer.
+
+The `browserListQuery` option (and the [presets](#presets), which use it) needs the optional [`browserslist`](https://github.com/browserslist/browserslist) package: run `npm install browserslist` if you use them. Nothing else is needed.
 
 ## Usage
 
@@ -55,11 +58,15 @@ This method always generates a random realistic set of headers, excluding the re
 Presets are setting templates for common use cases. It saves time writing the same configuration over and over.
 
 ```js
-import { HeaderGenerator, PRESETS } = from 'header-generator';
+import { HeaderGenerator, PRESETS } from 'header-generator';
 let headerGenerator = new HeaderGenerator(PRESETS.MODERN_WINDOWS_CHROME);
 ```
 
-This preset will fill the configuration for the latest five versions of chrome for windows desktops. Checkout the available presets list [here](https://github.com/apify/fingerprint-suite/blob/master/packages/header-generator/src/presets.ts).
+This preset will fill the configuration for the latest five versions of chrome for windows desktops (resolved with the `browserslist` package, see [Installation](#installation)). Checkout the available presets list [here](https://github.com/apify/fingerprint-suite/blob/master/packages/header-generator/src/presets.ts).
+
+## Validation errors
+
+Invalid options passed to the constructor or to `getHeaders` throw an `ArgumentValidationError` (exported from this package). Its message names every invalid option and the value it received, and the structured [zod](https://zod.dev) issues are available as `error.issues`. The schema of the options is exported as `headerGeneratorOptionsSchema`.
 
 ## Result example
 
