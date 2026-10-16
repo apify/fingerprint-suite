@@ -1,2 +1,3 @@
-export * from './fingerprint-generator';
-export { PRESETS, HeaderGeneratorOptions, Headers } from 'header-generator';
+export * from './fingerprint-generator.js';
+export { PRESETS } from 'header-generator';
+export type { HeaderGeneratorOptions, Headers } from 'header-generator';

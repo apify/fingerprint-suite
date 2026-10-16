@@ -1,4 +1,5 @@
-import { HeaderGenerator, HeaderGeneratorOptions } from 'header-generator';
+import { HeaderGenerator } from 'header-generator';
+import type { HeaderGeneratorOptions } from 'header-generator';
 
 import { describe, expect, test } from 'vitest';
 
@@ -143,7 +144,7 @@ describe('Generation tests', () => {
                 ],
                 strict: true,
             } as unknown as HeaderGeneratorOptions);
-            fail(
+            expect.fail(
                 "HeaderGenerator didn't throw an error when trying to generate headers for a nonexisting browser.",
             );
         } catch (error) {

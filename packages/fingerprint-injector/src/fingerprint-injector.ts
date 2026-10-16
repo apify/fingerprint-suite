@@ -1,18 +1,18 @@
-import { readFileSync } from 'fs';
+import { readFileSync } from 'node:fs';
 
-import {
+import { FingerprintGenerator } from 'fingerprint-generator';
+import type {
     BrowserFingerprintWithHeaders,
     Fingerprint,
-    FingerprintGenerator,
     FingerprintGeneratorOptions,
-    type UserAgentData,
+    UserAgentData,
 } from 'fingerprint-generator';
-import {
+import type {
     BrowserContext,
     Browser as PWBrowser,
     BrowserContextOptions,
 } from 'playwright';
-import { Page, Browser as PPBrowser } from 'puppeteer';
+import type { Page, Browser as PPBrowser } from 'puppeteer';
 
 interface EnhancedFingerprint extends Fingerprint {
     userAgent: string;
@@ -310,8 +310,9 @@ export class FingerprintInjector {
      * causing errors when executing it in the browser.
      */
     private _loadUtils(): string {
-        // path.join would be better here, but Vercel's build system doesn't like it (https://github.com/apify/fingerprint-suite/issues/135)
-        const utilsJs = readFileSync(`${__dirname}/utils.js`);
+        // The `new URL(..., import.meta.url)` form is statically traceable by bundlers and Vercel's file tracing
+        // (https://github.com/apify/fingerprint-suite/issues/135), so `utils.js` makes it into the deployment.
+        const utilsJs = readFileSync(new URL('./utils.js', import.meta.url));
         return `\n${utilsJs}\n`;
     }
 

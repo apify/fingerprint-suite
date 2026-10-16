@@ -1,8 +1,8 @@
-import fs from 'fs';
-import path from 'path';
+import fs from 'node:fs';
+import path from 'node:path';
 
 import { BayesianNetwork } from 'generative-bayesian-network';
-import { getRecordSchema } from './record-schema';
+import { getRecordSchema } from './record-schema.js';
 
 const browserHttpNodeName = '*BROWSER_HTTP';
 const httpVersionNodeName = '*HTTP_VERSION';
@@ -211,14 +211,14 @@ export class GeneratorNetworksCreator {
 
         const inputGeneratorNetwork = new BayesianNetwork({
             path: path.join(
-                __dirname,
+                import.meta.dirname,
                 'network_structures',
                 'input-network-structure.zip',
             ),
         });
         const headerGeneratorNetwork = new BayesianNetwork({
             path: path.join(
-                __dirname,
+                import.meta.dirname,
                 'network_structures',
                 'header-network-structure.zip',
             ),
@@ -346,7 +346,7 @@ export class GeneratorNetworksCreator {
 
         const fingerprintGeneratorNetwork = new BayesianNetwork({
             path: path.join(
-                __dirname,
+                import.meta.dirname,
                 'network_structures',
                 'fingerprint-network-structure.zip',
             ),

@@ -1,4 +1,8 @@
 /* eslint-disable no-unused-vars */
+// The script is embedded as the beginning of an IIFE body, so this directive keeps the whole injected script strict.
+
+'use strict';
+
 const isHeadlessChromium =
     /headless/i.test(navigator.userAgent) && navigator.plugins.length === 0;
 const isChrome = navigator.userAgent.includes('Chrome');

@@ -1,7 +1,5 @@
-import {
-    chromium,
-    firefox,
-    webkit,
+import { chromium, firefox, webkit } from 'playwright';
+import type {
     BrowserContext,
     LaunchOptions,
     BrowserContextOptions,

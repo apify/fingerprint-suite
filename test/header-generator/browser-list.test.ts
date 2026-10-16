@@ -1,5 +1,5 @@
 import browsersList from 'browserslist';
-import { getBrowsersFromQuery } from 'header-generator/src/utils';
+import { getBrowsersFromQuery } from 'header-generator/src/utils.js';
 
 import { describe, expect, test } from 'vitest';
 

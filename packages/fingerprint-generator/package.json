@@ -6,22 +6,23 @@
     "engines": {
         "node": ">=22.13.0"
     },
+    "type": "module",
     "main": "dist/index.js",
-    "module": "dist/index.mjs",
     "types": "dist/index.d.ts",
     "exports": {
         ".": {
-            "import": "./dist/index.mjs",
-            "require": "./dist/index.js",
-            "types": "./dist/index.d.ts"
-        }
+            "types": "./dist/index.d.ts",
+            "default": "./dist/index.js"
+        },
+        "./package.json": "./package.json"
     },
+    "sideEffects": false,
     "scripts": {
         "build": "pnpm clean && pnpm compile",
         "postbuild": "cp -r src/data_files dist/ && cp ../../README.md dist/",
         "clean": "rimraf ./dist",
-        "compile": "tsc -p tsconfig.build.json && gen-esm-wrapper ./dist/index.js ./dist/index.mjs",
-        "copy": "ts-node -T ../../scripts/copy.ts"
+        "compile": "tsc -p tsconfig.build.json",
+        "copy": "tsx ../../scripts/copy.ts"
     },
     "repository": {
         "type": "git",
@@ -34,7 +35,6 @@
     },
     "dependencies": {
         "generative-bayesian-network": "workspace:*",
-        "header-generator": "workspace:*",
-        "tslib": "^2.4.0"
+        "header-generator": "workspace:*"
     }
 }

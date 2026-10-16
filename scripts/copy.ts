@@ -1,6 +1,7 @@
-import { copyFileSync, readFileSync, writeFileSync } from 'fs';
-import { join } from 'path';
 import { execSync } from 'node:child_process';
+import { copyFileSync, readFileSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
+
 import semver from 'semver';
 
 function copy(filename: string, from: string, to: string): void {
@@ -35,18 +36,18 @@ GITHUB_REF: ${process.env.GITHUB_REF}`,
 
 const targetVersion = semver.valid(process.env.GIT_TAG);
 
-let rootVersion = getProjectVersion(`${__dirname}/../`);
+let rootVersion = getProjectVersion(`${import.meta.dirname}/../`);
 const currentLocalVersion = getProjectVersion(process.cwd());
 
 if (semver.gt(targetVersion!, rootVersion)) {
     execSync(
-        `cd ${__dirname}/../ && pnpm version ${targetVersion} --no-git-tag-version`,
+        `cd ${import.meta.dirname}/../ && pnpm version ${targetVersion} --no-git-tag-version`,
         {
             encoding: 'utf-8',
         },
     );
 
-    rootVersion = getProjectVersion(`${__dirname}/../`);
+    rootVersion = getProjectVersion(`${import.meta.dirname}/../`);
 }
 
 if (
@@ -68,7 +69,7 @@ if (
 
 // as we publish only the dist folder, we need to copy some meta files inside (readme/license/package.json)
 // also changes paths inside the copied `package.json` (`dist/index.js` -> `index.js`)
-const root = join(__dirname, '..');
+const root = join(import.meta.dirname, '..');
 const target = join(process.cwd(), 'dist');
 
 copy('README.md', root, target);

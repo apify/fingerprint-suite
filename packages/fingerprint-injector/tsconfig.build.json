@@ -3,5 +3,8 @@
   "compilerOptions": {
     "outDir": "./dist"
   },
-  "include": ["src/**/*"]
+  "include": ["src/**/*"],
+  // `utils.js` is browser code that gets read as text and injected into pages. It is copied as-is
+  // on build, since tsc would treat it as a module and append an `export {}`, breaking the injection.
+  "exclude": ["src/utils.js", "node_modules", "dist"]
 }

@@ -1,9 +1,9 @@
-import { setTimeout } from 'timers/promises';
+import { setTimeout } from 'node:timers/promises';
 
-import {
+import { FingerprintGenerator } from 'fingerprint-generator';
+import type {
     BrowserFingerprintWithHeaders,
     Fingerprint,
-    FingerprintGenerator,
 } from 'fingerprint-generator';
 import {
     FingerprintInjector,
@@ -176,7 +176,7 @@ describe('FingerprintInjector', () => {
 
                         page = await context.newPage();
                         response = await page.goto(
-                            `file://${__dirname}/test.html`,
+                            `file://${import.meta.dirname}/test.html`,
                             { waitUntil: 'commit' },
                         );
                     } else if (frameworkName === 'Puppeteer') {
@@ -193,7 +193,7 @@ describe('FingerprintInjector', () => {
                         );
 
                         response = await page.goto(
-                            `file://${__dirname}/test.html`,
+                            `file://${import.meta.dirname}/test.html`,
                         );
                     }
                     return await setTimeout(2000);

@@ -1,25 +1,28 @@
 /* eslint-disable */
-import * as path from 'path';
+import * as path from 'node:path';
 import { BayesianNetwork } from 'generative-bayesian-network';
 import { parseFile } from 'fast-csv';
 
 import { describe, expect, test } from 'vitest';
 
 const testNetworkDefinitionPath = path.join(
-    __dirname,
+    import.meta.dirname,
     './testNetworkDefinition.zip',
 );
 
 describe('Setup test', () => {
     const testGeneratorNetwork = new BayesianNetwork({
-        path: path.join(__dirname, './testNetworkStructureDefinition.zip'),
+        path: path.join(
+            import.meta.dirname,
+            './testNetworkStructureDefinition.zip',
+        ),
     });
 
     test('Calculates probabilities from data', async () => {
         const rows: string[][] = [];
 
         await new Promise<void>((res) => {
-            parseFile(path.join(__dirname, './testDataset.csv'))
+            parseFile(path.join(import.meta.dirname, './testDataset.csv'))
                 .on('data', (r) => rows.push(r))
                 .on('end', () => {
                     res();

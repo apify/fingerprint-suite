@@ -1,4 +1,4 @@
-import { type HeaderGeneratorOptions } from './header-generator';
+import type { HeaderGeneratorOptions } from './header-generator.js';
 
 export const MODERN_DESKTOP = {
     browserListQuery: 'last 5 versions',

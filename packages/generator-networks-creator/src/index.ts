@@ -1,1 +1,1 @@
-export { GeneratorNetworksCreator } from './generator-networks-creator';
+export { GeneratorNetworksCreator } from './generator-networks-creator.js';

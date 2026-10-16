@@ -4,25 +4,25 @@
     "engines": {
         "node": ">=22.13.0"
     },
+    "type": "module",
     "author": {
         "name": "Apify"
     },
     "main": "dist/index.js",
-    "module": "dist/index.mjs",
     "types": "dist/index.d.ts",
     "exports": {
         ".": {
-            "import": "./dist/index.mjs",
-            "require": "./dist/index.js",
-            "types": "./dist/index.d.ts"
-        }
+            "types": "./dist/index.d.ts",
+            "default": "./dist/index.js"
+        },
+        "./package.json": "./package.json"
     },
+    "sideEffects": false,
     "bugs": {
         "url": "https://github.com/apify/fingerprint-suite/issues"
     },
     "dependencies": {
-        "adm-zip": "^0.6.0",
-        "tslib": "^2.4.0"
+        "adm-zip": "^0.6.0"
     },
     "description": "An fast implementation of a generative bayesian network.",
     "homepage": "https://github.com/apify/fingerprint-suite",
@@ -35,7 +35,7 @@
         "build": "pnpm clean && pnpm compile",
         "postbuild": "cp ./README.md dist/",
         "clean": "rimraf ./dist",
-        "compile": "tsc -p tsconfig.build.json && gen-esm-wrapper ./dist/index.js ./dist/index.mjs",
-        "copy": "ts-node -T ../../scripts/copy.ts"
+        "compile": "tsc -p tsconfig.build.json",
+        "copy": "tsx ../../scripts/copy.ts"
     }
 }

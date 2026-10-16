@@ -1,7 +1,11 @@
+import { createRequire } from 'node:module';
+
 import type browsersList from 'browserslist';
 
-import { SUPPORTED_BROWSERS } from './constants';
-import { BrowserName, BrowserSpecification } from './header-generator';
+import { SUPPORTED_BROWSERS } from './constants.js';
+import type { BrowserName, BrowserSpecification } from './header-generator.js';
+
+const require = createRequire(import.meta.url);
 
 export const getUserAgent = (
     headers: Record<string, string>,

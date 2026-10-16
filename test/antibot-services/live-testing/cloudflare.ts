@@ -1,17 +1,17 @@
 /* eslint-disable no-console */
-import fs from 'fs';
-import path from 'path';
+import fs from 'node:fs';
+import path from 'node:path';
 
-import { chromium, Page } from 'playwright';
+import { chromium } from 'playwright';
+import type { Page } from 'playwright';
 
-import { FingerprintSuiteExtra } from './engine/combo';
-import { FingerprintSuite } from './engine/fingerprint-suite';
-import { PlaywrightExtra } from './engine/playwright-extra';
-import {
-    FingeprintingEngine,
-    VanillaPlaywright,
-} from './engine/vanilla-playwright';
-import { generateReport, TestResult } from './utils/generateReport';
+import { FingerprintSuiteExtra } from './engine/combo.js';
+import { FingerprintSuite } from './engine/fingerprint-suite.js';
+import { PlaywrightExtra } from './engine/playwright-extra.js';
+import { VanillaPlaywright } from './engine/vanilla-playwright.js';
+import type { FingeprintingEngine } from './engine/vanilla-playwright.js';
+import { generateReport } from './utils/generateReport.js';
+import type { TestResult } from './utils/generateReport.js';
 
 async function waitForCompletion<T>(
     promises: (() => Promise<T>)[],
@@ -27,7 +27,7 @@ async function waitForCompletion<T>(
 }
 
 const source = fs.readFileSync(
-    path.join(__dirname, 'cloudflare-websites.csv'),
+    path.join(import.meta.dirname, 'cloudflare-websites.csv'),
     'utf8',
 );
 const pages = source.split('\n');
@@ -144,7 +144,7 @@ async function runWith(engine: FingeprintingEngine): Promise<TestResult> {
     ]);
 
     fs.writeFileSync(
-        path.join(__dirname, 'report.html'),
+        path.join(import.meta.dirname, 'report.html'),
         generateReport({
             '🎭️ Vanilla Playwright': results[0],
             '🍪 Playwright Extra': results[2],
@@ -161,10 +161,10 @@ async function runWith(engine: FingeprintingEngine): Promise<TestResult> {
         },
     });
     const p = await c.newPage();
-    await p.goto(`file://${path.join(__dirname, 'report.html')}`);
+    await p.goto(`file://${path.join(import.meta.dirname, 'report.html')}`);
     await (
         await p.$('#content')
-    ).screenshot({ path: path.join(`${__dirname}`, 'report.png') });
+    ).screenshot({ path: path.join(`${import.meta.dirname}`, 'report.png') });
     await b.close();
 
     process.exit(0);

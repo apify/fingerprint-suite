@@ -1,4 +1,4 @@
-import { RecordList } from './bayesian-network';
+import type { RecordList } from './bayesian-network.js';
 
 /**
  * Calculates relative frequencies of values of specific attribute from the given data

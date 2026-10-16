@@ -19,7 +19,7 @@ describe('committed model sanity', () => {
     const helperFile = JSON.parse(
         readFileSync(
             join(
-                __dirname,
+                import.meta.dirname,
                 '../../packages/header-generator/src/data_files/browser-helper-file.json',
             ),
             { encoding: 'utf8' },

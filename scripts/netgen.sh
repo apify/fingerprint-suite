@@ -10,6 +10,6 @@ curl \
 
 echo "Generating network..."
 
-ts-node $(dirname $0)/netgen.ts
+tsx $(dirname $0)/netgen.ts
 
 echo "Done."

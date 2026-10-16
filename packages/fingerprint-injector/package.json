@@ -6,19 +6,19 @@
     "engines": {
         "node": ">=22.13.0"
     },
+    "type": "module",
     "main": "dist/index.js",
-    "module": "dist/index.mjs",
     "types": "dist/index.d.ts",
     "exports": {
         ".": {
-            "import": "./dist/index.mjs",
-            "require": "./dist/index.js",
-            "types": "./dist/index.d.ts"
-        }
+            "types": "./dist/index.d.ts",
+            "default": "./dist/index.js"
+        },
+        "./package.json": "./package.json"
     },
+    "sideEffects": false,
     "dependencies": {
-        "fingerprint-generator": "workspace:*",
-        "tslib": "^2.4.0"
+        "fingerprint-generator": "workspace:*"
     },
     "peerDependencies": {
         "playwright": "^1.22.2",
@@ -34,10 +34,10 @@
     },
     "scripts": {
         "build": "pnpm clean && pnpm compile",
-        "postbuild": "cp ../../README.md dist/",
+        "postbuild": "cp src/utils.js ../../README.md dist/",
         "clean": "rimraf ./dist",
-        "compile": "tsc -p tsconfig.build.json && gen-esm-wrapper ./dist/index.js ./dist/index.mjs",
-        "copy": "ts-node -T ../../scripts/copy.ts"
+        "compile": "tsc -p tsconfig.build.json",
+        "copy": "tsx ../../scripts/copy.ts"
     },
     "author": {
         "name": "Apify",
