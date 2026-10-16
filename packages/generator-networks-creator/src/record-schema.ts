@@ -66,21 +66,8 @@ const KNOWN_WEBGL_RENDERER_PARTS = [
 ];
 
 const KNOWN_OS_FONTS = {
-    WINDOWS: [
-        'Cambria Math',
-        'Calibri',
-        'MS Outlook',
-        'HoloLens MDL2 Assets',
-        'Segoe Fluent Icons',
-    ],
-    APPLE: [
-        'Helvetica Neue',
-        'Luminari',
-        'PingFang HK Light',
-        'InaiMathi Bold',
-        'Galvji',
-        'Chakra Petch',
-    ],
+    WINDOWS: ['Cambria Math', 'Calibri', 'MS Outlook', 'HoloLens MDL2 Assets', 'Segoe Fluent Icons'],
+    APPLE: ['Helvetica Neue', 'Luminari', 'PingFang HK Light', 'InaiMathi Bold', 'Galvji', 'Chakra Petch'],
 };
 
 export async function getRecordSchema() {
@@ -91,10 +78,7 @@ export async function getRecordSchema() {
     return z.preprocess(
         (record) => {
             const castRecord = record as any;
-            if (
-                castRecord?.browserFingerprint?.userAgent &&
-                castRecord?.requestFingerprint?.headers
-            ) {
+            if (castRecord?.browserFingerprint?.userAgent && castRecord?.requestFingerprint?.headers) {
                 const parsedUserAgent = UAParser(
                     castRecord.browserFingerprint.userAgent,
                     castRecord.requestFingerprint.headers,
@@ -105,9 +89,7 @@ export async function getRecordSchema() {
                 if (parsedUserAgent.os.name) {
                     if (parsedUserAgent.os.name.startsWith('Windows')) {
                         knownOsFonts = KNOWN_OS_FONTS.WINDOWS;
-                    } else if (
-                        ['macOS', 'iOS'].includes(parsedUserAgent.os.name)
-                    ) {
+                    } else if (['macOS', 'iOS'].includes(parsedUserAgent.os.name)) {
                         knownOsFonts = KNOWN_OS_FONTS.APPLE;
                     }
                 }
@@ -116,9 +98,7 @@ export async function getRecordSchema() {
                     ...castRecord,
                     userAgentProps: {
                         parsedUserAgent,
-                        isDesktop: !['wearable', 'mobile'].includes(
-                            parsedUserAgent.device.type!,
-                        ),
+                        isDesktop: !['wearable', 'mobile'].includes(parsedUserAgent.device.type!),
                         knownOsFonts,
                     },
                 };
@@ -189,10 +169,7 @@ export async function getRecordSchema() {
                         z.enum(['ogg', 'mp3', 'wav', 'm4a', 'aac']),
                         z.enum(['probably', 'maybe', '']),
                     ),
-                    videoCodecs: z.record(
-                        z.enum(['ogg', 'h264', 'webm']),
-                        z.enum(['probably', 'maybe', '']),
-                    ),
+                    videoCodecs: z.record(z.enum(['ogg', 'h264', 'webm']), z.enum(['probably', 'maybe', ''])),
                     userAgentData: z
                         .object({
                             brands: z.array(
@@ -231,11 +208,7 @@ export async function getRecordSchema() {
                     videoCard: z.object({
                         renderer: z
                             .string()
-                            .refine((renderer) =>
-                                KNOWN_WEBGL_RENDERER_PARTS.some((part) =>
-                                    renderer.includes(part),
-                                ),
-                            ),
+                            .refine((renderer) => KNOWN_WEBGL_RENDERER_PARTS.some((part) => renderer.includes(part))),
                         vendor: z.string(),
                     }),
                     fonts: z.array(z.string()),
@@ -263,108 +236,66 @@ export async function getRecordSchema() {
                             devicePixelRatio: z.number().min(0).max(5),
                         })
                         .refine(
-                            (data) =>
-                                data.availWidth <= data.width &&
-                                data.availHeight <= data.height,
+                            (data) => data.availWidth <= data.width && data.availHeight <= data.height,
                             'Available width and height should be less than or equal to width and height',
                         )
                         .refine(
-                            (data) =>
-                                data.innerWidth <= data.outerWidth &&
-                                data.innerHeight <= data.outerHeight,
+                            (data) => data.innerWidth <= data.outerWidth && data.innerHeight <= data.outerHeight,
                             'Inner width and height should be less than or equal to outer width and height',
                         )
                         .refine(
-                            (data) =>
-                                !data.pixelDepth ||
-                                data.pixelDepth === data.colorDepth,
+                            (data) => !data.pixelDepth || data.pixelDepth === data.colorDepth,
                             'Pixel depth should be equal to color depth',
                         ),
                     userAgent: z
                         .string()
                         .refine(
-                            (userAgent) =>
-                                !userAgent.match(
-                                    /(bot|bots|slurp|spider|crawler|crawl)\b/i,
-                                ),
+                            (userAgent) => !userAgent.match(/(bot|bots|slurp|spider|crawler|crawl)\b/i),
                             'User agent should not contain bot, bots, slurp, spider, crawler, or crawl',
                         )
                         .refine(
                             (userAgent) =>
-                                !robotUserAgents.some((robot) =>
-                                    userAgent.match(
-                                        new RegExp(robot.pattern, 'i'),
-                                    ),
-                                ),
+                                !robotUserAgents.some((robot) => userAgent.match(new RegExp(robot.pattern, 'i'))),
                             'User agent should not match any known robot user agent patterns',
                         ),
                 }),
             })
             .refine(
-                ({
-                    userAgentProps: { parsedUserAgent },
-                    browserFingerprint: { productSub },
-                }) =>
+                ({ userAgentProps: { parsedUserAgent }, browserFingerprint: { productSub } }) =>
                     parsedUserAgent.browser.name.includes('Firefox')
                         ? productSub === '20100101'
                         : productSub === '20030107',
                 "ProductSub should be '20100101' for Firefox and '20030107' for other browsers",
             )
             .refine(
-                ({
-                    userAgentProps: { parsedUserAgent },
-                    browserFingerprint: { vendor },
-                }) =>
-                    (parsedUserAgent.browser.name.includes('Firefox') &&
-                        vendor === '') ||
-                    (parsedUserAgent.browser.name.includes('Safari') &&
-                        vendor === 'Apple Computer, Inc.') ||
+                ({ userAgentProps: { parsedUserAgent }, browserFingerprint: { vendor } }) =>
+                    (parsedUserAgent.browser.name.includes('Firefox') && vendor === '') ||
+                    (parsedUserAgent.browser.name.includes('Safari') && vendor === 'Apple Computer, Inc.') ||
                     vendor === 'Google Inc.',
             )
+            .refine(({ requestFingerprint: { headers }, browserFingerprint: { userAgent } }) => {
+                const userAgentHeader = headers['user-agent'] || headers['User-Agent'];
+                return userAgentHeader === userAgent;
+            }, 'User-Agent header should match the browser fingerprint user agent')
             .refine(
-                ({
-                    requestFingerprint: { headers },
-                    browserFingerprint: { userAgent },
-                }) => {
-                    const userAgentHeader =
-                        headers['user-agent'] || headers['User-Agent'];
-                    return userAgentHeader === userAgent;
-                },
-                'User-Agent header should match the browser fingerprint user agent',
-            )
-            .refine(
-                ({
-                    userAgentProps: { knownOsFonts },
-                    browserFingerprint: { fonts },
-                }) =>
+                ({ userAgentProps: { knownOsFonts }, browserFingerprint: { fonts } }) =>
                     fonts.length === 0 ||
                     knownOsFonts.length === 0 ||
                     fonts.some((font) => knownOsFonts.includes(font)),
                 'Fonts should be empty or contain known OS fonts',
             )
-            .refine(
-                ({
-                    userAgentProps: { isDesktop },
-                    browserFingerprint: { screen },
-                }) => {
-                    const screenMax = Math.max(screen.width, screen.height);
-                    const screenMin = Math.min(screen.width, screen.height);
+            .refine(({ userAgentProps: { isDesktop }, browserFingerprint: { screen } }) => {
+                const screenMax = Math.max(screen.width, screen.height);
+                const screenMin = Math.min(screen.width, screen.height);
 
-                    if (isDesktop) {
-                        if (screenMax < 512 || screenMin < 384) {
-                            return false;
-                        }
+                if (isDesktop) {
+                    if (screenMax < 512 || screenMin < 384) {
+                        return false;
                     }
+                }
 
-                    return (
-                        screenMax >= 480 &&
-                        screenMax <= 7680 &&
-                        screenMin >= 320 &&
-                        screenMin <= 4320
-                    );
-                },
-                'Screen width and height should be valid for the device type',
-            )
+                return screenMax >= 480 && screenMax <= 7680 && screenMin >= 320 && screenMin <= 4320;
+            }, 'Screen width and height should be valid for the device type')
             .transform(({ userAgentProps, ...rest }) => ({
                 ...rest,
                 userAgent: rest.browserFingerprint.userAgent,

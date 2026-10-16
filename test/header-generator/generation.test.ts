@@ -3,9 +3,7 @@ import type { HeaderGeneratorOptions } from 'header-generator';
 
 import { describe, expect, test } from 'vitest';
 
-function extractLocalesFromAcceptLanguageHeader(
-    acceptLanguageHeader: string,
-): string[] {
+function extractLocalesFromAcceptLanguageHeader(acceptLanguageHeader: string): string[] {
     const extractedLocales = [];
     const localesWithWeight = acceptLanguageHeader.split(',');
     for (const localeWithWeight of localesWithWeight) {
@@ -70,11 +68,7 @@ describe('Generation tests', () => {
         const generator = new HeaderGenerator();
         const ordered = generator.orderHeaders(headers);
         expect(ordered).toEqual(headers);
-        expect(Object.keys(ordered)).toEqual([
-            'Connection',
-            'user-agent',
-            'cookie',
-        ]);
+        expect(Object.keys(ordered)).toEqual(['Connection', 'user-agent', 'cookie']);
     });
 
     test('Orders headers works without user-agent', () => {
@@ -102,9 +96,7 @@ describe('Generation tests', () => {
             httpVersion: '2',
             locales: requestedLocales,
         });
-        const extractedLocales = extractLocalesFromAcceptLanguageHeader(
-            headers['accept-language'],
-        );
+        const extractedLocales = extractLocalesFromAcceptLanguageHeader(headers['accept-language']);
         expect(requestedLocales.sort()).toEqual(extractedLocales.sort());
     });
 
@@ -129,9 +121,7 @@ describe('Generation tests', () => {
             httpVersion: '2',
             devices: ['mobile'],
         });
-        expect(
-            /phone|android|mobile/i.test(headers['user-agent']),
-        ).toBeTruthy();
+        expect(/phone|android|mobile/i.test(headers['user-agent'])).toBeTruthy();
     });
 
     test('Strict mode throws an error when nothing can be generated', () => {

@@ -25,9 +25,7 @@ export function getDeviceOS(userAgent: string): {
     return { device, operatingSystem };
 }
 
-export function getBrowserNameVersion(
-    userAgent: string,
-): `${string}/${string}` | typeof missingValueDatasetToken {
+export function getBrowserNameVersion(userAgent: string): `${string}/${string}` | typeof missingValueDatasetToken {
     const canonicalNames = {
         chrome: 'chrome',
         crios: 'chrome',
@@ -40,8 +38,7 @@ export function getBrowserNameVersion(
         edgios: 'edge',
     } as Record<string, string>;
 
-    const unsupportedBrowsers =
-        /opr|yabrowser|SamsungBrowser|UCBrowser|vivaldi/i;
+    const unsupportedBrowsers = /opr|yabrowser|SamsungBrowser|UCBrowser|vivaldi/i;
     const edge = /(edg(a|ios|e)?)\/([0-9.]*)/i;
     const safari = /Version\/([\d.]+)( Mobile\/[a-z0-9]+)? Safari/i;
     // `safari` is deliberately absent here: the `Safari/x.y.z` token carries the

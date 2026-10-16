@@ -5,9 +5,7 @@ export interface TestResult {
     meanTimeToPass: number;
 }
 
-export function generateReport(
-    testResults: Record<string, TestResult>,
-): string {
+export function generateReport(testResults: Record<string, TestResult>): string {
     const table = `
 <table>
     <thead>

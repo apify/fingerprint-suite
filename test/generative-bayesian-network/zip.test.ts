@@ -27,20 +27,13 @@ describe('ZIP reader and writer', () => {
 
         const entries = readZip(archive);
 
-        expect(entries.map(({ name }) => name)).toEqual([
-            'network.json',
-            'random.bin',
-            'empty.txt',
-            'ünïcode/ž.txt',
-        ]);
+        expect(entries.map(({ name }) => name)).toEqual(['network.json', 'random.bin', 'empty.txt', 'ünïcode/ž.txt']);
         expect(entries[0].data.equals(compressible)).toBe(true);
         expect(entries[1].data.equals(incompressible)).toBe(true);
         expect(entries[2].data).toHaveLength(0);
         expect(entries[3].data.toString()).toBe('ok');
         // compressible data is deflated, random data is stored as it is
-        expect(archive.length).toBeLessThan(
-            compressible.length + incompressible.length,
-        );
+        expect(archive.length).toBeLessThan(compressible.length + incompressible.length);
     });
 
     test('output is reproducible', () => {
@@ -53,10 +46,7 @@ describe('ZIP reader and writer', () => {
         const entries = readZip(PYTHON_ARCHIVE);
 
         // directory entries are skipped, stored and deflated files are read
-        expect(entries.map(({ name }) => name)).toEqual([
-            'stored.txt',
-            'dir/deflated.json',
-        ]);
+        expect(entries.map(({ name }) => name)).toEqual(['stored.txt', 'dir/deflated.json']);
         expect(entries[0].data.toString()).toBe('stored content');
         expect(entries[1].data.toString()).toBe('{"a":1}'.repeat(40));
     });
@@ -71,17 +61,12 @@ describe('ZIP reader and writer', () => {
             ),
         );
 
-        expect(Array.isArray(JSON.parse(entry.data.toString()).nodes)).toBe(
-            true,
-        );
+        expect(Array.isArray(JSON.parse(entry.data.toString()).nodes)).toBe(true);
     });
 
     test.each([
         ['not an archive', Buffer.from('definitely not a zip file')],
-        [
-            'a truncated archive',
-            createZip([{ name: 'a', data: randomBytes(64) }]).subarray(0, 60),
-        ],
+        ['a truncated archive', createZip([{ name: 'a', data: randomBytes(64) }]).subarray(0, 60)],
     ])('rejects %s', (_, archive) => {
         expect(() => readZip(archive)).toThrow(/Invalid ZIP archive/);
     });
@@ -97,15 +82,11 @@ describe('ZIP reader and writer', () => {
     test('rejects unsupported compression methods and encryption', () => {
         const data = Buffer.from('x');
         const archive = createZip([{ name: 'a', data }]);
-        const centralDirectory = archive.lastIndexOf(
-            Buffer.from([0x50, 0x4b, 0x01, 0x02]),
-        );
+        const centralDirectory = archive.lastIndexOf(Buffer.from([0x50, 0x4b, 0x01, 0x02]));
 
         const unsupportedMethod = Buffer.from(archive);
         unsupportedMethod.writeUInt16LE(14, centralDirectory + 10); // LZMA
-        expect(() => readZip(unsupportedMethod)).toThrow(
-            /Unsupported ZIP compression method/,
-        );
+        expect(() => readZip(unsupportedMethod)).toThrow(/Unsupported ZIP compression method/);
 
         const encrypted = Buffer.from(archive);
         encrypted.writeUInt16LE(0x1, centralDirectory + 8);

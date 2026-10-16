@@ -4,10 +4,7 @@
  * @param headers Headers to be filtered.
  * @returns Filtered headers.
  */
-export function onlyInjectableHeaders(
-    headers: Record<string, string>,
-    browserName?: string,
-): Record<string, string> {
+export function onlyInjectableHeaders(headers: Record<string, string>, browserName?: string): Record<string, string> {
     const requestHeaders = [
         'accept-encoding',
         'accept',

@@ -55,9 +55,7 @@ export function readZip(archive: Buffer): ZipEntry[] {
             offset + CENTRAL_DIRECTORY_HEADER_SIZE > archive.length ||
             archive.readUInt32LE(offset) !== CENTRAL_DIRECTORY_SIGNATURE
         ) {
-            throw new Error(
-                'Invalid ZIP archive: corrupted central directory.',
-            );
+            throw new Error('Invalid ZIP archive: corrupted central directory.');
         }
 
         const flags = archive.readUInt16LE(offset + 8);
@@ -74,11 +72,7 @@ export function readZip(archive: Buffer): ZipEntry[] {
             offset + CENTRAL_DIRECTORY_HEADER_SIZE + nameLength,
         );
 
-        offset +=
-            CENTRAL_DIRECTORY_HEADER_SIZE +
-            nameLength +
-            extraLength +
-            commentLength;
+        offset += CENTRAL_DIRECTORY_HEADER_SIZE + nameLength + extraLength + commentLength;
 
         if (name.endsWith('/')) continue;
 
@@ -88,12 +82,9 @@ export function readZip(archive: Buffer): ZipEntry[] {
 
         if (
             localHeaderOffset + LOCAL_FILE_HEADER_SIZE > archive.length ||
-            archive.readUInt32LE(localHeaderOffset) !==
-                LOCAL_FILE_HEADER_SIGNATURE
+            archive.readUInt32LE(localHeaderOffset) !== LOCAL_FILE_HEADER_SIGNATURE
         ) {
-            throw new Error(
-                `Invalid ZIP archive: corrupted local header of ${name}`,
-            );
+            throw new Error(`Invalid ZIP archive: corrupted local header of ${name}`);
         }
 
         // The sizes are taken from the central directory, which is always complete (unlike the local header with data descriptors).
@@ -102,10 +93,7 @@ export function readZip(archive: Buffer): ZipEntry[] {
             LOCAL_FILE_HEADER_SIZE +
             archive.readUInt16LE(localHeaderOffset + 26) +
             archive.readUInt16LE(localHeaderOffset + 28);
-        const compressed = archive.subarray(
-            dataStart,
-            dataStart + compressedSize,
-        );
+        const compressed = archive.subarray(dataStart, dataStart + compressedSize);
 
         let data: Buffer;
         if (method === METHOD_STORED) {
@@ -113,9 +101,7 @@ export function readZip(archive: Buffer): ZipEntry[] {
         } else if (method === METHOD_DEFLATE) {
             data = inflateRawSync(compressed);
         } else {
-            throw new Error(
-                `Unsupported ZIP compression method ${method} of ${name}`,
-            );
+            throw new Error(`Unsupported ZIP compression method ${method} of ${name}`);
         }
 
         if (crc32(data) !== expectedCrc) {
@@ -159,9 +145,7 @@ export function createZip(entries: ZipEntry[]): Buffer {
         local.writeUInt16LE(nameBuffer.length, 26);
         nameBuffer.copy(local, LOCAL_FILE_HEADER_SIZE);
 
-        const central = Buffer.alloc(
-            CENTRAL_DIRECTORY_HEADER_SIZE + nameBuffer.length,
-        );
+        const central = Buffer.alloc(CENTRAL_DIRECTORY_HEADER_SIZE + nameBuffer.length);
         central.writeUInt32LE(CENTRAL_DIRECTORY_SIGNATURE, 0);
         central.writeUInt16LE(versionNeeded, 4);
         central.writeUInt16LE(versionNeeded, 6);
@@ -189,10 +173,7 @@ export function createZip(entries: ZipEntry[]): Buffer {
     end.writeUInt32LE(centralDirectory.length, 12);
     end.writeUInt32LE(localSize, 16);
 
-    if (
-        entries.length >= 0xffff ||
-        localSize + centralDirectory.length >= 0xffffffff
-    ) {
+    if (entries.length >= 0xffff || localSize + centralDirectory.length >= 0xffffffff) {
         throw new Error('ZIP64 archives are not supported.');
     }
 
@@ -200,19 +181,10 @@ export function createZip(entries: ZipEntry[]): Buffer {
 }
 
 function findEndOfCentralDirectory(archive: Buffer): number {
-    const lowest = Math.max(
-        0,
-        archive.length - END_OF_CENTRAL_DIRECTORY_SIZE - MAX_COMMENT_SIZE,
-    );
+    const lowest = Math.max(0, archive.length - END_OF_CENTRAL_DIRECTORY_SIZE - MAX_COMMENT_SIZE);
 
-    for (
-        let offset = archive.length - END_OF_CENTRAL_DIRECTORY_SIZE;
-        offset >= lowest;
-        offset--
-    ) {
-        if (
-            archive.readUInt32LE(offset) === END_OF_CENTRAL_DIRECTORY_SIGNATURE
-        ) {
+    for (let offset = archive.length - END_OF_CENTRAL_DIRECTORY_SIZE; offset >= lowest; offset--) {
+        if (archive.readUInt32LE(offset) === END_OF_CENTRAL_DIRECTORY_SIGNATURE) {
             return offset;
         }
     }

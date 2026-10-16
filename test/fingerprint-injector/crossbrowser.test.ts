@@ -20,12 +20,7 @@ describe('Playwright controlled instances', () => {
         'firefox',
         // 'webkit',
     ] as const;
-    const fingerprintBrowsers = [
-        'chrome',
-        'firefox',
-        'safari',
-        'edge',
-    ] as const;
+    const fingerprintBrowsers = ['chrome', 'firefox', 'safari', 'edge'] as const;
 
     test.each(everyAeveryB(runnableBrowsers, fingerprintBrowsers))(
         `[%s] should inject %s fingerprint`,
@@ -51,12 +46,7 @@ describe('Playwright controlled instances', () => {
 
 describe('Puppeteer controlled instances', () => {
     const runnableBrowsers = ['chrome', 'firefox'] as const;
-    const fingerprintBrowsers = [
-        'chrome',
-        'firefox',
-        'safari',
-        'edge',
-    ] as const;
+    const fingerprintBrowsers = ['chrome', 'firefox', 'safari', 'edge'] as const;
 
     test.each(everyAeveryB(runnableBrowsers, fingerprintBrowsers))(
         `[%s] should inject %s fingerprint`,

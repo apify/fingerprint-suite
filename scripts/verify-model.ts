@@ -32,8 +32,7 @@ import { FingerprintGenerator } from '../packages/fingerprint-generator/src/inde
 import { HeaderGenerator } from '../packages/header-generator/src/index.js';
 
 const REPO_ROOT = path.join(import.meta.dirname, '..');
-const HELPER_FILE_REL =
-    'packages/header-generator/src/data_files/browser-helper-file.json';
+const HELPER_FILE_REL = 'packages/header-generator/src/data_files/browser-helper-file.json';
 
 /** Browsers the model is expected to cover, and the plausible range for a major version. */
 const EXPECTED_BROWSERS = {
@@ -130,9 +129,7 @@ function previousHelperEntries(): string[] | null {
 // ---------------------------------------------------------------------------
 function checkQueriesResolve() {
     const queries = [
-        ...Object.keys(EXPECTED_BROWSERS).map(
-            (browser) => `last 5 ${browser} versions`,
-        ),
+        ...Object.keys(EXPECTED_BROWSERS).map((browser) => `last 5 ${browser} versions`),
         'last 2 versions',
         'last 10 chrome versions',
         '> 0.5%',
@@ -145,10 +142,7 @@ function checkQueriesResolve() {
             }).getHeaders();
 
             if (!headers['user-agent'] && !headers['User-Agent']) {
-                fail(
-                    'functional',
-                    `query '${browserListQuery}' produced headers without a User-Agent.`,
-                );
+                fail('functional', `query '${browserListQuery}' produced headers without a User-Agent.`);
             }
         } catch (error) {
             fail(
@@ -167,36 +161,20 @@ function checkQueriesResolve() {
                 browsers: [browser as BrowserName],
             }).getHeaders();
         } catch (error) {
-            fail(
-                'functional',
-                `cannot generate headers for browser '${browser}'. ${
-                    (error as Error).message
-                }`,
-            );
+            fail('functional', `cannot generate headers for browser '${browser}'. ${(error as Error).message}`);
         }
     }
 
     try {
         const { fingerprint } = new FingerprintGenerator().getFingerprint();
         if (!fingerprint?.navigator?.userAgent) {
-            fail(
-                'functional',
-                'generated fingerprint has no navigator.userAgent.',
-            );
+            fail('functional', 'generated fingerprint has no navigator.userAgent.');
         }
-        if (
-            !(fingerprint?.screen?.width > 0 && fingerprint?.screen?.height > 0)
-        ) {
-            fail(
-                'functional',
-                'generated fingerprint has non-positive screen dimensions.',
-            );
+        if (!(fingerprint?.screen?.width > 0 && fingerprint?.screen?.height > 0)) {
+            fail('functional', 'generated fingerprint has non-positive screen dimensions.');
         }
     } catch (error) {
-        fail(
-            'functional',
-            `fingerprint generation failed outright. ${(error as Error).message}`,
-        );
+        fail('functional', `fingerprint generation failed outright. ${(error as Error).message}`);
     }
 }
 
@@ -220,18 +198,12 @@ function writeSummary(
     for (const browser of Object.keys(EXPECTED_BROWSERS).sort()) {
         const majors = current.get(browser);
         const before = previous?.get(browser)?.[0];
-        lines.push(
-            `| ${browser} | ${before ?? '—'} | ${majors?.[0] ?? '**missing**'} | ${
-                majors?.length ?? 0
-            } |`,
-        );
+        lines.push(`| ${browser} | ${before ?? '—'} | ${majors?.[0] ?? '**missing**'} | ${majors?.length ?? 0} |`);
     }
 
     lines.push(
         '',
-        `Browser/HTTP-version combinations: ${
-            previousEntries ? `${previousEntries.length} → ` : ''
-        }${entries.length}`,
+        `Browser/HTTP-version combinations: ${previousEntries ? `${previousEntries.length} → ` : ''}${entries.length}`,
     );
 
     if (warnings.length > 0) {
@@ -239,10 +211,7 @@ function writeSummary(
         for (const warning of warnings) lines.push(`- ${warning}`);
     }
 
-    fs.writeFileSync(
-        path.join(REPO_ROOT, 'model-summary.md'),
-        `${lines.join('\n')}\n`,
-    );
+    fs.writeFileSync(path.join(REPO_ROOT, 'model-summary.md'), `${lines.join('\n')}\n`);
 }
 
 // ---------------------------------------------------------------------------
@@ -250,21 +219,13 @@ function writeSummary(
 // ---------------------------------------------------------------------------
 function checkHelperFile() {
     const helperPath = path.join(REPO_ROOT, HELPER_FILE_REL);
-    const entries = JSON.parse(
-        fs.readFileSync(helperPath, { encoding: 'utf8' }),
-    ) as string[];
+    const entries = JSON.parse(fs.readFileSync(helperPath, { encoding: 'utf8' })) as string[];
 
     const { majorsByBrowser, unparsed } = parseHelperFile(entries);
 
-    console.log(
-        `Model covers ${entries.length} browser/HTTP-version combinations:`,
-    );
+    console.log(`Model covers ${entries.length} browser/HTTP-version combinations:`);
     for (const [browser, majors] of [...majorsByBrowser].sort()) {
-        console.log(
-            `  ${browser.padEnd(10)} newest ${String(majors[0]).padEnd(
-                5,
-            )} (${majors.length} versions)`,
-        );
+        console.log(`  ${browser.padEnd(10)} newest ${String(majors[0]).padEnd(5)} (${majors.length} versions)`);
     }
 
     if (unparsed.length > 0) {
@@ -283,10 +244,7 @@ function checkHelperFile() {
         const majors = majorsByBrowser.get(browser);
 
         if (!majors || majors.length === 0) {
-            fail(
-                'plausibility',
-                `model contains no '${browser}' entries at all.`,
-            );
+            fail('plausibility', `model contains no '${browser}' entries at all.`);
             continue;
         }
 
@@ -311,10 +269,7 @@ function checkHelperFile() {
         // 2. Freshness — the #564 symptom.
         const known = newestKnownMajor(browser);
         if (known === null) {
-            warn(
-                'freshness',
-                `browserslist knows no versions for '${browser}'; skipped.`,
-            );
+            warn('freshness', `browserslist knows no versions for '${browser}'; skipped.`);
         } else if (newest < known - config.freshnessTolerance) {
             fail(
                 'freshness',
@@ -356,11 +311,9 @@ function checkHelperFile() {
         if (retention < MIN_COMBO_RETENTION) {
             fail(
                 'volume',
-                `model covers ${entries.length} browser/HTTP combinations, down from ${
-                    previous.length
-                } (${(retention * 100).toFixed(
-                    0,
-                )}% retained, floor ${(MIN_COMBO_RETENTION * 100).toFixed(0)}%).`,
+                `model covers ${entries.length} browser/HTTP combinations, down from ${previous.length} (${(
+                    retention * 100
+                ).toFixed(0)}% retained, floor ${(MIN_COMBO_RETENTION * 100).toFixed(0)}%).`,
             );
         }
     }
@@ -375,9 +328,7 @@ if (warnings.length > 0) {
 }
 
 if (failures.length > 0) {
-    console.error(
-        `\nModel verification FAILED with ${failures.length} problem(s):`,
-    );
+    console.error(`\nModel verification FAILED with ${failures.length} problem(s):`);
     for (const failure of failures) console.error(`  x ${failure}`);
     console.error(
         '\nThe generated model is not fit to ship. Inspect the source dataset and the ' +

@@ -7,11 +7,7 @@ import type {
     FingerprintGeneratorOptions,
     UserAgentData,
 } from 'fingerprint-generator';
-import type {
-    BrowserContext,
-    Browser as PWBrowser,
-    BrowserContextOptions,
-} from 'playwright';
+import type { BrowserContext, Browser as PWBrowser, BrowserContextOptions } from 'playwright';
 import type { Page, Browser as PPBrowser } from 'puppeteer';
 
 import { onlyInjectableHeaders } from './injectable-headers.js';
@@ -21,24 +17,12 @@ interface EnhancedFingerprint extends Fingerprint {
     historyLength: number;
 }
 
-declare function overrideInstancePrototype<T>(
-    instance: T,
-    overrideObj: Partial<T>,
-): void;
+declare function overrideInstancePrototype<T>(instance: T, overrideObj: Partial<T>): void;
 declare function overrideUserAgentData(userAgentData: UserAgentData): void;
-declare function overrideDocumentDimensionsProps(
-    props: Record<string, number>,
-): void;
-declare function overrideWindowDimensionsProps(
-    props: Record<string, number>,
-): void;
-declare function overrideBattery(
-    batteryInfo?: Record<string, string | number>,
-): void;
-declare function overrideCodecs(
-    audioCodecs: Record<string, string>,
-    videoCodecs: Record<string, string>,
-): void;
+declare function overrideDocumentDimensionsProps(props: Record<string, number>): void;
+declare function overrideWindowDimensionsProps(props: Record<string, number>): void;
+declare function overrideBattery(batteryInfo?: Record<string, string | number>): void;
+declare function overrideCodecs(audioCodecs: Record<string, string>, videoCodecs: Record<string, string>): void;
 declare function overrideWebGl(webGlInfo: Record<string, string>): void;
 declare function overrideIntlAPI(language: string): void;
 declare function overrideStatic(): void;
@@ -66,8 +50,7 @@ export class FingerprintInjector {
         const { fingerprint, headers } = browserFingerprintWithHeaders;
         const enhancedFingerprint = this.#enhanceFingerprint(fingerprint);
 
-        const content =
-            this.#getInjectableFingerprintFunction(enhancedFingerprint);
+        const content = this.#getInjectableFingerprintFunction(enhancedFingerprint);
 
         const browserName = browserContext.browser()?.browserType().name();
 
@@ -77,10 +60,7 @@ export class FingerprintInjector {
                 // @ts-expect-error Accessing private property
                 // eslint-disable-next-line no-underscore-dangle
                 (browserContext._options?.extraHTTPHeaders ?? []).map(
-                    ({ name, value }: { name: string; value: string }) => [
-                        name,
-                        value,
-                    ],
+                    ({ name, value }: { name: string; value: string }) => [name, value],
                 ),
             ),
         });
@@ -128,26 +108,18 @@ export class FingerprintInjector {
                 deviceScaleFactor: screen.devicePixelRatio,
             });
 
-            await page.setExtraHTTPHeaders(
-                onlyInjectableHeaders(headers, browserVersion),
-            );
+            await page.setExtraHTTPHeaders(onlyInjectableHeaders(headers, browserVersion));
 
-            await page.emulateMediaFeatures([
-                { name: 'prefers-color-scheme', value: 'dark' },
-            ]);
+            await page.emulateMediaFeatures([{ name: 'prefers-color-scheme', value: 'dark' }]);
         }
 
-        await page.evaluateOnNewDocument(
-            this.#getInjectableFingerprintFunction(enhancedFingerprint),
-        );
+        await page.evaluateOnNewDocument(this.#getInjectableFingerprintFunction(enhancedFingerprint));
     }
 
     /**
      * Gets the override script that should be evaluated in the browser.
      */
-    getInjectableScript(
-        browserFingerprintWithHeaders: BrowserFingerprintWithHeaders,
-    ): string {
+    getInjectableScript(browserFingerprintWithHeaders: BrowserFingerprintWithHeaders): string {
         const { fingerprint } = browserFingerprintWithHeaders;
         const enhancedFingerprint = this.#enhanceFingerprint(fingerprint);
 
@@ -159,18 +131,11 @@ export class FingerprintInjector {
      * @param fingerprint Enhanced fingerprint.
      * @returns Script overriding browser fingerprint.
      */
-    #getInjectableFingerprintFunction(
-        fingerprint: EnhancedFingerprint,
-    ): string {
+    #getInjectableFingerprintFunction(fingerprint: EnhancedFingerprint): string {
         function inject() {
             const {
                 battery,
-                navigator: {
-                    extraProperties,
-                    userAgentData,
-                    webdriver,
-                    ...navigatorProps
-                },
+                navigator: { extraProperties, userAgentData, webdriver, ...navigatorProps },
                 screen: allScreenProps,
                 videoCard,
                 historyLength,
@@ -304,9 +269,7 @@ export async function newInjectedContext(
     },
 ): Promise<BrowserContext> {
     const generator = new FingerprintGenerator();
-    const fingerprintWithHeaders =
-        options?.fingerprint ??
-        generator.getFingerprint(options?.fingerprintOptions);
+    const fingerprintWithHeaders = options?.fingerprint ?? generator.getFingerprint(options?.fingerprintOptions);
 
     const { fingerprint, headers } = fingerprintWithHeaders;
     const context = await browser.newContext({
@@ -325,10 +288,7 @@ export async function newInjectedContext(
     });
 
     const injector = new FingerprintInjector();
-    await injector.attachFingerprintToPlaywright(
-        context,
-        fingerprintWithHeaders,
-    );
+    await injector.attachFingerprintToPlaywright(context, fingerprintWithHeaders);
 
     return context;
 }
@@ -341,9 +301,7 @@ export async function newInjectedPage(
     },
 ): Promise<Page> {
     const generator = new FingerprintGenerator();
-    const fingerprintWithHeaders =
-        options?.fingerprint ??
-        generator.getFingerprint(options?.fingerprintOptions);
+    const fingerprintWithHeaders = options?.fingerprint ?? generator.getFingerprint(options?.fingerprintOptions);
 
     const page = await browser.newPage();
 

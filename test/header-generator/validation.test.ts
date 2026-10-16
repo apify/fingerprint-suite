@@ -22,9 +22,7 @@ describe('Options validation', () => {
     });
 
     test('keys outside of the schema are allowed', () => {
-        expect(
-            () => new HeaderGenerator({ unknownKey: 'x' } as any),
-        ).not.toThrow();
+        expect(() => new HeaderGenerator({ unknownKey: 'x' } as any)).not.toThrow();
         expect(
             () =>
                 new FingerprintGenerator({
@@ -38,9 +36,7 @@ describe('Options validation', () => {
     test('`Infinity` is a valid version bound, `NaN` is not', () => {
         expect(() =>
             headerGenerator.getHeaders({
-                browsers: [
-                    { name: 'chrome', minVersion: 1, maxVersion: Infinity },
-                ],
+                browsers: [{ name: 'chrome', minVersion: 1, maxVersion: Infinity }],
             }),
         ).not.toThrow();
         expect(
@@ -53,14 +49,8 @@ describe('Options validation', () => {
 
     test.each([
         ['an unknown browser name', { browsers: ['netscape'] }],
-        [
-            'a browser specification with unknown keys',
-            { browsers: [{ name: 'chrome', foo: 1 }] },
-        ],
-        [
-            'a browser specification without a name',
-            { browsers: [{ minVersion: 1 }] },
-        ],
+        ['a browser specification with unknown keys', { browsers: [{ name: 'chrome', foo: 1 }] }],
+        ['a browser specification without a name', { browsers: [{ minVersion: 1 }] }],
         ['browsers that are not an array', { browsers: 'chrome' }],
         ['an unknown operating system', { operatingSystems: ['beos'] }],
         ['an unknown device', { devices: ['tablet'] }],
@@ -72,15 +62,9 @@ describe('Options validation', () => {
         ['options that are not an object', 'chrome'],
         ['`null` options', null],
     ])('rejects %s', (_, options) => {
-        expect(() => new HeaderGenerator(options as any)).toThrow(
-            ArgumentValidationError,
-        );
-        expect(() => headerGenerator.getHeaders(options as any)).toThrow(
-            ArgumentValidationError,
-        );
-        expect(() => new FingerprintGenerator(options as any)).toThrow(
-            ArgumentValidationError,
-        );
+        expect(() => new HeaderGenerator(options as any)).toThrow(ArgumentValidationError);
+        expect(() => headerGenerator.getHeaders(options as any)).toThrow(ArgumentValidationError);
+        expect(() => new FingerprintGenerator(options as any)).toThrow(ArgumentValidationError);
     });
 
     test('`undefined` values are allowed', () => {
@@ -117,8 +101,6 @@ describe('Options validation', () => {
     });
 
     test('the schema accepts everything `HeaderGeneratorOptions` allows', () => {
-        expectTypeOf<Partial<HeaderGeneratorOptions>>().toExtend<
-            z.input<typeof headerGeneratorOptionsSchema>
-        >();
+        expectTypeOf<Partial<HeaderGeneratorOptions>>().toExtend<z.input<typeof headerGeneratorOptionsSchema>>();
     });
 });

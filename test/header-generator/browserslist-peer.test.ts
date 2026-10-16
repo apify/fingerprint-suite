@@ -14,10 +14,7 @@ vi.mock('node:module', async (importOriginal) => {
 
             return Object.assign((id: string) => {
                 if (id === 'browserslist') {
-                    throw Object.assign(
-                        new Error("Cannot find module 'browserslist'"),
-                        { code: 'MODULE_NOT_FOUND' },
-                    );
+                    throw Object.assign(new Error("Cannot find module 'browserslist'"), { code: 'MODULE_NOT_FOUND' });
                 }
 
                 return realRequire(id);
@@ -34,10 +31,7 @@ describe('Without the optional `browserslist` peer dependency', () => {
     });
 
     test.each([
-        [
-            'the constructor',
-            () => new HeaderGenerator({ browserListQuery: 'last 5 versions' }),
-        ],
+        ['the constructor', () => new HeaderGenerator({ browserListQuery: 'last 5 versions' })],
         [
             'getHeaders()',
             () =>
@@ -47,8 +41,6 @@ describe('Without the optional `browserslist` peer dependency', () => {
         ],
         ['a preset', () => new HeaderGenerator(PRESETS.MODERN_DESKTOP)],
     ])('%s points to the missing package', (_, act) => {
-        expect(act).toThrow(
-            /optional peer dependency of `header-generator`.*npm install browserslist/,
-        );
+        expect(act).toThrow(/optional peer dependency of `header-generator`.*npm install browserslist/);
     });
 });

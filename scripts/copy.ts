@@ -19,8 +19,7 @@ function rewrite(p: string, replacer: (from: string) => string): void {
 }
 
 function getProjectVersion(directory: string) {
-    return JSON.parse(readFileSync(join(directory, 'package.json'), 'utf8'))
-        .version as string;
+    return JSON.parse(readFileSync(join(directory, 'package.json'), 'utf8')).version as string;
 }
 
 if (!process.env.GIT_TAG || semver.valid(process.env.GIT_TAG) === null) {
@@ -38,27 +37,17 @@ let rootVersion = getProjectVersion(`${import.meta.dirname}/../`);
 const currentLocalVersion = getProjectVersion(process.cwd());
 
 if (semver.gt(targetVersion!, rootVersion)) {
-    execSync(
-        `cd ${import.meta.dirname}/../ && pnpm version ${targetVersion} --no-git-tag-version --no-git-checks`,
-        {
-            encoding: 'utf-8',
-        },
-    );
+    execSync(`cd ${import.meta.dirname}/../ && pnpm version ${targetVersion} --no-git-tag-version --no-git-checks`, {
+        encoding: 'utf-8',
+    });
 
     rootVersion = getProjectVersion(`${import.meta.dirname}/../`);
 }
 
-if (
-    semver.valid(rootVersion) &&
-    semver.valid(currentLocalVersion) &&
-    semver.gt(rootVersion, currentLocalVersion)
-) {
-    execSync(
-        `cd ${process.cwd()} && pnpm version ${rootVersion} --no-git-tag-version --no-git-checks`,
-        {
-            encoding: 'utf-8',
-        },
-    );
+if (semver.valid(rootVersion) && semver.valid(currentLocalVersion) && semver.gt(rootVersion, currentLocalVersion)) {
+    execSync(`cd ${process.cwd()} && pnpm version ${rootVersion} --no-git-tag-version --no-git-checks`, {
+        encoding: 'utf-8',
+    });
 }
 
 // `pnpm publish` only resolves the `workspace:*` protocol when run from within the
@@ -74,9 +63,5 @@ copy('README.md', root, target);
 copy('LICENSE.md', root, target);
 copy('package.json', process.cwd(), target);
 rewrite(join(target, 'package.json'), (pkg) => pkg.replace(/dist\//g, ''));
-rewrite(join(target, 'package.json'), (pkg) =>
-    pkg.replace(/workspace:\*/g, rootVersion),
-);
-rewrite(join(target, 'utils.js'), (pkg) =>
-    pkg.replace('../package.json', './package.json'),
-);
+rewrite(join(target, 'package.json'), (pkg) => pkg.replace(/workspace:\*/g, rootVersion));
+rewrite(join(target, 'utils.js'), (pkg) => pkg.replace('../package.json', './package.json'));

@@ -3,36 +3,17 @@ import { join } from 'node:path';
 import { setTimeout } from 'node:timers/promises';
 
 import { FingerprintGenerator } from 'fingerprint-generator';
-import type {
-    BrowserFingerprintWithHeaders,
-    Fingerprint,
-} from 'fingerprint-generator';
-import {
-    FingerprintInjector,
-    newInjectedContext,
-    newInjectedPage,
-} from 'fingerprint-injector';
+import type { BrowserFingerprintWithHeaders, Fingerprint } from 'fingerprint-generator';
+import { FingerprintInjector, newInjectedContext, newInjectedPage } from 'fingerprint-injector';
 import { onlyInjectableHeaders } from 'fingerprint-injector/src/injectable-headers.js';
 import playwright, { chromium, type Browser as PWBrowser } from 'playwright';
 import puppeteer from 'puppeteer';
 import type { Browser as PPBrowser, Page as PPPage } from 'puppeteer';
 
-import {
-    describe,
-    expect,
-    test,
-    beforeEach,
-    afterAll,
-    beforeAll,
-} from 'vitest';
+import { describe, expect, test, beforeEach, afterAll, beforeAll } from 'vitest';
 
 /** The browser-side helpers that the injector embeds into every injected script. */
-const utilsJs = `\n${readFileSync(
-    join(
-        import.meta.dirname,
-        '../../packages/fingerprint-injector/src/utils.js',
-    ),
-)}\n`;
+const utilsJs = `\n${readFileSync(join(import.meta.dirname, '../../packages/fingerprint-injector/src/utils.js'))}\n`;
 
 function getHTTPBinUrl() {
     return process.env.APIFY_HTTPBIN_TOKEN
@@ -126,8 +107,7 @@ describe('FingerprintInjector', () => {
                 try {
                     iframe.srcdoc = srcdoc;
                 } catch (error) {
-                    errorMessage =
-                        error instanceof Error ? error.message : String(error);
+                    errorMessage = error instanceof Error ? error.message : String(error);
                 }
 
                 return {
@@ -169,8 +149,7 @@ describe('FingerprintInjector', () => {
                         ...fingerprintGeneratorOptions,
                     });
 
-                    fingerprintWithHeaders =
-                        fingerprintGenerator.getFingerprint();
+                    fingerprintWithHeaders = fingerprintGenerator.getFingerprint();
 
                     fingerprint = fingerprintWithHeaders.fingerprint;
 
@@ -181,32 +160,20 @@ describe('FingerprintInjector', () => {
                         })) as PWBrowser;
 
                         context = await browser.newContext();
-                        await fpInjector.attachFingerprintToPlaywright(
-                            context,
-                            fingerprintWithHeaders,
-                        );
+                        await fpInjector.attachFingerprintToPlaywright(context, fingerprintWithHeaders);
 
                         page = await context.newPage();
-                        response = await page.goto(
-                            `file://${import.meta.dirname}/test.html`,
-                            { waitUntil: 'commit' },
-                        );
+                        response = await page.goto(`file://${import.meta.dirname}/test.html`, { waitUntil: 'commit' });
                     } else if (frameworkName === 'Puppeteer') {
                         browser = await launcher.launch({
                             headless: false,
                             ...options,
                         });
 
-                        page =
-                            (await browser.newPage()) as PPPage;
-                        await fpInjector.attachFingerprintToPuppeteer(
-                            page,
-                            fingerprintWithHeaders,
-                        );
+                        page = (await browser.newPage()) as PPPage;
+                        await fpInjector.attachFingerprintToPuppeteer(page, fingerprintWithHeaders);
 
-                        response = await page.goto(
-                            `file://${import.meta.dirname}/test.html`,
-                        );
+                        response = await page.goto(`file://${import.meta.dirname}/test.html`);
                     }
                     return await setTimeout(2000);
                 });
@@ -220,41 +187,32 @@ describe('FingerprintInjector', () => {
                 test('should override navigator', async () => {
                     const { navigator: navigatorFp } = fingerprint as any;
 
-                    const navigatorPrimitiveProperties = Object.keys(
-                        navigatorFp,
-                    ).filter((key) => {
+                    const navigatorPrimitiveProperties = Object.keys(navigatorFp).filter((key) => {
                         const type = typeof navigatorFp[key];
                         return type === 'string' || type === 'number';
                     });
 
                     for (const navigatorProperty of navigatorPrimitiveProperties) {
-                        const browserValue = await page.evaluate(
-                            (propName: string) => {
-                                // @ts-expect-error internal browser code
-                                return navigator[propName];
-                            },
-                            navigatorProperty,
-                        );
-                        expect(browserValue).toBe(
-                            navigatorFp[navigatorProperty],
-                        );
+                        const browserValue = await page.evaluate((propName: string) => {
+                            // @ts-expect-error internal browser code
+                            return navigator[propName];
+                        }, navigatorProperty);
+                        expect(browserValue).toBe(navigatorFp[navigatorProperty]);
                     }
 
                     if (name === 'Chrome') {
                         const userAgentData = await page.evaluate(async () => {
                             const highEntropy =
                                 // @ts-expect-error internal browser code
-                                await navigator.userAgentData.getHighEntropyValues(
-                                    [
-                                        'architecture',
-                                        'bitness',
-                                        'model',
-                                        'platformVersion',
-                                        'uaFullVersion',
-                                        'fullVersionList',
-                                        'platform',
-                                    ],
-                                );
+                                await navigator.userAgentData.getHighEntropyValues([
+                                    'architecture',
+                                    'bitness',
+                                    'model',
+                                    'platformVersion',
+                                    'uaFullVersion',
+                                    'fullVersionList',
+                                    'platform',
+                                ]);
 
                             return {
                                 ...highEntropy,
@@ -269,31 +227,17 @@ describe('FingerprintInjector', () => {
                         const { userAgentData: userAgentDataFp } = navigatorFp;
                         if (userAgentDataFp) {
                             expect(userAgentData.brands).toBeDefined();
-                            expect(userAgentData.mobile).toBe(
-                                userAgentDataFp.mobile,
-                            );
-                            expect(userAgentData.platform).toBe(
-                                userAgentDataFp.platform,
-                            );
-                            expect(userAgentData.architecture).toBe(
-                                userAgentDataFp.architecture,
-                            );
+                            expect(userAgentData.mobile).toBe(userAgentDataFp.mobile);
+                            expect(userAgentData.platform).toBe(userAgentDataFp.platform);
+                            expect(userAgentData.architecture).toBe(userAgentDataFp.architecture);
                         }
                     }
                 });
 
                 test('should override window.screen', async () => {
                     const { screen: screenFp } = fingerprint as any;
-                    const {
-                        availHeight,
-                        availWidth,
-                        pixelDepth,
-                        height,
-                        width,
-                        availTop,
-                        availLeft,
-                        colorDepth,
-                    } = screenFp;
+                    const { availHeight, availWidth, pixelDepth, height, width, availTop, availLeft, colorDepth } =
+                        screenFp;
                     const screenObj = {
                         availHeight,
                         availWidth,
@@ -308,13 +252,10 @@ describe('FingerprintInjector', () => {
                     const screenProperties = Object.keys(screenObj);
 
                     for (const screenProperty of screenProperties) {
-                        const browserValue = await page.evaluate(
-                            (propName: string) => {
-                                // @ts-expect-error internal browser code
-                                return window.screen[propName];
-                            },
-                            screenProperty,
-                        );
+                        const browserValue = await page.evaluate((propName: string) => {
+                            // @ts-expect-error internal browser code
+                            return window.screen[propName];
+                        }, screenProperty);
 
                         expect(browserValue).toBe(screenFp[screenProperty]);
                     }
@@ -322,8 +263,7 @@ describe('FingerprintInjector', () => {
 
                 test('should override screen props on window', async () => {
                     const { screen } = fingerprint as any;
-                    const { outerHeight, outerWidth, devicePixelRatio } =
-                        screen;
+                    const { outerHeight, outerWidth, devicePixelRatio } = screen;
                     const screenObj = {
                         outerHeight,
                         outerWidth,
@@ -337,12 +277,9 @@ describe('FingerprintInjector', () => {
                         // The 0 values are introduced by collecting in the hidden iframe.
                         // They are document sizes anyway so no need to test them or inject them.
                         if (propValue > 0) {
-                            const browserValue = await page.evaluate(
-                                (propName: keyof Window) => {
-                                    return window[propName];
-                                },
-                                screenProperty,
-                            );
+                            const browserValue = await page.evaluate((propName: keyof Window) => {
+                                return window[propName];
+                            }, screenProperty);
 
                             expect(browserValue).toBe(screen[screenProperty]);
                         }
@@ -354,26 +291,19 @@ describe('FingerprintInjector', () => {
                     const {
                         videoCard: { vendor, renderer },
                     } = fingerprint;
-                    const [browserVendor, browserRenderer] =
-                        await page.evaluate(() => {
-                            const canvas = document.createElement('canvas');
-                            const webGl = canvas.getContext('webgl');
-                            try {
-                                const debugInfo = webGl.getExtension(
-                                    'WEBGL_debug_renderer_info',
-                                );
-                                const loadedVendor = webGl.getParameter(
-                                    debugInfo.UNMASKED_VENDOR_WEBGL,
-                                );
-                                const loadedRenderer = webGl.getParameter(
-                                    debugInfo.UNMASKED_RENDERER_WEBGL,
-                                );
+                    const [browserVendor, browserRenderer] = await page.evaluate(() => {
+                        const canvas = document.createElement('canvas');
+                        const webGl = canvas.getContext('webgl');
+                        try {
+                            const debugInfo = webGl.getExtension('WEBGL_debug_renderer_info');
+                            const loadedVendor = webGl.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL);
+                            const loadedRenderer = webGl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL);
 
-                                return [loadedVendor, loadedRenderer];
-                            } catch (e) {
-                                return [null, null];
-                            }
-                        });
+                            return [loadedVendor, loadedRenderer];
+                        } catch (e) {
+                            return [null, null];
+                        }
+                    });
 
                     if (browserVendor === null || browserRenderer === null) {
                         // this can happen with headless browsers / systems without hardware graphical accelerators - e.g. CI
@@ -390,33 +320,19 @@ describe('FingerprintInjector', () => {
                 test('should override codecs', async () => {
                     const { videoCodecs, audioCodecs } = fingerprint;
 
-                    for (const [codec, canPlay] of Object.entries(
-                        videoCodecs,
-                    )) {
-                        const canPlayBrowser = await page.evaluate(
-                            (videoCodec: string) => {
-                                const videoEl = document.createElement('video');
-                                return videoEl.canPlayType(
-                                    `video/${videoCodec}`,
-                                );
-                            },
-                            codec,
-                        );
+                    for (const [codec, canPlay] of Object.entries(videoCodecs)) {
+                        const canPlayBrowser = await page.evaluate((videoCodec: string) => {
+                            const videoEl = document.createElement('video');
+                            return videoEl.canPlayType(`video/${videoCodec}`);
+                        }, codec);
                         expect(canPlay).toBe(canPlayBrowser);
                     }
 
-                    for (const [codec, canPlay] of Object.entries(
-                        audioCodecs,
-                    )) {
-                        const canPlayBrowser = await page.evaluate(
-                            (audioCodec: string) => {
-                                const audioEl = document.createElement('audio');
-                                return audioEl.canPlayType(
-                                    `audio/${audioCodec}`,
-                                );
-                            },
-                            codec,
-                        );
+                    for (const [codec, canPlay] of Object.entries(audioCodecs)) {
+                        const canPlayBrowser = await page.evaluate((audioCodec: string) => {
+                            const audioEl = document.createElement('audio');
+                            return audioEl.canPlayType(`audio/${audioCodec}`);
+                        }, codec);
                         expect(canPlay).toBe(canPlayBrowser);
                     }
                 });
@@ -425,9 +341,7 @@ describe('FingerprintInjector', () => {
                     response = await page.goto(`https://crawlee.dev`);
                     const requestHeaders = response.request().headers();
 
-                    expect(
-                        requestHeaders['accept-language']?.includes('cs'),
-                    ).toBe(true);
+                    expect(requestHeaders['accept-language']?.includes('cs')).toBe(true);
 
                     const {
                         navigator: { language },
@@ -443,9 +357,7 @@ describe('FingerprintInjector', () => {
                 test('should override other browser headers', async () => {
                     response = await page.goto(`https://crawlee.dev`);
                     const requestObject = await response.request();
-                    const requestHeaders =
-                        (await requestObject.allHeaders?.()) ??
-                        requestObject.headers?.();
+                    const requestHeaders = (await requestObject.allHeaders?.()) ?? requestObject.headers?.();
                     const { headers } = fingerprintWithHeaders;
 
                     for (const header of Object.keys(onlyInjectableHeaders(headers))) {
@@ -479,9 +391,7 @@ describe('FingerprintInjector', () => {
             '$name',
             // @ts-expect-error test only
             ({ name, launcher, options, fingerprintGeneratorOptions }) => {
-                const fpg = new FingerprintGenerator(
-                    fingerprintGeneratorOptions,
-                );
+                const fpg = new FingerprintGenerator(fingerprintGeneratorOptions);
 
                 const getNewPage = async (
                     browser: PPBrowser | PWBrowser,
@@ -489,13 +399,8 @@ describe('FingerprintInjector', () => {
                     newContextOptions = {},
                 ): Promise<any> => {
                     if (frameworkName === 'Playwright') {
-                        const context = await (browser as PWBrowser).newContext(
-                            newContextOptions,
-                        );
-                        await fpInjector.attachFingerprintToPlaywright(
-                            context,
-                            fp,
-                        );
+                        const context = await (browser as PWBrowser).newContext(newContextOptions);
+                        await fpInjector.attachFingerprintToPlaywright(context, fp);
                         return context.newPage();
                     }
                     if (frameworkName === 'Puppeteer') {
@@ -519,14 +424,10 @@ describe('FingerprintInjector', () => {
                         }),
                     );
 
-                    for (const headerName of Object.keys(
-                        onlyInjectableHeaders(fp.headers),
-                    )) {
+                    for (const headerName of Object.keys(onlyInjectableHeaders(fp.headers))) {
                         expect(
                             Object.entries(response.headers).find(
-                                ([key]) =>
-                                    key.toLowerCase() ===
-                                    headerName.toLowerCase(),
+                                ([key]) => key.toLowerCase() === headerName.toLowerCase(),
                             )?.[1],
                         ).toBe(fp.headers[headerName]);
                     }
@@ -555,9 +456,7 @@ describe('FingerprintInjector', () => {
                     );
 
                     expect(response.headers['X-Test-Header']).toBe('TestValue');
-                    expect(response.headers['User-Agent']).toBe(
-                        'CustomUserAgent/1.0',
-                    );
+                    expect(response.headers['User-Agent']).toBe('CustomUserAgent/1.0');
                 });
 
                 test('WebRTC not blocked by default', async () => {
@@ -630,9 +529,7 @@ describe('FingerprintInjector', () => {
             // test whether the injection worked
             const isApple = await page.evaluate(() => {
                 const ua = navigator.userAgent.toLowerCase();
-                return ['iphone', 'ipad', 'macintosh'].some((x) =>
-                    ua.includes(x),
-                );
+                return ['iphone', 'ipad', 'macintosh'].some((x) => ua.includes(x));
             });
 
             const screenSize = await page.evaluate(() => {

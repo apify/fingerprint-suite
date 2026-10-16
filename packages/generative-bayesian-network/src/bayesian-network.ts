@@ -20,9 +20,7 @@ export class BayesianNetwork {
         const [definition] = readZip(readFileSync(path));
 
         if (!definition) {
-            throw new Error(
-                `The network definition ${path} is an empty ZIP archive.`,
-            );
+            throw new Error(`The network definition ${path} is an empty ZIP archive.`);
         }
 
         const networkDefinition = JSON.parse(definition.data.toString('utf8'));
@@ -66,14 +64,8 @@ export class BayesianNetwork {
      * Returns false if no such sample can be generated.
      * @param valuePossibilities A dictionary of lists of possible values for nodes (if a node isn't present in the dictionary, all values are possible).
      */
-    generateConsistentSampleWhenPossible(
-        valuePossibilities: Record<string, string[]>,
-    ) {
-        return this.#recursivelyGenerateConsistentSampleWhenPossible(
-            {},
-            valuePossibilities,
-            0,
-        );
+    generateConsistentSampleWhenPossible(valuePossibilities: Record<string, string[]>) {
+        return this.#recursivelyGenerateConsistentSampleWhenPossible({}, valuePossibilities, 0);
     }
 
     /**
@@ -92,22 +84,17 @@ export class BayesianNetwork {
         let sampleValue;
 
         do {
-            sampleValue = node.sampleAccordingToRestrictions(
-                sampleSoFar,
-                valuePossibilities[node.name],
-                bannedValues,
-            );
+            sampleValue = node.sampleAccordingToRestrictions(sampleSoFar, valuePossibilities[node.name], bannedValues);
             if (!sampleValue) break;
 
             sampleSoFar[node.name] = sampleValue;
 
             if (depth + 1 < this.#nodesInSamplingOrder.length) {
-                const sample =
-                    this.#recursivelyGenerateConsistentSampleWhenPossible(
-                        sampleSoFar,
-                        valuePossibilities,
-                        depth + 1,
-                    );
+                const sample = this.#recursivelyGenerateConsistentSampleWhenPossible(
+                    sampleSoFar,
+                    valuePossibilities,
+                    depth + 1,
+                );
                 if (Object.keys(sample).length !== 0) {
                     return sample;
                 }
@@ -128,13 +115,10 @@ export class BayesianNetwork {
     setProbabilitiesAccordingToData(data: RecordList) {
         this.#nodesInSamplingOrder.forEach((node, i) => {
             // eslint-disable-next-line no-console
-            console.log(
-                `${i}/${this.#nodesInSamplingOrder.length} Setting probabilities for node ${node.name}`,
-            );
+            console.log(`${i}/${this.#nodesInSamplingOrder.length} Setting probabilities for node ${node.name}`);
             const possibleParentValues: Record<string, string[]> = {};
             for (const parentName of node.parentNames) {
-                possibleParentValues[parentName] =
-                    this.#nodesByName[parentName].possibleValues;
+                possibleParentValues[parentName] = this.#nodesByName[parentName].possibleValues;
             }
             node.setProbabilitiesAccordingToData(data, possibleParentValues);
         });

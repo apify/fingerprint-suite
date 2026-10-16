@@ -23,15 +23,7 @@ classifiers = [
     "Programming Language :: Python :: 3.13",
     "Topic :: Software Development :: Libraries",
 ]
-keywords = [
-    "apify",
-    "chrome",
-    "crawlee",
-    "crawler",
-    "scraper",
-    "scraping",
-    "fingerprints",
-]
+keywords = ["apify", "chrome", "crawlee", "crawler", "scraper", "scraping", "fingerprints"]
 
 [project.urls]
 "Homepage" = "https://docs.apify.com/academy/anti-scraping/techniques/fingerprinting"

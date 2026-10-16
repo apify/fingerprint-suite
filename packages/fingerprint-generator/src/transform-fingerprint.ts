@@ -1,27 +1,15 @@
-import type {
-    Fingerprint,
-    ScreenFingerprint,
-} from './fingerprint-generator.js';
+import type { Fingerprint, ScreenFingerprint } from './fingerprint-generator.js';
 
-const normalizeScreenFingerprint = (
-    screen: ScreenFingerprint,
-): ScreenFingerprint => {
-    const innerWidth =
-        screen.innerWidth > 0
-            ? screen.innerWidth
-            : Math.min(screen.width, screen.outerWidth);
-    const innerHeight =
-        screen.innerHeight > 0
-            ? screen.innerHeight
-            : Math.min(screen.height, screen.outerHeight);
+const normalizeScreenFingerprint = (screen: ScreenFingerprint): ScreenFingerprint => {
+    const innerWidth = screen.innerWidth > 0 ? screen.innerWidth : Math.min(screen.width, screen.outerWidth);
+    const innerHeight = screen.innerHeight > 0 ? screen.innerHeight : Math.min(screen.height, screen.outerHeight);
 
     return {
         ...screen,
         innerWidth,
         innerHeight,
         clientWidth: screen.clientWidth > 0 ? screen.clientWidth : innerWidth,
-        clientHeight:
-            screen.clientHeight > 0 ? screen.clientHeight : innerHeight,
+        clientHeight: screen.clientHeight > 0 ? screen.clientHeight : innerHeight,
     };
 };
 
@@ -31,9 +19,7 @@ const normalizeScreenFingerprint = (
  * @param fingerprint Fingerprint to be transformed.
  * @returns Transformed fingerprint.
  */
-export function transformFingerprint(
-    fingerprint: Record<string, any>,
-): Fingerprint {
+export function transformFingerprint(fingerprint: Record<string, any>): Fingerprint {
     const {
         userAgent,
         userAgentData,

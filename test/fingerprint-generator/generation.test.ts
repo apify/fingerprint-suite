@@ -60,9 +60,7 @@ describe('Generation tests', () => {
         });
 
         const headersUserAgent = headers['User-Agent'] ?? headers['user-agent'];
-        expect(
-            headersUserAgent === fingerprint.navigator.userAgent,
-        ).toBeTruthy();
+        expect(headersUserAgent === fingerprint.navigator.userAgent).toBeTruthy();
     });
 
     test('Transforms schema', () => {
@@ -161,12 +159,8 @@ describe('Generation tests', () => {
         expect(transformed.screen.innerHeight).toBeGreaterThan(0);
         expect(transformed.screen.clientWidth).toBeGreaterThan(0);
         expect(transformed.screen.clientHeight).toBeGreaterThan(0);
-        expect(transformed.screen.clientWidth).toBe(
-            transformed.screen.innerWidth,
-        );
-        expect(transformed.screen.clientHeight).toBe(
-            transformed.screen.innerHeight,
-        );
+        expect(transformed.screen.clientWidth).toBe(transformed.screen.innerWidth);
+        expect(transformed.screen.clientHeight).toBe(transformed.screen.innerHeight);
     });
 });
 

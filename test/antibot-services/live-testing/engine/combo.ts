@@ -21,10 +21,7 @@ export class FingerprintSuiteExtra extends PlaywrightExtra {
             },
         });
 
-        await new FingerprintInjector().attachFingerprintToPlaywright(
-            context,
-            fingerprint,
-        );
+        await new FingerprintInjector().attachFingerprintToPlaywright(context, fingerprint);
 
         return context;
     };
