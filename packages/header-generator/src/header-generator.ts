@@ -1,9 +1,9 @@
 import { readFileSync } from 'node:fs';
-import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 
+import { parseArgument } from '@apify/validations';
 import { BayesianNetwork, utils } from 'generative-bayesian-network';
-import type { Ow } from 'ow';
+import { z } from 'zod';
 
 import {
     SUPPORTED_BROWSERS,
@@ -24,55 +24,40 @@ import {
     shuffleArray,
 } from './utils.js';
 
-const require = createRequire(import.meta.url);
-
-// `ow` is slow to load, so it and the shape below are created on first use.
-const getOw = (): Ow => require('ow').default;
-
-const createHeaderGeneratorOptionsShape = (ow: Ow) => {
-    const browserSpecificationShape = {
-        name: ow.string,
-        minVersion: ow.optional.number,
-        maxVersion: ow.optional.number,
-        httpVersion: ow.optional.string,
-    };
-
-    return {
-        browsers: ow.optional.array.ofType(
-            ow.any(
-                ow.object.exactShape(browserSpecificationShape),
-                ow.string.oneOf(SUPPORTED_BROWSERS),
-            ),
-        ),
-        operatingSystems: ow.optional.array.ofType(
-            ow.string.oneOf(SUPPORTED_OPERATING_SYSTEMS),
-        ),
-        devices: ow.optional.array.ofType(ow.string.oneOf(SUPPORTED_DEVICES)),
-        locales: ow.optional.array.ofType(ow.string),
-        httpVersion: ow.optional.string.oneOf(SUPPORTED_HTTP_VERSIONS),
-        browserListQuery: ow.optional.string,
-        strict: ow.optional.boolean,
-    };
-};
-
-type HeaderGeneratorOptionsShape = ReturnType<
-    typeof createHeaderGeneratorOptionsShape
->;
-
-let shape: HeaderGeneratorOptionsShape | undefined;
-const getShape = () => (shape ??= createHeaderGeneratorOptionsShape(getOw()));
-
-export const headerGeneratorOptionsShape = new Proxy(
-    {} as HeaderGeneratorOptionsShape,
-    {
-        get: (_, key) => Reflect.get(getShape(), key),
-        set: (_, key, value) => Reflect.set(getShape(), key, value),
-        has: (_, key) => Reflect.has(getShape(), key),
-        ownKeys: () => Reflect.ownKeys(getShape()),
-        getOwnPropertyDescriptor: (_, key) =>
-            Reflect.getOwnPropertyDescriptor(getShape(), key),
-    },
+/**
+ * Accepts any number except `NaN` (`Infinity` is fine, e.g. as `maxVersion`).
+ * This is what `ow.number` used to accept in `header-generator` v2.
+ */
+const anyNumber = z.custom<number>(
+    (value) => typeof value === 'number' && !Number.isNaN(value),
+    { message: 'Invalid input: expected number' },
 );
+
+const browserSpecificationSchema = z.strictObject({
+    name: z.string(),
+    minVersion: anyNumber.optional(),
+    maxVersion: anyNumber.optional(),
+    httpVersion: z.string().optional(),
+});
+
+/**
+ * Schema of the `HeaderGeneratorOptions` accepted by `HeaderGenerator` (and, as a superset, `FingerprintGenerator`).
+ *
+ * Keys that are not part of the schema are allowed and ignored, so it can be extended by the options of the generators built on top of it.
+ */
+export const headerGeneratorOptionsSchema = z.looseObject({
+    browsers: z
+        .array(
+            z.union([browserSpecificationSchema, z.enum(SUPPORTED_BROWSERS)]),
+        )
+        .optional(),
+    operatingSystems: z.array(z.enum(SUPPORTED_OPERATING_SYSTEMS)).optional(),
+    devices: z.array(z.enum(SUPPORTED_DEVICES)).optional(),
+    locales: z.array(z.string()).optional(),
+    httpVersion: z.enum(SUPPORTED_HTTP_VERSIONS).optional(),
+    browserListQuery: z.string().optional(),
+    strict: z.boolean().optional(),
+});
 
 /**
  * String specifying the HTTP version to use.
@@ -198,7 +183,7 @@ export class HeaderGenerator {
 
     private headersOrder: string[];
 
-    private relaxationOrder: (keyof typeof headerGeneratorOptionsShape)[] = [
+    private relaxationOrder: (keyof HeaderGeneratorOptions)[] = [
         'locales',
         'devices',
         'operatingSystems',
@@ -210,11 +195,10 @@ export class HeaderGenerator {
      * @param options Default header generation options used - unless overridden.
      */
     constructor(options: Partial<HeaderGeneratorOptions> = {}) {
-        const ow: Ow = getOw();
-        ow(
+        parseArgument(
             options,
+            headerGeneratorOptionsSchema,
             'HeaderGeneratorOptions',
-            ow.object.partialShape(headerGeneratorOptionsShape),
         );
         // Use a default setup when the necessary values are not provided
         const {
@@ -294,11 +278,10 @@ export class HeaderGenerator {
         requestDependentHeaders: Headers = {},
         userAgentValues?: string[],
     ): Headers {
-        const ow: Ow = getOw();
-        ow(
+        parseArgument(
             options,
+            headerGeneratorOptionsSchema,
             'HeaderGeneratorOptions',
-            ow.object.partialShape(headerGeneratorOptionsShape),
         );
 
         for (const [key, value] of Object.entries(options)) {

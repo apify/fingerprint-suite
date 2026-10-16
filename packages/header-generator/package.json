@@ -24,9 +24,10 @@
     },
     "sideEffects": false,
     "dependencies": {
+        "@apify/validations": "^1.1.2",
         "browserslist": "^4.28.8",
         "generative-bayesian-network": "workspace:*",
-        "ow": "^0.28.1"
+        "zod": "^4.6.5"
     },
     "scripts": {
         "build": "pnpm clean && pnpm compile",
