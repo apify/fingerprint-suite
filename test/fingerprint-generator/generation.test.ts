@@ -1,4 +1,5 @@
 import { FingerprintGenerator, PRESETS } from 'fingerprint-generator';
+import { transformFingerprint } from 'fingerprint-generator/src/transform-fingerprint.js';
 import type { HeaderGeneratorOptions } from 'header-generator';
 
 import { describe, expect, test } from 'vitest';
@@ -86,7 +87,7 @@ describe('Generation tests', () => {
     });
 
     test('Normalizes zero viewport dimensions', () => {
-        const transformed = (fingerprintGenerator as any).transformFingerprint({
+        const transformed = transformFingerprint({
             screen: {
                 availHeight: 875,
                 availWidth: 1440,

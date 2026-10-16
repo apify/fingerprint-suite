@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { setTimeout } from 'node:timers/promises';
 
 import { FingerprintGenerator } from 'fingerprint-generator';
@@ -10,6 +12,7 @@ import {
     newInjectedContext,
     newInjectedPage,
 } from 'fingerprint-injector';
+import { onlyInjectableHeaders } from 'fingerprint-injector/src/injectable-headers.js';
 import playwright, { chromium, type Browser as PWBrowser } from 'playwright';
 import puppeteer, { Browser as PPBrowser } from 'puppeteer';
 
@@ -21,6 +24,14 @@ import {
     afterAll,
     beforeAll,
 } from 'vitest';
+
+/** The browser-side helpers that the injector embeds into every injected script. */
+const utilsJs = `\n${readFileSync(
+    join(
+        import.meta.dirname,
+        '../../packages/fingerprint-injector/src/utils.js',
+    ),
+)}\n`;
 
 function getHTTPBinUrl() {
     return process.env.APIFY_HTTPBIN_TOKEN
@@ -88,8 +99,10 @@ describe('FingerprintInjector', () => {
     });
 
     test('should build utils', async () => {
-        // eslint-disable-next-line dot-notation
-        expect(fpInjector['utilsJs']).toBeTruthy();
+        const fingerprint = new FingerprintGenerator().getFingerprint();
+
+        // The injected script embeds the browser helpers verbatim.
+        expect(fpInjector.getInjectableScript(fingerprint)).toContain(utilsJs);
     });
 
     test('should preserve iframe srcdoc after installing contentWindow fix', async () => {
@@ -97,8 +110,6 @@ describe('FingerprintInjector', () => {
 
         try {
             const page = await browser.newPage();
-            // eslint-disable-next-line dot-notation
-            const utilsJs = fpInjector['utilsJs'];
             const result = await page.evaluate((utils) => {
                 const script = document.createElement('script');
                 script.textContent = `${utils}\nfixIframeContentWindow();`;
@@ -436,12 +447,7 @@ describe('FingerprintInjector', () => {
                         requestObject.headers?.();
                     const { headers } = fingerprintWithHeaders;
 
-                    // eslint-disable-next-line dot-notation
-                    const onlyInjectable = new FingerprintInjector()[
-                        'onlyInjectableHeaders'
-                    ];
-
-                    for (const header of Object.keys(onlyInjectable(headers))) {
+                    for (const header of Object.keys(onlyInjectableHeaders(headers))) {
                         expect(requestHeaders[header]).toBe(headers[header]);
                     }
                 });
@@ -512,12 +518,8 @@ describe('FingerprintInjector', () => {
                         }),
                     );
 
-                    const onlyInjectable = new FingerprintInjector()[
-                        'onlyInjectableHeaders'
-                    ];
-
                     for (const headerName of Object.keys(
-                        onlyInjectable(fp.headers),
+                        onlyInjectableHeaders(fp.headers),
                     )) {
                         expect(
                             Object.entries(response.headers).find(

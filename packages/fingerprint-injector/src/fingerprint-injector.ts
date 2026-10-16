@@ -14,6 +14,8 @@ import type {
 } from 'playwright';
 import type { Page, Browser as PPBrowser } from 'puppeteer';
 
+import { onlyInjectableHeaders } from './injectable-headers.js';
+
 interface EnhancedFingerprint extends Fingerprint {
     userAgent: string;
     historyLength: number;
@@ -48,44 +50,7 @@ declare function blockWebRTC(): void;
  * @class
  */
 export class FingerprintInjector {
-    private utilsJs = this._loadUtils();
-
-    /**
-     * Some HTTP headers depend on the request (for example Accept (with values application/json, image/png) etc.).
-     *  This function filters out those headers and leaves only the browser-wide ones.
-     * @param headers Headers to be filtered.
-     * @returns Filtered headers.
-     */
-    private onlyInjectableHeaders(
-        headers: Record<string, string>,
-        browserName?: string,
-    ): Record<string, string> {
-        const requestHeaders = [
-            'accept-encoding',
-            'accept',
-            'cache-control',
-            'pragma',
-            'sec-fetch-dest',
-            'sec-fetch-mode',
-            'sec-fetch-site',
-            'sec-fetch-user',
-            'upgrade-insecure-requests',
-        ];
-
-        const filteredHeaders = { ...headers };
-
-        requestHeaders.forEach((header) => {
-            delete filteredHeaders[header];
-        });
-
-        // Chromium-based controlled browsers do not support `te` header.
-        // Probably needs more investigation, but for now, we can just remove it.
-        if (!(browserName?.toLowerCase().includes('firefox') ?? false)) {
-            delete filteredHeaders.te;
-        }
-
-        return filteredHeaders;
-    }
+    #utilsJs = this.#loadUtils();
 
     /**
      * Adds init script to the browser context, so the fingerprint is changed before every document creation.
@@ -99,15 +64,15 @@ export class FingerprintInjector {
         browserFingerprintWithHeaders: BrowserFingerprintWithHeaders,
     ): Promise<void> {
         const { fingerprint, headers } = browserFingerprintWithHeaders;
-        const enhancedFingerprint = this._enhanceFingerprint(fingerprint);
+        const enhancedFingerprint = this.#enhanceFingerprint(fingerprint);
 
         const content =
-            this.getInjectableFingerprintFunction(enhancedFingerprint);
+            this.#getInjectableFingerprintFunction(enhancedFingerprint);
 
         const browserName = browserContext.browser()?.browserType().name();
 
         await browserContext.setExtraHTTPHeaders({
-            ...this.onlyInjectableHeaders(headers, browserName),
+            ...onlyInjectableHeaders(headers, browserName),
             ...Object.fromEntries(
                 // @ts-expect-error Accessing private property
                 (browserContext._options?.extraHTTPHeaders ?? []).map(
@@ -139,7 +104,7 @@ export class FingerprintInjector {
         browserFingerprintWithHeaders: BrowserFingerprintWithHeaders,
     ): Promise<void> {
         const { fingerprint, headers } = browserFingerprintWithHeaders;
-        const enhancedFingerprint = this._enhanceFingerprint(fingerprint);
+        const enhancedFingerprint = this.#enhanceFingerprint(fingerprint);
         const { screen, userAgent } = enhancedFingerprint;
 
         await page.setUserAgent(userAgent);
@@ -163,7 +128,7 @@ export class FingerprintInjector {
             });
 
             await page.setExtraHTTPHeaders(
-                this.onlyInjectableHeaders(headers, browserVersion),
+                onlyInjectableHeaders(headers, browserVersion),
             );
 
             await page.emulateMediaFeatures([
@@ -172,7 +137,7 @@ export class FingerprintInjector {
         }
 
         await page.evaluateOnNewDocument(
-            this.getInjectableFingerprintFunction(enhancedFingerprint),
+            this.#getInjectableFingerprintFunction(enhancedFingerprint),
         );
     }
 
@@ -183,9 +148,9 @@ export class FingerprintInjector {
         browserFingerprintWithHeaders: BrowserFingerprintWithHeaders,
     ): string {
         const { fingerprint } = browserFingerprintWithHeaders;
-        const enhancedFingerprint = this._enhanceFingerprint(fingerprint);
+        const enhancedFingerprint = this.#enhanceFingerprint(fingerprint);
 
-        return this.getInjectableFingerprintFunction(enhancedFingerprint);
+        return this.#getInjectableFingerprintFunction(enhancedFingerprint);
     }
 
     /**
@@ -193,7 +158,7 @@ export class FingerprintInjector {
      * @param fingerprint Enhanced fingerprint.
      * @returns Script overriding browser fingerprint.
      */
-    private getInjectableFingerprintFunction(
+    #getInjectableFingerprintFunction(
         fingerprint: EnhancedFingerprint,
     ): string {
         function inject() {
@@ -289,17 +254,17 @@ export class FingerprintInjector {
 
         const mainFunctionString: string = inject.toString();
 
-        return `(()=>{${this.utilsJs}; const fp=${JSON.stringify(fingerprint)}; (${mainFunctionString})()})()`;
+        return `(()=>{${this.#utilsJs}; const fp=${JSON.stringify(fingerprint)}; (${mainFunctionString})()})()`;
     }
 
-    private _enhanceFingerprint(fingerprint: Fingerprint): EnhancedFingerprint {
+    #enhanceFingerprint(fingerprint: Fingerprint): EnhancedFingerprint {
         const { navigator, ...rest } = fingerprint;
 
         return {
             ...rest,
             navigator,
             userAgent: navigator.userAgent,
-            historyLength: this._randomInRange(2, 6),
+            historyLength: this.#randomInRange(2, 6),
         };
     }
 
@@ -309,14 +274,14 @@ export class FingerprintInjector {
      * Loading this file dynamically bypasses the TypeScript compiler, which would otherwise mangle the code,
      * causing errors when executing it in the browser.
      */
-    private _loadUtils(): string {
+    #loadUtils(): string {
         // The `new URL(..., import.meta.url)` form is statically traceable by bundlers and Vercel's file tracing
         // (https://github.com/apify/fingerprint-suite/issues/135), so `utils.js` makes it into the deployment.
         const utilsJs = readFileSync(new URL('./utils.js', import.meta.url));
         return `\n${utilsJs}\n`;
     }
 
-    private _randomInRange(min: number, max: number): number {
+    #randomInRange(min: number, max: number): number {
         return Math.floor(Math.random() * (max - min) + min);
     }
 }

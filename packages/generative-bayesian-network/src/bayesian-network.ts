@@ -9,8 +9,8 @@ export type RecordList = Record<string, any>[];
  * represented by the network.
  */
 export class BayesianNetwork {
-    private nodesInSamplingOrder: BayesianNode[] = [];
-    private nodesByName: Record<string, BayesianNode> = {};
+    #nodesInSamplingOrder: BayesianNode[] = [];
+    #nodesByName: Record<string, BayesianNode> = {};
 
     constructor({ path }: { path: string }) {
         const zip = new AdmZip(path);
@@ -19,11 +19,11 @@ export class BayesianNetwork {
         const networkDefinition = JSON.parse(
             zipEntries[0].getData().toString('utf8'),
         );
-        this.nodesInSamplingOrder = networkDefinition.nodes.map(
+        this.#nodesInSamplingOrder = networkDefinition.nodes.map(
             (nodeDefinition: any) => new BayesianNode(nodeDefinition),
         );
 
-        this.nodesByName = this.nodesInSamplingOrder.reduce(
+        this.#nodesByName = this.#nodesInSamplingOrder.reduce(
             (p, node) => ({
                 ...p,
                 [node.name]: node,
@@ -33,12 +33,19 @@ export class BayesianNetwork {
     }
 
     /**
+     * The nodes of this network, indexed by their names.
+     */
+    get nodesByName(): Readonly<Record<string, BayesianNode>> {
+        return this.#nodesByName;
+    }
+
+    /**
      * Randomly samples from the distribution represented by the bayesian network.
      * @param inputValues Already known node values.
      */
     generateSample(inputValues: Record<string, string> = {}) {
         const sample = inputValues;
-        for (const node of this.nodesInSamplingOrder) {
+        for (const node of this.#nodesInSamplingOrder) {
             if (!(node.name in sample)) {
                 sample[node.name] = node.sample(sample);
             }
@@ -55,7 +62,7 @@ export class BayesianNetwork {
     generateConsistentSampleWhenPossible(
         valuePossibilities: Record<string, string[]>,
     ) {
-        return this.recursivelyGenerateConsistentSampleWhenPossible(
+        return this.#recursivelyGenerateConsistentSampleWhenPossible(
             {},
             valuePossibilities,
             0,
@@ -68,13 +75,13 @@ export class BayesianNetwork {
      * @param valuePossibilities A dictionary of lists of possible values for nodes (if a node isn't present in the dictionary, all values are possible).
      * @param depth Current recursion depth.
      */
-    private recursivelyGenerateConsistentSampleWhenPossible(
+    #recursivelyGenerateConsistentSampleWhenPossible(
         sampleSoFar: Record<string, string>,
         valuePossibilities: Record<string, string[]>,
         depth: number,
     ): Record<string, string> {
         const bannedValues: string[] = [];
-        const node = this.nodesInSamplingOrder[depth];
+        const node = this.#nodesInSamplingOrder[depth];
         let sampleValue;
 
         do {
@@ -87,9 +94,9 @@ export class BayesianNetwork {
 
             sampleSoFar[node.name] = sampleValue;
 
-            if (depth + 1 < this.nodesInSamplingOrder.length) {
+            if (depth + 1 < this.#nodesInSamplingOrder.length) {
                 const sample =
-                    this.recursivelyGenerateConsistentSampleWhenPossible(
+                    this.#recursivelyGenerateConsistentSampleWhenPossible(
                         sampleSoFar,
                         valuePossibilities,
                         depth + 1,
@@ -112,15 +119,15 @@ export class BayesianNetwork {
      * @param dataframe A Danfo.js dataframe containing the data.
      */
     setProbabilitiesAccordingToData(data: RecordList) {
-        this.nodesInSamplingOrder.forEach((node, i) => {
+        this.#nodesInSamplingOrder.forEach((node, i) => {
             // eslint-disable-next-line no-console
             console.log(
-                `${i}/${this.nodesInSamplingOrder.length} Setting probabilities for node ${node.name}`,
+                `${i}/${this.#nodesInSamplingOrder.length} Setting probabilities for node ${node.name}`,
             );
             const possibleParentValues: Record<string, string[]> = {};
             for (const parentName of node.parentNames) {
                 possibleParentValues[parentName] =
-                    this.nodesByName[parentName].possibleValues;
+                    this.#nodesByName[parentName].possibleValues;
             }
             node.setProbabilitiesAccordingToData(data, possibleParentValues);
         });
@@ -132,7 +139,7 @@ export class BayesianNetwork {
      */
     saveNetworkDefinition({ path }: { path: string }) {
         const network = {
-            nodes: this.nodesInSamplingOrder,
+            nodes: this.#nodesInSamplingOrder,
         };
 
         // creating archives

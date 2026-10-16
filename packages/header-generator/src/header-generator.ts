@@ -175,15 +175,15 @@ export class HeaderGenerator {
 
     browserListQuery: string | undefined;
 
-    private inputGeneratorNetwork: any;
+    #inputGeneratorNetwork: any;
 
-    private headerGeneratorNetwork: any;
+    #headerGeneratorNetwork: any;
 
-    private uniqueBrowsers: HttpBrowserObject[];
+    #uniqueBrowsers: HttpBrowserObject[];
 
-    private headersOrder: string[];
+    #headersOrder: string[];
 
-    private relaxationOrder: (keyof HeaderGeneratorOptions)[] = [
+    #relaxationOrder: (keyof HeaderGeneratorOptions)[] = [
         'locales',
         'devices',
         'operatingSystems',
@@ -211,7 +211,7 @@ export class HeaderGenerator {
             strict = false,
         } = options;
         this.globalOptions = {
-            browsers: this._prepareBrowsersConfig(
+            browsers: this.#prepareBrowsersConfig(
                 browsers as BrowsersType,
                 browserListQuery,
                 httpVersion,
@@ -223,9 +223,9 @@ export class HeaderGenerator {
             browserListQuery,
             strict,
         };
-        this.uniqueBrowsers = [];
+        this.#uniqueBrowsers = [];
 
-        this.headersOrder = JSON.parse(
+        this.#headersOrder = JSON.parse(
             readFileSync(
                 new URL('./data_files/headers-order.json', import.meta.url),
             ).toString(),
@@ -243,13 +243,13 @@ export class HeaderGenerator {
         for (const browserString of uniqueBrowserStrings) {
             // There are headers without user agents in the datasets we used to configure the generator. They should be disregarded.
             if (browserString !== MISSING_VALUE_DATASET_TOKEN) {
-                this.uniqueBrowsers.push(
-                    this.prepareHttpBrowserObject(browserString),
+                this.#uniqueBrowsers.push(
+                    this.#prepareHttpBrowserObject(browserString),
                 );
             }
         }
 
-        this.inputGeneratorNetwork = new BayesianNetwork({
+        this.#inputGeneratorNetwork = new BayesianNetwork({
             path: fileURLToPath(
                 new URL(
                     './data_files/input-network-definition.zip',
@@ -257,7 +257,7 @@ export class HeaderGenerator {
                 ),
             ),
         });
-        this.headerGeneratorNetwork = new BayesianNetwork({
+        this.#headerGeneratorNetwork = new BayesianNetwork({
             path: fileURLToPath(
                 new URL(
                     './data_files/header-network-definition.zip',
@@ -292,14 +292,14 @@ export class HeaderGenerator {
 
         const headerOptions = { ...this.globalOptions, ...options };
         const possibleAttributeValues =
-            this._getPossibleAttributeValues(headerOptions);
+            this.#getPossibleAttributeValues(headerOptions);
 
         const [http1Constraints, http2Constraints] = userAgentValues
             ? [
-                  utils.getConstraintClosure(this.headerGeneratorNetwork, {
+                  utils.getConstraintClosure(this.#headerGeneratorNetwork, {
                       'User-Agent': userAgentValues,
                   }),
-                  utils.getConstraintClosure(this.headerGeneratorNetwork, {
+                  utils.getConstraintClosure(this.#headerGeneratorNetwork, {
                       'user-agent': userAgentValues,
                   }),
               ]
@@ -340,7 +340,7 @@ export class HeaderGenerator {
 
         // Generate a sample of input attributes consistent with the data used to create the definition files if possible.
         const inputSample =
-            this.inputGeneratorNetwork.generateConsistentSampleWhenPossible(
+            this.#inputGeneratorNetwork.generateConsistentSampleWhenPossible(
                 inputConstraints,
             );
 
@@ -383,7 +383,7 @@ export class HeaderGenerator {
                 return this.orderHeaders(converted2to1);
             }
 
-            const relaxationIndex = this.relaxationOrder.findIndex(
+            const relaxationIndex = this.#relaxationOrder.findIndex(
                 (key) => options[key] !== undefined,
             );
             if (options.strict || relaxationIndex === -1) {
@@ -394,7 +394,7 @@ export class HeaderGenerator {
 
             // Relax the requirements and try again
             const relaxedOptions = { ...options };
-            const relaxationKey = this.relaxationOrder[relaxationIndex];
+            const relaxationKey = this.#relaxationOrder[relaxationIndex];
             delete relaxedOptions[relaxationKey];
             return this.getHeaders(
                 relaxedOptions,
@@ -405,10 +405,10 @@ export class HeaderGenerator {
 
         // Generate the actual headers
         const generatedSample =
-            this.headerGeneratorNetwork.generateSample(inputSample);
+            this.#headerGeneratorNetwork.generateSample(inputSample);
 
         // Manually fill the accept-language header with random ordering of the locales from input
-        const generatedHttpAndBrowser = this.prepareHttpBrowserObject(
+        const generatedHttpAndBrowser = this.#prepareHttpBrowserObject(
             generatedSample[BROWSER_HTTP_NODE_NAME],
         );
         let secFetchAttributeNames:
@@ -420,7 +420,7 @@ export class HeaderGenerator {
             secFetchAttributeNames = HTTP1_SEC_FETCH_ATTRIBUTES;
         }
 
-        generatedSample[acceptLanguageFieldName] = this._getAcceptLanguageField(
+        generatedSample[acceptLanguageFieldName] = this.#getAcceptLanguageField(
             headerOptions.locales,
         );
 
@@ -460,7 +460,7 @@ export class HeaderGenerator {
                 ...generatedSample,
                 ...requestDependentHeaders,
             },
-            (this.headersOrder as Record<string, any>)[
+            (this.#headersOrder as Record<string, any>)[
                 generatedHttpAndBrowser.name
             ],
         );
@@ -473,7 +473,7 @@ export class HeaderGenerator {
      */
     orderHeaders(
         headers: Headers,
-        order = this.getOrderFromUserAgent(headers),
+        order = this.#getOrderFromUserAgent(headers),
     ): Headers {
         const orderedSample: Headers = {};
 
@@ -492,7 +492,7 @@ export class HeaderGenerator {
         return orderedSample;
     }
 
-    private _prepareBrowsersConfig(
+    #prepareBrowsersConfig(
         browsers?: BrowsersType,
         browserListQuery?: string,
         httpVersion?: HttpVersion,
@@ -513,10 +513,10 @@ export class HeaderGenerator {
         });
     }
 
-    private _getBrowserHttpOptions(browsers: BrowserSpecification[]): string[] {
+    #getBrowserHttpOptions(browsers: BrowserSpecification[]): string[] {
         const browserHttpOptions = [];
         for (const browser of browsers) {
-            for (const browserOption of this.uniqueBrowsers) {
+            for (const browserOption of this.#uniqueBrowsers) {
                 if (browser.name === browserOption.name) {
                     const browserMajorVersion = browserOption.version[0];
 
@@ -536,7 +536,7 @@ export class HeaderGenerator {
         return browserHttpOptions;
     }
 
-    private _getPossibleAttributeValues(
+    #getPossibleAttributeValues(
         headerOptions: Partial<HeaderGeneratorOptions>,
     ): Record<string, any> {
         const {
@@ -545,14 +545,14 @@ export class HeaderGenerator {
             httpVersion,
             operatingSystems,
         } = headerOptions;
-        const browsers = this._prepareBrowsersConfig(
+        const browsers = this.#prepareBrowsersConfig(
             optionsBrowser,
             browserListQuery,
             httpVersion,
         );
 
         // Find known browsers compatible with the input
-        const browserHttpOptions = this._getBrowserHttpOptions(browsers);
+        const browserHttpOptions = this.#getBrowserHttpOptions(browsers);
         const possibleAttributeValues: Record<string, any> = {};
 
         possibleAttributeValues[BROWSER_HTTP_NODE_NAME] = browserHttpOptions;
@@ -566,7 +566,7 @@ export class HeaderGenerator {
         return possibleAttributeValues;
     }
 
-    private _getAcceptLanguageField(
+    #getAcceptLanguageField(
         localesFromOptions: HeaderGeneratorOptions['locales'],
     ): string {
         let locales = localesFromOptions;
@@ -619,16 +619,14 @@ export class HeaderGenerator {
      * Extract structured information about a browser and http version in the form of an object from httpBrowserString.
      * @param httpBrowserString A string containing the browser name, version and http version, such as `chrome/88.0.4324.182|2`.
      */
-    private prepareHttpBrowserObject(
-        httpBrowserString: string,
-    ): HttpBrowserObject {
+    #prepareHttpBrowserObject(httpBrowserString: string): HttpBrowserObject {
         const [browserString, httpVersion] = httpBrowserString.split('|');
         let browserObject;
 
         if (browserString === MISSING_VALUE_DATASET_TOKEN) {
             browserObject = { name: MISSING_VALUE_DATASET_TOKEN };
         } else {
-            browserObject = this.prepareBrowserObject(browserString);
+            browserObject = this.#prepareBrowserObject(browserString);
         }
 
         return {
@@ -642,7 +640,7 @@ export class HeaderGenerator {
      * Extract structured information about a browser in the form of an object from browserString.
      * @param browserString A string containing the browser name and version, e.g. `chrome/88.0.4324.182`.
      */
-    private prepareBrowserObject(browserString: string): HttpBrowserObject {
+    #prepareBrowserObject(browserString: string): HttpBrowserObject {
         const nameVersionSplit = browserString.split('/');
         const versionSplit = nameVersionSplit[1].split('.');
         const preparedVersion = [];
@@ -662,7 +660,7 @@ export class HeaderGenerator {
      * @param headers Non-normalized request headers
      * @returns Correct header order for the given browser.
      */
-    private getOrderFromUserAgent(headers: Record<string, string>): string[] {
+    #getOrderFromUserAgent(headers: Record<string, string>): string[] {
         const userAgent = getUserAgent(headers);
         const browser = getBrowser(userAgent);
 
@@ -670,6 +668,6 @@ export class HeaderGenerator {
             return [];
         }
 
-        return (this.headersOrder as Record<string, any>)[browser] ?? [];
+        return (this.#headersOrder as Record<string, any>)[browser] ?? [];
     }
 }

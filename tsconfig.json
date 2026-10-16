@@ -6,9 +6,13 @@
             "header-generator": ["./packages/header-generator/src/index.ts"],
             "header-generator/*": ["./packages/header-generator/*"],
             "fingerprint-generator": ["./packages/fingerprint-generator/src/index.ts"],
+            "fingerprint-generator/*": ["./packages/fingerprint-generator/*"],
             "fingerprint-injector": ["./packages/fingerprint-injector/src/index.ts"],
+            "fingerprint-injector/*": ["./packages/fingerprint-injector/*"],
             "generative-bayesian-network": ["./packages/generative-bayesian-network/src/index.ts"],
-            "generator-networks-creator": ["./packages/generator-networks-creator/src/index.ts"]
+            "generative-bayesian-network/*": ["./packages/generative-bayesian-network/*"],
+            "generator-networks-creator": ["./packages/generator-networks-creator/src/index.ts"],
+            "generator-networks-creator/*": ["./packages/generator-networks-creator/*"]
         }
     }
 }

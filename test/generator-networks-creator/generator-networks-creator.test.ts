@@ -1,10 +1,11 @@
-import { GeneratorNetworksCreator } from 'generator-networks-creator';
+import {
+    getBrowserNameVersion,
+    getDeviceOS,
+} from 'generator-networks-creator/src/user-agent.js';
 
 import { describe, expect, test } from 'vitest';
 
 describe('Processing browser data', () => {
-    const networkGenerator = new GeneratorNetworksCreator();
-
     const cases = [
         {
             userAgent:
@@ -161,27 +162,21 @@ describe('Processing browser data', () => {
 
     test('Extracts browser name/version from User-Agent', () => {
         for (const testCase of cases) {
-            const browser = networkGenerator['getBrowserNameVersion'](
-                testCase.userAgent,
-            );
+            const browser = getBrowserNameVersion(testCase.userAgent);
             expect(browser).toBe(testCase.expectedBrowser);
         }
     });
 
     test('Extracts operating system from User-Agent', () => {
         for (const testCase of cases) {
-            const os = networkGenerator['getDeviceOS'](
-                testCase.userAgent,
-            ).operatingSystem;
+            const os = getDeviceOS(testCase.userAgent).operatingSystem;
             expect(os).toBe(testCase.expectedOS);
         }
     });
 
     test('Extracts device type from User-Agent', () => {
         for (const testCase of cases) {
-            const deviceType = networkGenerator['getDeviceOS'](
-                testCase.userAgent,
-            ).device;
+            const deviceType = getDeviceOS(testCase.userAgent).device;
             expect(deviceType).toBe(testCase.expectedDeviceType);
         }
     });

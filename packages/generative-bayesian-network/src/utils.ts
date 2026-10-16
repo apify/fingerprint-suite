@@ -111,8 +111,7 @@ export function getConstraintClosure(
             throw new Error(`The current constraints are too restrictive. 
 No possible values can be found for the given constraints.`);
         }
-        // eslint-disable-next-line
-        const node = network['nodesByName'][key]['nodeDefinition'];
+        const node = network.nodesByName[key];
         const tree = undeeper(node.conditionalProbabilities);
         const zippedValues = filterByLastLevelKeys(tree, possibleValues[key]);
 
