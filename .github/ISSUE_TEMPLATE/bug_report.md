@@ -19,7 +19,7 @@ A clear and concise description of what you expected to happen.
 **System information:**
 
 - OS: [e.g. MacOS]
-- Node.js version [e.g. 14.7]
+- Node.js version [e.g. 22.13] (22.13+ is required)
 
 **Additional context**
 Add any other context about the problem here.

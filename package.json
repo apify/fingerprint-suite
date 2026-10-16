@@ -2,6 +2,9 @@
     "name": "fingerprint-suite",
     "private": true,
     "version": "2.1.89",
+    "engines": {
+        "node": ">=22.13.0"
+    },
     "description": "",
     "keywords": [
         "apify",

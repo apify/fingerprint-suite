@@ -42,7 +42,7 @@ jobs:
         strategy:
             matrix:
                 os: [ubuntu-22.04]
-                node-version: [20, 22, 24]
+                node-version: [22, 24, 26]
 
         steps:
             - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0

@@ -1,6 +1,9 @@
 {
     "name": "generative-bayesian-network",
     "version": "2.1.89",
+    "engines": {
+        "node": ">=22.13.0"
+    },
     "author": {
         "name": "Apify"
     },
