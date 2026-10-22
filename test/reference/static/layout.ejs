@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="/css/styles.css">
+  <script><%- inject %></script>
+  <script type="module" src="/js/fingerprint-comparison.ts"></script>
+  <script type="module" src="/main.js"></script>
+</head>
+<body>
+  <h1>Fingerprint Comparison Tool</h1>
+  
+  <%- include('partials/fingerprint-config', { 
+    browser: browser || 'chrome', 
+    device: device || 'desktop', 
+    os: os || 'windows' 
+  }) %>
+  
+  <div id="comparison-table-container">
+    <table id="comparison-table">
+      <thead>
+        <tr>
+          <th>Property</th>
+          <th>Fingerprint Value</th>
+          <th>Actual Browser Value</th>
+          <th>Code to Get Value</th>
+        </tr>
+      </thead>
+      <tbody id="comparison-tbody">
+        <!-- Table will be filled via JavaScript -->
+      </tbody>
+    </table>
+  </div>
+  
+  <div class="raw-data">
+    <h2>Raw Fingerprint Data</h2>
+    <pre id="fingerprint-data"><%= fingerprint %></pre>
+  </div>
+</body>
+</html>
