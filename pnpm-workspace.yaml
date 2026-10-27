@@ -1,7 +1,7 @@
 packages:
     - packages/*
 
-minimumReleaseAge: 1440
+minimumReleaseAge: 10080
 minimumReleaseAgeExclude:
     - '@apify/*'
     - '@crawlee/*'
