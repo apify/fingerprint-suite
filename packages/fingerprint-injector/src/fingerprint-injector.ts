@@ -147,20 +147,22 @@ export class FingerprintInjector {
         const browserVersion = await page.browser().version();
 
         if (!browserVersion.toLowerCase().includes('firefox')) {
-            await (
-                await page.target().createCDPSession()
-            ).send('Page.setDeviceMetricsOverride', {
-                screenHeight: screen.height,
-                screenWidth: screen.width,
-                width: screen.width,
-                height: screen.height,
-                mobile: /phone|android|mobile/i.test(userAgent),
-                screenOrientation:
-                    screen.height > screen.width
-                        ? { angle: 0, type: 'portraitPrimary' }
-                        : { angle: 90, type: 'landscapePrimary' },
-                deviceScaleFactor: screen.devicePixelRatio,
-            });
+            if (screen) {
+                await (
+                    await page.target().createCDPSession()
+                ).send('Page.setDeviceMetricsOverride', {
+                    screenHeight: screen.height,
+                    screenWidth: screen.width,
+                    width: screen.width,
+                    height: screen.height,
+                    mobile: /phone|android|mobile/i.test(userAgent),
+                    screenOrientation:
+                        screen.height > screen.width
+                            ? { angle: 0, type: 'portraitPrimary' }
+                            : { angle: 90, type: 'landscapePrimary' },
+                    deviceScaleFactor: screen.devicePixelRatio,
+                });
+            }
 
             await page.setExtraHTTPHeaders(
                 this.onlyInjectableHeaders(headers, browserVersion),
@@ -234,7 +236,7 @@ export class FingerprintInjector {
                 hasHDR,
                 // window.screen props
                 ...newScreen
-            } = allScreenProps;
+            } = allScreenProps || {};
 
             const windowScreenProps = {
                 innerHeight,
@@ -273,9 +275,15 @@ export class FingerprintInjector {
             }
             overrideInstancePrototype(window.navigator, navigatorProps);
 
-            overrideInstancePrototype(window.screen, newScreen);
-            overrideWindowDimensionsProps(windowScreenProps);
-            overrideDocumentDimensionsProps(documentScreenProps);
+            if (allScreenProps) {
+                overrideInstancePrototype(window.screen, newScreen);
+                overrideWindowDimensionsProps(
+                    windowScreenProps as Record<string, number>,
+                );
+                overrideDocumentDimensionsProps(
+                    documentScreenProps as Record<string, number>,
+                );
+            }
 
             overrideInstancePrototype(window.history, {
                 length: historyLength,
@@ -346,11 +354,16 @@ export async function newInjectedContext(
         userAgent: fingerprint.navigator.userAgent,
         colorScheme: 'dark',
         ...options?.newContextOptions,
-        viewport: {
-            width: fingerprint.screen.width,
-            height: fingerprint.screen.height,
-            ...options?.newContextOptions?.viewport,
-        },
+        viewport: fingerprint.screen
+            ? {
+                  width: fingerprint.screen.width,
+                  height: fingerprint.screen.height,
+                  ...options?.newContextOptions?.viewport,
+              }
+            : (options?.newContextOptions?.viewport ?? {
+                  width: 1920,
+                  height: 1080,
+              }),
         extraHTTPHeaders: {
             'accept-language': headers['accept-language'],
             ...options?.newContextOptions?.extraHTTPHeaders,
