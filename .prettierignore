@@ -3,3 +3,6 @@ build
 coverage
 
 *.json
+# pnpm
+pnpm-lock.yaml
+pnpm-workspace.yaml

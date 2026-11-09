@@ -141,6 +141,8 @@ export async function getRecordSchema() {
                                 'Mobile Safari',
                                 'Mobile Firefox',
                             ]),
+                            // Missing for e.g. iOS WebViews, which carry no `Version/x` token.
+                            major: z.string().regex(/^[1-9]\d*$/),
                         }),
                         device: z.object({
                             // undefined means desktop
@@ -175,7 +177,12 @@ export async function getRecordSchema() {
                         .object({
                             charging: z.boolean(),
                             chargingTime: z.number().nullable(),
-                            dischargingTime: z.boolean().nullable(),
+                            // Seconds of battery life remaining, per the Battery Status
+                            // API — not a boolean. Declaring this `z.boolean()` rejected
+                            // every record from a device actually running on battery
+                            // (~24% of the dataset), biasing the model towards charging
+                            // and battery-less machines.
+                            dischargingTime: z.number().nullable(),
                             level: z.number().min(0).max(1),
                         })
                         .nullable(),
@@ -242,7 +249,8 @@ export async function getRecordSchema() {
                             pageXOffset: z.number().nonnegative(),
                             pageYOffset: z.number().nonnegative(),
                             screenX: z.number().nonnegative(),
-                            hasHDR: z.boolean().optional(),
+                            // Browsers report `null`, not just a missing key, when HDR support is unknown.
+                            hasHDR: z.boolean().nullable().optional(),
                             width: z.number().positive(),
                             height: z.number().positive(),
                             availWidth: z.number().positive(),

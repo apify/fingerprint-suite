@@ -6,6 +6,12 @@ on:
         - cron: '0 0 1 * *'
     workflow_dispatch:
 
+permissions:
+    contents: read
+
+env:
+    APIFY_HTTPBIN_TOKEN: ${{ secrets.APIFY_HTTPBIN_TOKEN }}
+
 jobs:
     build_model:
         runs-on: ubuntu-22.04
@@ -13,27 +19,18 @@ jobs:
             version: ${{ steps.get_version.outputs.version }}
 
         steps:
-            - uses: actions/checkout@v6
+            - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
               with:
                   token: ${{ secrets.APIFY_SERVICE_ACCOUNT_GITHUB_TOKEN }}
             - name: Use Node.js 22
-              uses: actions/setup-node@v6
+              uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
               with:
                   node-version: 24
 
-            - name: Cache node modules + browsers
-              uses: actions/cache@v5
-              with:
-                  path: |
-                      ~/.npm
-                      ~/.cache/ms-playwright
-                  key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
-
-            - name: Install Dependencies
-              run: npm ci
+            - uses: apify/actions/pnpm-install@v1.1.2
 
             - name: Install Playwright deps
-              run: npx playwright install
+              run: pnpm exec playwright install
 
             - name: Install xvfb
               run: |
@@ -42,24 +39,37 @@ jobs:
 
             - name: Install Playwright browsers
               run: |
-                  npx playwright install webkit
-                  npx playwright install chrome
-                  npx playwright install msedge
+                  pnpm exec playwright install webkit
+                  pnpm exec playwright install chrome
+                  pnpm exec playwright install msedge
 
             - name: Install Playwright deps v2
-              run: npx playwright install-deps
+              run: pnpm exec playwright install-deps
 
             - name: Collect HTTP header orders
               run: |
                   xvfb-run -- node ./packages/header-order-collector/collector.js | tee ./packages/header-generator/src/data_files/headers-order.json
 
-            - name: Generate model
-              run: npm run buildNetwork
+            # Keeps the freshness check in `pnpm verifyModel` meaningful: it compares the
+            # generated model against the newest browser versions browserslist knows
+            # about, which is only useful if caniuse-lite is current.
+            - name: Refresh browser version data
+              run: pnpm dlx update-browserslist-db@latest
+
+            # `pnpm buildNetwork` ends in `pnpm verifyModel`, which fails the job if the
+            # generated model is stale, regressed, or implausible. See
+            # https://github.com/apify/fingerprint-suite/issues/564 for why.
+            - name: Generate and verify model
+              run: pnpm buildNetwork
               env:
                   APIFY_FINGERPRINT_DATASET_ID: ${{ secrets.APIFY_FINGERPRINT_DATASET_ID }}
 
+            - name: Publish model summary
+              if: always()
+              run: cat model-summary.md >> $GITHUB_STEP_SUMMARY || true
+
             - name: Upload models as artifacts
-              uses: actions/upload-artifact@v7
+              uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
               with:
                   name: new-models
                   path: |
@@ -69,26 +79,26 @@ jobs:
                       ./packages/header-generator/src/data_files/input-network-definition.zip
                       ./packages/fingerprint-generator/src/data_files/fingerprint-network-definition.zip
                       ./package.json
-                      ./package-lock.json
+                      ./pnpm-lock.yaml
+                      ./model-summary.md
 
     test_model_js:
         runs-on: ubuntu-22.04
         needs: build_model
         steps:
-            - uses: actions/checkout@v6
+            - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
               with:
                   token: ${{ secrets.APIFY_SERVICE_ACCOUNT_GITHUB_TOKEN }}
 
             - name: Use Node.js 22
-              uses: actions/setup-node@v6
+              uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
               with:
-                  node-version: 24
+                  node-version: 22
 
-            - name: Install Dependencies
-              run: npm ci
+            - uses: apify/actions/pnpm-install@v1.1.2
 
             - name: Download artifacts
-              uses: actions/download-artifact@v8
+              uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
               with:
                   name: new-models
 
@@ -99,52 +109,58 @@ jobs:
 
             - name: Test model changes (Node.JS packages)
               run: |
-                  npx playwright install --with-deps
-                  npx puppeteer browsers install chrome
-                  npx puppeteer browsers install firefox
+                  pnpm exec playwright install --with-deps
+                  pnpm exec puppeteer browsers install chrome
+                  pnpm exec puppeteer browsers install firefox
 
-                  npm run build
-                  xvfb-run --auto-servernum -- npm test
+                  pnpm build
+                  xvfb-run --auto-servernum -- pnpm test
 
     test_model_py:
         needs: build_model
         uses: ./.github/workflows/browserforge-compat-test.yml
 
-    commit_model:
-        name: Commit and push new model
+    # Opens a pull request instead of pushing to master. Tagging and the GitHub release
+    # (which is what triggers the npm/PyPI publish) happen only after a human merges it
+    # — see .github/workflows/model-release.yml. Before #564 this job pushed, tagged and
+    # released in one step, so a bad model reached npm with nobody in the loop.
+    open_model_pr:
+        name: Open model update PR
         needs: [build_model, test_model_js, test_model_py]
         runs-on: ubuntu-22.04
+        permissions:
+            contents: write
+            pull-requests: write
         steps:
-            - uses: actions/checkout@v6
+            - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
               with:
                   token: ${{ secrets.APIFY_SERVICE_ACCOUNT_GITHUB_TOKEN }}
 
             - name: Use Node.js 22
-              uses: actions/setup-node@v6
+              uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
               with:
                   node-version: 24
 
-            - name: Install Dependencies
-              run: npm ci
+            - uses: apify/actions/pnpm-install@v1.1.2
 
-            - uses: actions/download-artifact@v8
+            - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
               with:
                   name: new-models
 
             - name: Bump package version numbers
               id: bump_version
               run: |
-                  npm version patch --git-tag-version=false
+                  pnpm version patch --git-tag-version=false
                   export GIT_TAG=$(node -p "require('./package.json').version")
 
-                  npm run prerelease
+                  pnpm prerelease
 
                   echo "version=${GIT_TAG}" >> $GITHUB_OUTPUT
 
             - name: Print new version
               run: 'echo new version: ${{ steps.bump_version.outputs.version }}'
 
-            - uses: astral-sh/setup-uv@v7
+            - uses: astral-sh/setup-uv@37802adc94f370d6bfd71619e3f0bf239e1f3b78 # v7.6.0
 
             - name: Bump Python package version and change log
               shell: bash
@@ -157,26 +173,60 @@ jobs:
                   # Update changelog
                   sed -i "5i## $(uv version --short) - ($(date "+%Y-%m-%d"))\n\n- Updated data. Same as npm package \`fingerprint-generator\` version \`$version\`\n" CHANGELOG.md
 
-            - name: Push new model
-              uses: stefanzweifel/git-auto-commit-action@v7
-              with:
-                  commit_message: '[auto] fingerprint/header model update'
-                  branch: master
-                  tagging_message: 'v${{ steps.bump_version.outputs.version }}'
-
-                  file_pattern: './packages/ ./package.json ./package-lock.json ./apify_fingerprint_datapoints/CHANGELOG.md ./pyproject.toml'
-
-                  commit_user_name: 'modelmaker[bot] ⚒️'
-                  commit_user_email: modelmaker[bot]@users.noreply.github.com
-
-            - name: Create release
-              uses: actions/create-release@v1
+            # The branch name prefix is the contract with model-release.yml, which tags
+            # and releases only when a `model-update/*` branch is merged.
+            - name: Commit new model to a branch
+              id: commit
               env:
-                  GITHUB_TOKEN: ${{ secrets.APIFY_SERVICE_ACCOUNT_GITHUB_TOKEN }}
-              with:
-                  tag_name: 'v${{ steps.bump_version.outputs.version }}'
-                  release_name: 'v${{ steps.bump_version.outputs.version }}'
-                  body: |
-                      This is an automated release of the model used by the `fingerprint-suite`.
+                  VERSION: ${{ steps.bump_version.outputs.version }}
+              run: |
+                  set -euo pipefail
 
-                      The only difference between this release and the previous one is the model used to generate fingerprints.
+                  BRANCH="model-update/v${VERSION}"
+                  echo "branch=${BRANCH}" >> $GITHUB_OUTPUT
+
+                  git config user.name 'modelmaker[bot] ⚒️'
+                  git config user.email 'modelmaker[bot]@users.noreply.github.com'
+
+                  git checkout -b "${BRANCH}"
+                  git add ./packages ./package.json ./pnpm-lock.yaml \
+                      ./apify_fingerprint_datapoints/CHANGELOG.md ./pyproject.toml
+
+                  if git diff --cached --quiet; then
+                      echo "No model changes to propose."
+                      echo "changed=false" >> $GITHUB_OUTPUT
+                      exit 0
+                  fi
+
+                  git commit -m 'chore: fingerprint/header model update'
+                  git push --force origin "${BRANCH}"
+                  echo "changed=true" >> $GITHUB_OUTPUT
+
+            - name: Open pull request
+              if: steps.commit.outputs.changed == 'true'
+              env:
+                  GH_TOKEN: ${{ secrets.APIFY_SERVICE_ACCOUNT_GITHUB_TOKEN }}
+                  BRANCH: ${{ steps.commit.outputs.branch }}
+                  VERSION: ${{ steps.bump_version.outputs.version }}
+              run: |
+                  set -euo pipefail
+
+                  {
+                      echo "Automated update of the fingerprint/header model, for release as \`v${VERSION}\`."
+                      echo
+                      echo "Automated checks that already ran: model verification (\`pnpm verifyModel\`), the JS test suite, and the browserforge compatibility suite."
+                      echo
+                      if [ -f model-summary.md ]; then cat model-summary.md; echo; fi
+                      echo "### Before merging"
+                      echo
+                      echo "Merging this PR tags \`v${VERSION}\` and publishes to npm and PyPI. Please sanity-check the coverage table above — in particular that no browser's newest version moved backwards."
+                  } > pr-body.md
+
+                  # Reuse the existing PR if this workflow already ran for this version.
+                  if ! gh pr edit "${BRANCH}" --title "chore: fingerprint/header model update (v${VERSION})" --body-file pr-body.md 2>/dev/null; then
+                      gh pr create \
+                          --base master \
+                          --head "${BRANCH}" \
+                          --title "chore: fingerprint/header model update (v${VERSION})" \
+                          --body-file pr-body.md
+                  fi

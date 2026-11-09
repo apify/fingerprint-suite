@@ -710,13 +710,14 @@ function fixIframeContentWindow() {
                 },
                 set(newValue) {
                     addContentWindowProxy(this);
+                    const srcdoc = `${newValue}`;
                     // Reset property, the hook is only needed once
                     Object.defineProperty(iframe, 'srcdoc', {
                         configurable: false,
                         writable: false,
-                        value: _srcdoc,
+                        value: srcdoc,
                     });
-                    _iframe.srcdoc = newValue;
+                    _iframe.setAttribute('srcdoc', srcdoc);
                 },
             });
             return iframe;

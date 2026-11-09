@@ -99,6 +99,29 @@ export type BrowserFingerprintWithHeaders = {
     headers: Headers;
     fingerprint: Fingerprint;
 };
+
+const normalizeScreenFingerprint = (
+    screen: ScreenFingerprint,
+): ScreenFingerprint => {
+    const innerWidth =
+        screen.innerWidth > 0
+            ? screen.innerWidth
+            : Math.min(screen.width, screen.outerWidth);
+    const innerHeight =
+        screen.innerHeight > 0
+            ? screen.innerHeight
+            : Math.min(screen.height, screen.outerHeight);
+
+    return {
+        ...screen,
+        innerWidth,
+        innerHeight,
+        clientWidth: screen.clientWidth > 0 ? screen.clientWidth : innerWidth,
+        clientHeight:
+            screen.clientHeight > 0 ? screen.clientHeight : innerHeight,
+    };
+};
+
 export interface FingerprintGeneratorOptions extends HeaderGeneratorOptions {
     /**
      * Defines the screen dimensions of the generated fingerprint.
@@ -315,6 +338,7 @@ export class FingerprintGenerator extends HeaderGenerator {
         } = fingerprint;
         const parsedMemory = parseInt(deviceMemory, 10);
         const parsedTouchPoints = parseInt(maxTouchPoints, 10);
+        const normalizedScreen = normalizeScreenFingerprint(screen);
 
         const navigator = {
             userAgent,
@@ -341,7 +365,7 @@ export class FingerprintGenerator extends HeaderGenerator {
         };
 
         return {
-            screen,
+            screen: normalizedScreen,
             navigator,
             audioCodecs,
             videoCodecs,

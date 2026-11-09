@@ -11,6 +11,9 @@ on:
     workflow_call:
     workflow_dispatch:
 
+permissions:
+    contents: read
+
 env:
     APIFY_HTTPBIN_TOKEN: ${{ secrets.APIFY_HTTPBIN_TOKEN }}
 
@@ -21,23 +24,15 @@ jobs:
         runs-on: ubuntu-22.04
 
         steps:
-            - uses: actions/checkout@v6
+            - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
             - name: Use Node.js 22
-              uses: actions/setup-node@v6
+              uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
               with:
                   node-version: 24
 
-            - name: Install Dependencies
-              run: npm ci
+            - uses: apify/actions/pnpm-install@v1.1.2
 
-            - name: Load Cache
-              uses: actions/cache@v5
-              with:
-                  path: |
-                      node_modules
-                  key: cache-${{ github.run_id }}
-
-            - run: npm run lint
+            - run: pnpm lint
 
     build_and_test:
         name: Build & Test
@@ -50,33 +45,25 @@ jobs:
                 node-version: [20, 22, 24]
 
         steps:
-            - uses: actions/checkout@v6
+            - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
             - name: Use Node.js ${{ matrix.node-version }}
-              uses: actions/setup-node@v6
+              uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
               with:
                   node-version: ${{ matrix.node-version }}
 
-            - name: Cache Node Modules
-              uses: actions/cache@v5
-              with:
-                  path: |
-                      node_modules
-                  key: cache-${{ github.run_id }}
-
-            - name: Install Dependencies
-              run: npm ci
+            - uses: apify/actions/pnpm-install@v1.1.2
 
             - name: Install Playwright deps
-              run: npx playwright install --with-deps
+              run: pnpm exec playwright install --with-deps
 
             - name: Install Puppeteer deps
               run: |
-                  npx puppeteer browsers install chrome
-                  npx puppeteer browsers install firefox
+                  pnpm exec puppeteer browsers install chrome
+                  pnpm exec puppeteer browsers install firefox
 
             - name: Turbo cache
               id: turbo-cache
-              uses: actions/cache@v5
+              uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25 # v5.1.0
               with:
                   path: .turbo
                   key: turbo-${{ github.job }}-${{ github.ref_name }}-${{ github.sha }}
@@ -84,12 +71,12 @@ jobs:
                       turbo-${{ github.job }}-${{ github.ref_name }}-
 
             - name: Build
-              run: npm run build
+              run: pnpm build
 
             - name: Run Windows or MacOs tests
-              run: npm test
+              run: pnpm test
               if: ${{ matrix.os == 'windows-latest' || matrix.os == 'macos-latest' }}
 
             - name: Run Linux tests
-              run: xvfb-run --auto-servernum -- npm test
+              run: xvfb-run --auto-servernum -- pnpm test
               if: ${{ matrix.os == 'ubuntu-22.04'}}

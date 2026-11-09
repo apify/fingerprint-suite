@@ -2,6 +2,29 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.16.0 - (2026-11-09)
+
+- Updated data. Same as npm package `fingerprint-generator` version `2.1.90`
+
+## 0.15.0 - (2026-08-05)
+
+- Reverted the data shipped in `0.14.0` back to the previous model: it only covered
+  stale browser versions and broke `browserListQuery`-based header generation. Same
+  as npm package `fingerprint-generator` version `2.1.88`. See
+  https://github.com/apify/fingerprint-suite/issues/564.
+
+## 0.14.0 - (2026-08-01)
+
+- Updated data. Same as npm package `fingerprint-generator` version `2.1.87`
+
+## 0.13.0 - (2026-05-04)
+
+- Updated data. Same as npm package `fingerprint-generator` version `2.1.83`
+
+## 0.12.0 - (2026-04-01)
+
+- Updated data. Same as npm package `fingerprint-generator` version `2.1.82`
+
 ## 0.11.0 - (2026-03-01)
 
 - Updated data. Same as npm package `fingerprint-generator` version `2.1.81`

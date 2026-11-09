@@ -1,0 +1,27 @@
+packages:
+    - packages/*
+
+minimumReleaseAge: 10080
+minimumReleaseAgeExclude:
+    - '@apify/*'
+    - '@crawlee/*'
+    - 'apify-client'
+    - 'apify'
+    - 'crawlee'
+    - 'got-scraping'
+
+onlyBuiltDependencies:
+    - "@swc/core"
+    - esbuild
+    - playwright
+    - playwright-core
+    - puppeteer
+
+nodeLinker: hoisted
+linkWorkspacePackages: true
+preferWorkspacePackages: true
+publicHoistPattern:
+    - "*"
+
+overrides:
+    js-yaml: ^4.3.1

@@ -84,6 +84,89 @@ describe('Generation tests', () => {
             expect(field).toBeDefined();
         }
     });
+
+    test('Normalizes zero viewport dimensions', () => {
+        const transformed = (fingerprintGenerator as any).transformFingerprint({
+            screen: {
+                availHeight: 875,
+                availWidth: 1440,
+                availTop: 25,
+                availLeft: 0,
+                colorDepth: 24,
+                height: 900,
+                pixelDepth: 24,
+                width: 1440,
+                devicePixelRatio: 2,
+                pageXOffset: 0,
+                pageYOffset: 0,
+                innerHeight: 0,
+                outerHeight: 858,
+                outerWidth: 1284,
+                innerWidth: 0,
+                screenX: 0,
+                clientWidth: 0,
+                clientHeight: 0,
+                hasHDR: false,
+            },
+            navigator: {
+                userAgent:
+                    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36',
+                userAgentData: {
+                    brands: [],
+                    mobile: false,
+                    platform: 'MacOS',
+                    architecture: '',
+                    bitness: '',
+                    fullVersionList: [],
+                    model: '',
+                    platformVersion: '',
+                    uaFullVersion: '',
+                },
+                doNotTrack: '1',
+                appCodeName: 'Mozilla',
+                appName: 'Netscape',
+                appVersion: '5.0',
+                oscpu: '',
+                webdriver: 'false',
+                language: 'en-US',
+                languages: ['en-US'],
+                platform: 'MacIntel',
+                deviceMemory: 8,
+                hardwareConcurrency: '8',
+                product: 'Gecko',
+                productSub: '20030107',
+                vendor: 'Google Inc.',
+                vendorSub: '',
+                maxTouchPoints: '0',
+                extraProperties: {
+                    vendorFlavors: [],
+                    isBluetoothSupported: false,
+                    globalPrivacyControl: null,
+                    pdfViewerEnabled: true,
+                    installedApps: [],
+                },
+            },
+            languages: ['en-US'],
+            videoCodecs: {},
+            audioCodecs: {},
+            pluginsData: {},
+            battery: null,
+            videoCard: { vendor: '', renderer: '' },
+            multimediaDevices: [],
+            fonts: [],
+        });
+
+        expect(transformed.screen.innerWidth).toBeGreaterThan(0);
+        expect(transformed.screen.innerHeight).toBeGreaterThan(0);
+        expect(transformed.screen.clientWidth).toBeGreaterThan(0);
+        expect(transformed.screen.clientHeight).toBeGreaterThan(0);
+        expect(transformed.screen.clientWidth).toBe(
+            transformed.screen.innerWidth,
+        );
+        expect(transformed.screen.clientHeight).toBe(
+            transformed.screen.innerHeight,
+        );
+    });
 });
 
 describe('Generate fingerprints with basic constraints', () => {
