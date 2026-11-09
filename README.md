@@ -32,6 +32,11 @@ With the help of `fingerprint-suite` you can generate and inject browser fingerp
 
 The following example shows how to use the fingerprinting tools to camouflage your Playwright-managed Chromium instance.
 
+```bash
+npm install fingerprint-injector playwright
+npx playwright install chromium
+```
+
 ```typescript
 import { chromium } from 'playwright';
 import { newInjectedContext } from 'fingerprint-injector';
@@ -55,10 +60,16 @@ import { newInjectedContext } from 'fingerprint-injector';
 
     const page = await context.newPage();
     // ... your code using `page` here
+
+    await browser.close();
 })();
 ```
 
 Here is the same example using Puppeteer:
+
+```bash
+npm install fingerprint-injector puppeteer
+```
 
 ```typescript
 import puppeteer from 'puppeteer';
@@ -76,6 +87,8 @@ import { newInjectedPage } from 'fingerprint-injector';
 
     // ... your code using `page` here
     await page.goto('https://example.com');
+
+    await browser.close();
 })();
 ```
 
