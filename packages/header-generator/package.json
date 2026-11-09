@@ -1,6 +1,6 @@
 {
     "name": "header-generator",
-    "version": "2.1.89",
+    "version": "2.1.90",
     "description": "NodeJS package for generating realistic browser-like HTTP headers.",
     "author": {
         "name": "Apify",
