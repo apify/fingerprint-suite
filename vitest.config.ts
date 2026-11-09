@@ -1,15 +1,12 @@
 // @ts-ignore
 import { defineConfig } from 'vitest/config';
-import tsconfigPaths from 'vite-tsconfig-paths';
 import { join } from 'node:path';
 
 let threads: { minThreads: number; maxThreads: number } | undefined;
 
 export default defineConfig({
-    plugins: [tsconfigPaths()],
-    esbuild: {
-        target: 'es2022',
-        keepNames: true,
+    resolve: {
+        tsconfigPaths: true,
     },
     test: {
         globals: true,
