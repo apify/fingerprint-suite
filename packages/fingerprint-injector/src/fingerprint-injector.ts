@@ -11,6 +11,7 @@ import {
     BrowserContext,
     Browser as PWBrowser,
     BrowserContextOptions,
+    Page as PWPage,
 } from 'playwright';
 import { Page, Browser as PPBrowser } from 'puppeteer';
 
@@ -88,6 +89,43 @@ export class FingerprintInjector {
     }
 
     /**
+     * Chromium resets the `user-agent` and `sec-ch-ua*` headers set via extra HTTP headers on redirects,
+     * so they have to be set with the native user agent override as well.
+     */
+    private getUserAgentOverride(
+        headers: Record<string, string>,
+        userAgentData?: UserAgentData,
+    ) {
+        const lowercased = Object.fromEntries(
+            Object.entries(headers).map(([name, value]) => [
+                name.toLowerCase(),
+                value,
+            ]),
+        );
+        const secChUa = lowercased['sec-ch-ua'];
+
+        return {
+            userAgent: lowercased['user-agent'] as string | undefined,
+            userAgentMetadata: secChUa
+                ? {
+                      brands: [
+                          ...secChUa.matchAll(/"([^"]*)";v="([^"]*)"/g),
+                      ].map(([, brand, version]) => ({ brand, version })),
+                      fullVersionList: userAgentData?.fullVersionList,
+                      platform:
+                          lowercased['sec-ch-ua-platform']?.replace(/"/g, '') ??
+                          '',
+                      platformVersion: userAgentData?.platformVersion ?? '',
+                      architecture: userAgentData?.architecture ?? '',
+                      model: userAgentData?.model ?? '',
+                      mobile: lowercased['sec-ch-ua-mobile'] === '?1',
+                      bitness: userAgentData?.bitness,
+                  }
+                : undefined,
+        };
+    }
+
+    /**
      * Adds init script to the browser context, so the fingerprint is changed before every document creation.
      * DISCLAIMER: Since Playwright does not support changing viewport and `user-agent` after the context is created,
      * you have to set it manually when the context is created. Check the Playwright usage example for more details.
@@ -106,7 +144,7 @@ export class FingerprintInjector {
 
         const browserName = browserContext.browser()?.browserType().name();
 
-        await browserContext.setExtraHTTPHeaders({
+        const extraHTTPHeaders = {
             ...this.onlyInjectableHeaders(headers, browserName),
             ...Object.fromEntries(
                 // @ts-expect-error Accessing private property
@@ -117,7 +155,28 @@ export class FingerprintInjector {
                     ],
                 ),
             ),
-        });
+        };
+
+        await browserContext.setExtraHTTPHeaders(extraHTTPHeaders);
+
+        if (browserName === 'chromium') {
+            const { userAgent, userAgentMetadata } = this.getUserAgentOverride(
+                extraHTTPHeaders,
+                fingerprint.navigator.userAgentData,
+            );
+            const overrideUserAgent = async (page: PWPage) => {
+                const session = await browserContext.newCDPSession(page);
+                await session.send('Emulation.setUserAgentOverride', {
+                    userAgent: userAgent ?? fingerprint.navigator.userAgent,
+                    userAgentMetadata,
+                });
+            };
+
+            browserContext.on('page', (page) => {
+                overrideUserAgent(page).catch(() => {});
+            });
+            await Promise.all(browserContext.pages().map(overrideUserAgent));
+        }
 
         browserContext.on('page', (page) => {
             page.emulateMedia({ colorScheme: 'dark' }).catch(() => {});
@@ -142,11 +201,20 @@ export class FingerprintInjector {
         const enhancedFingerprint = this._enhanceFingerprint(fingerprint);
         const { screen, userAgent } = enhancedFingerprint;
 
-        await page.setUserAgent(userAgent);
-
         const browserVersion = await page.browser().version();
+        const isFirefox = browserVersion.toLowerCase().includes('firefox');
 
-        if (!browserVersion.toLowerCase().includes('firefox')) {
+        await page.setUserAgent(
+            userAgent,
+            isFirefox
+                ? undefined
+                : this.getUserAgentOverride(
+                      headers,
+                      fingerprint.navigator.userAgentData,
+                  ).userAgentMetadata,
+        );
+
+        if (!isFirefox) {
             await (
                 await page.target().createCDPSession()
             ).send('Page.setDeviceMetricsOverride', {

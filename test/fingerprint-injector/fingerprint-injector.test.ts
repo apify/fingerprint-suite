@@ -24,8 +24,8 @@ import {
 
 function getHTTPBinUrl() {
     return process.env.APIFY_HTTPBIN_TOKEN
-        ? `https://httpbin.apify.actor/get?token=${process.env.APIFY_HTTPBIN_TOKEN}`
-        : 'https://httpbin.org/get';
+        ? `https://httpbin.apify.actor/redirect-to?url=%2Fget&token=${process.env.APIFY_HTTPBIN_TOKEN}`
+        : 'https://httpbin.org/redirect-to?url=%2Fget';
 }
 
 const cases = [
