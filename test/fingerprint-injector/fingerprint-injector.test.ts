@@ -23,9 +23,7 @@ import {
 } from 'vitest';
 
 function getHTTPBinUrl() {
-    return process.env.APIFY_HTTPBIN_TOKEN
-        ? `https://httpbin.apify.actor/get?token=${process.env.APIFY_HTTPBIN_TOKEN}`
-        : 'https://httpbin.org/get';
+    return 'https://httpbin.apify.actor/get';
 }
 
 const cases = [

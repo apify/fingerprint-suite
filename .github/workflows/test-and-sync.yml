@@ -14,9 +14,6 @@ on:
 permissions:
     contents: read
 
-env:
-    APIFY_HTTPBIN_TOKEN: ${{ secrets.APIFY_HTTPBIN_TOKEN }}
-
 jobs:
     lint:
         name: Lint
