@@ -141,6 +141,8 @@ export async function getRecordSchema() {
                                 'Mobile Safari',
                                 'Mobile Firefox',
                             ]),
+                            // Missing for e.g. iOS WebViews, which carry no `Version/x` token.
+                            major: z.string().regex(/^[1-9]\d*$/),
                         }),
                         device: z.object({
                             // undefined means desktop
