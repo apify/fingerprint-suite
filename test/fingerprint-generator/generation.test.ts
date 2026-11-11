@@ -23,6 +23,36 @@ describe('Generation tests', () => {
         expect(fp).toBeDefined();
     });
 
+    test('does not mutate options passed to getFingerprint', () => {
+        const options = {
+            mockWebRTC: false,
+            slim: false,
+            locales: undefined,
+        };
+        fingerprintGenerator.getFingerprint(options);
+
+        expect(options).toHaveProperty('mockWebRTC', false);
+        expect(options).toHaveProperty('slim', false);
+    });
+
+    test('allows overriding constructor mockWebRTC: true with mockWebRTC: false', () => {
+        const customGenerator = new FingerprintGenerator({ mockWebRTC: true });
+        const { fingerprint } = customGenerator.getFingerprint({
+            mockWebRTC: false,
+        });
+
+        expect(fingerprint.mockWebRTC).toBe(false);
+    });
+
+    test('allows overriding constructor slim: true with slim: false', () => {
+        const customGenerator = new FingerprintGenerator({ slim: true });
+        const { fingerprint } = customGenerator.getFingerprint({
+            slim: false,
+        });
+
+        expect(fingerprint.slim).toBe(false);
+    });
+
     test('Works with presets', () => {
         const presets = Object.values(PRESETS);
         for (const preset of presets) {

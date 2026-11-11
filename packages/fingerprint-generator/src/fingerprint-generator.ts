@@ -180,20 +180,22 @@ export class FingerprintGenerator extends HeaderGenerator {
     ): BrowserFingerprintWithHeaders {
         const filteredValues: Record<string, string[]> = {};
 
-        for (const [key, value] of Object.entries(options)) {
-            if (!value) {
-                delete options[key as keyof typeof options];
+        const cleanOptions = { ...options };
+        for (const [key, value] of Object.entries(cleanOptions)) {
+            if (value === undefined) {
+                delete cleanOptions[key as keyof typeof cleanOptions];
             }
         }
 
-        options = {
+        const mergedOptions = {
             ...this.fingerprintGlobalOptions,
-            ...options,
+            ...cleanOptions,
         };
 
         const partialCSP = (() => {
             const extensiveScreen =
-                options.screen && Object.keys(options.screen).length !== 0;
+                mergedOptions.screen &&
+                Object.keys(mergedOptions.screen).length !== 0;
             const shouldUseExtensiveConstraints = extensiveScreen;
 
             if (!shouldUseExtensiveConstraints) return undefined;
@@ -205,13 +207,14 @@ export class FingerprintGenerator extends HeaderGenerator {
                               screenString.split(STRINGIFIED_PREFIX)[1],
                           );
                           return (
-                              screen.width >= (options.screen?.minWidth ?? 0) &&
+                              screen.width >=
+                                  (mergedOptions.screen?.minWidth ?? 0) &&
                               screen.width <=
-                                  (options.screen?.maxWidth ?? 1e5) &&
+                                  (mergedOptions.screen?.maxWidth ?? 1e5) &&
                               screen.height >=
-                                  (options.screen?.minHeight ?? 0) &&
+                                  (mergedOptions.screen?.minHeight ?? 0) &&
                               screen.height <=
-                                  (options.screen?.maxHeight ?? 1e5)
+                                  (mergedOptions.screen?.maxHeight ?? 1e5)
                           );
                       },
                   )
@@ -223,7 +226,7 @@ export class FingerprintGenerator extends HeaderGenerator {
                     filteredValues,
                 );
             } catch (e) {
-                if (options?.strict) throw e;
+                if (mergedOptions?.strict) throw e;
                 delete filteredValues.screen;
                 return undefined;
             }
@@ -232,7 +235,7 @@ export class FingerprintGenerator extends HeaderGenerator {
         for (let generateRetries = 0; generateRetries < 10; generateRetries++) {
             // Generate headers consistent with the inputs to get input-compatible user-agent and accept-language headers needed later
             const headers = super.getHeaders(
-                options,
+                cleanOptions,
                 requestDependentHeaders,
                 partialCSP?.userAgent,
             );
@@ -281,14 +284,8 @@ export class FingerprintGenerator extends HeaderGenerator {
             return {
                 fingerprint: {
                     ...this.transformFingerprint(fingerprint),
-                    mockWebRTC:
-                        options.mockWebRTC ??
-                        this.fingerprintGlobalOptions.mockWebRTC ??
-                        false,
-                    slim:
-                        options.slim ??
-                        this.fingerprintGlobalOptions.slim ??
-                        false,
+                    mockWebRTC: mergedOptions.mockWebRTC ?? false,
+                    slim: mergedOptions.slim ?? false,
                 },
                 headers,
             };

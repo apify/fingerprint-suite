@@ -43,6 +43,39 @@ describe('Generation tests', () => {
         expect(headers).toBeDefined();
     });
 
+    test('does not mutate options passed to getHeaders', () => {
+        const options = {
+            strict: false,
+            locales: undefined,
+        };
+        headerGenerator.getHeaders(options);
+
+        expect(options).toHaveProperty('strict', false);
+    });
+
+    test('respects strict: true configured in constructor', () => {
+        const strictGenerator = new HeaderGenerator({ strict: true });
+
+        expect(() => {
+            strictGenerator.getHeaders({
+                browsers: [{ name: 'firefox', minVersion: 9999 }],
+            });
+        }).toThrow(
+            'No headers based on this input can be generated. Please relax or change some of the requirements you specified.',
+        );
+    });
+
+    test('allows overriding constructor strict: true with strict: false', () => {
+        const strictGenerator = new HeaderGenerator({ strict: true });
+        const headers = strictGenerator.getHeaders({
+            browsers: [{ name: 'firefox', minVersion: 9999 }],
+            strict: false,
+        });
+
+        expect(headers).toBeDefined();
+        expect(Object.keys(headers).length).toBeGreaterThan(0);
+    });
+
     test('Orders headers', () => {
         const headers = {
             bar: 'foo',
