@@ -503,6 +503,16 @@ function overrideScreenByReassigning(target, newProperties) {
     }
 }
 
+function overrideWindowScreen(props) {
+    for (const [prop, value] of Object.entries(props)) {
+        redefineProperty(window.screen, prop, {
+            get() {
+                return value;
+            },
+        });
+    }
+}
+
 function overrideWindowDimensionsProps(props) {
     try {
         overrideScreenByReassigning(window, props);
