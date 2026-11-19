@@ -1,4 +1,4 @@
-import { readFileSync } from 'fs';
+import { readFileSync, existsSync } from 'fs';
 
 import {
     BrowserFingerprintWithHeaders,
@@ -310,8 +310,12 @@ export class FingerprintInjector {
      * causing errors when executing it in the browser.
      */
     private _loadUtils(): string {
+        const path = process.env.FINGERPRINT_INJECTOR_UTILS_PATH || `${__dirname}/utils.js`
+        if (!existsSync(path)) {
+            throw new Error(`Unable to find ${path}`);
+        }
         // path.join would be better here, but Vercel's build system doesn't like it (https://github.com/apify/fingerprint-suite/issues/135)
-        const utilsJs = readFileSync(`${__dirname}/utils.js`);
+        const utilsJs = readFileSync(path);
         return `\n${utilsJs}\n`;
     }
 
