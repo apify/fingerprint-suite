@@ -284,13 +284,14 @@ export class HeaderGenerator {
             ow.object.partialShape(headerGeneratorOptionsShape),
         );
 
-        for (const [key, value] of Object.entries(options)) {
-            if (!value) {
-                delete options[key as keyof typeof options];
+        const cleanOptions = { ...options };
+        for (const [key, value] of Object.entries(cleanOptions)) {
+            if (value === undefined) {
+                delete cleanOptions[key as keyof typeof cleanOptions];
             }
         }
 
-        const headerOptions = { ...this.globalOptions, ...options };
+        const headerOptions = { ...this.globalOptions, ...cleanOptions };
         const possibleAttributeValues =
             this._getPossibleAttributeValues(headerOptions);
 
@@ -349,7 +350,7 @@ export class HeaderGenerator {
             if (headerOptions.httpVersion === '1') {
                 const headers2 = this.getHeaders(
                     {
-                        ...options,
+                        ...cleanOptions,
                         httpVersion: '2',
                     },
                     requestDependentHeaders,
@@ -384,16 +385,16 @@ export class HeaderGenerator {
             }
 
             const relaxationIndex = this.relaxationOrder.findIndex(
-                (key) => options[key] !== undefined,
+                (key) => cleanOptions[key] !== undefined,
             );
-            if (options.strict || relaxationIndex === -1) {
+            if (headerOptions.strict || relaxationIndex === -1) {
                 throw new Error(
                     'No headers based on this input can be generated. Please relax or change some of the requirements you specified.',
                 );
             }
 
             // Relax the requirements and try again
-            const relaxedOptions = { ...options };
+            const relaxedOptions = { ...cleanOptions };
             const relaxationKey = this.relaxationOrder[relaxationIndex];
             delete relaxedOptions[relaxationKey];
             return this.getHeaders(
