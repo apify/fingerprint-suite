@@ -1,0 +1,21 @@
+name: Release published
+
+# Holds no secrets: release runs use the tag as their ref, which the token's environment does not allow.
+on:
+    release:
+        types: [published]
+
+permissions: {}
+
+jobs:
+    start_publish:
+        name: Start the publish workflow
+        runs-on: ubuntu-22.04
+        permissions:
+            actions: write
+        steps:
+            - name: Dispatch publish-to-npm.yaml on master
+              env:
+                  GH_TOKEN: ${{ github.token }}
+                  TAG: ${{ github.event.release.tag_name }}
+              run: gh workflow run publish-to-npm.yaml --repo "$GITHUB_REPOSITORY" --ref master --field tag="$TAG"
