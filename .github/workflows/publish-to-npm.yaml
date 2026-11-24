@@ -21,7 +21,9 @@ jobs:
         name: Publish latest
         runs-on: ubuntu-22.04
         needs: [test_and_sync]
-        environment: npm
+        environment:
+            name: npm
+            deployment: false
         steps:
             # The tag's code runs with the token below, so it has to be code that already went through master.
             - name: Check that the tag is on master

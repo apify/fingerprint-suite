@@ -12,7 +12,9 @@ permissions:
 jobs:
     build_model:
         runs-on: ubuntu-22.04
-        environment: npm
+        environment:
+            name: npm
+            deployment: false
         outputs:
             version: ${{ steps.get_version.outputs.version }}
 
@@ -82,7 +84,9 @@ jobs:
 
     test_model_js:
         runs-on: ubuntu-22.04
-        environment: npm
+        environment:
+            name: npm
+            deployment: false
         needs: build_model
         steps:
             - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
@@ -127,7 +131,9 @@ jobs:
         name: Open model update PR
         needs: [build_model, test_model_js, test_model_py]
         runs-on: ubuntu-22.04
-        environment: npm
+        environment:
+            name: npm
+            deployment: false
         permissions:
             contents: write
             pull-requests: write

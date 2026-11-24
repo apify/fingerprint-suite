@@ -41,7 +41,9 @@ jobs:
         needs: find_model_update
         if: needs.find_model_update.outputs.pr-number != ''
         runs-on: ubuntu-22.04
-        environment: npm
+        environment:
+            name: npm
+            deployment: false
         permissions:
             contents: write
         steps:
