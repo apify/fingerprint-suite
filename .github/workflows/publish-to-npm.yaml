@@ -1,7 +1,12 @@
 name: Publish
+# Started by `release-published.yml`, so that it runs from master and can use the environment that holds the token.
 on:
-    release:
-        types: [published]
+    workflow_dispatch:
+        inputs:
+            tag:
+                description: Release tag to publish (e.g. v2.1.0)
+                required: true
+                type: string
 
 permissions:
     contents: write
@@ -16,10 +21,27 @@ jobs:
         name: Publish latest
         runs-on: ubuntu-22.04
         needs: [test_and_sync]
+        environment:
+            name: npm
+            deployment: false
         steps:
+            # The tag's code runs with the token below, so it has to be code that already went through master.
+            - name: Check that the tag is on master
+              env:
+                  GH_TOKEN: ${{ github.token }}
+                  TAG: ${{ inputs.tag }}
+              run: |
+                  set -euo pipefail
+                  status=$(gh api "repos/${GITHUB_REPOSITORY}/compare/master...refs/tags/${TAG}" --jq .status)
+                  if [[ "$status" != "identical" && "$status" != "behind" ]]; then
+                      echo "::error::${TAG} is not on master"
+                      exit 1
+                  fi
+
             - name: Checkout Source code
               uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
               with:
+                  ref: refs/tags/${{ inputs.tag }}
                   token: ${{ secrets.APIFY_SERVICE_ACCOUNT_GITHUB_TOKEN }}
 
             - name: Use Node.js
@@ -44,8 +66,10 @@ jobs:
                   git config --global user.name 'Apify Release Bot'
                   git config --global user.email 'noreply@apify.com'
 
-                  export GIT_TAG=$(echo $GITHUB_REF | sed 's/refs\/tags\///g')
+                  export GIT_TAG="$TAG"
                   pnpm release
+              env:
+                  TAG: ${{ inputs.tag }}
 
             - name: Commit the version bump
               uses: stefanzweifel/git-auto-commit-action@4a55954c782fc1ea30b9056cd3e7a2b40ca8887d # v7.2.0
@@ -69,6 +93,8 @@ jobs:
             url: https://pypi.org/project/crawlee
         steps:
             - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+              with:
+                  ref: refs/tags/${{ inputs.tag }}
             - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
               with:
                   python-version: '3.14'
