@@ -112,7 +112,7 @@ describe('Generation tests', () => {
             httpVersion: '2',
             browsers: [{ name: 'edge' }],
         });
-        expect(/edg/.test(headers['user-agent'].toLowerCase())).toBeTruthy();
+        expect(headers['user-agent'].toLowerCase().includes('edg')).toBeTruthy();
     });
 
     test('Generates headers consistent with operating systems input', () => {
@@ -120,7 +120,7 @@ describe('Generation tests', () => {
             httpVersion: '2',
             operatingSystems: ['linux'],
         });
-        expect(/linux/.test(headers['user-agent'].toLowerCase())).toBeTruthy();
+        expect(headers['user-agent'].toLowerCase().includes('linux')).toBeTruthy();
     });
 
     test('Generates headers consistent with devices input', () => {

@@ -1,6 +1,5 @@
-/* eslint-disable no-console */
-import fs from 'fs';
-import path from 'path';
+import fs from 'node:fs';
+import path from 'node:path';
 
 import { chromium, Page } from 'playwright';
 
@@ -11,7 +10,7 @@ import {
     FingeprintingEngine,
     VanillaPlaywright,
 } from './engine/vanilla-playwright.js';
-import { generateReport, TestResult } from './utils/generateReport.js';
+import { generateReport, TestResult } from './utils/generate-report.js';
 
 async function waitForCompletion<T>(
     promises: (() => Promise<T>)[],
@@ -19,7 +18,6 @@ async function waitForCompletion<T>(
 ): Promise<void> {
     async function worker() {
         let job;
-        /* eslint-disable-next-line no-cond-assign */
         while ((job = promises.shift())) await job();
     }
 
@@ -164,7 +162,7 @@ async function runWith(engine: FingeprintingEngine): Promise<TestResult> {
     await p.goto(`file://${path.join(import.meta.dirname, 'report.html')}`);
     await (
         await p.$('#content')
-    ).screenshot({ path: path.join(`${import.meta.dirname}`, 'report.png') });
+    ).screenshot({ path: path.join(import.meta.dirname, 'report.png') });
     await b.close();
 
     process.exit(0);

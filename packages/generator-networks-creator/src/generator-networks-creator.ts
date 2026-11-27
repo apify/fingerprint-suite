@@ -1,5 +1,5 @@
-import fs from 'fs';
-import path from 'path';
+import fs from 'node:fs';
+import path from 'node:path';
 
 import { BayesianNetwork } from 'generative-bayesian-network';
 import { getRecordSchema } from './record-schema.js';
@@ -182,17 +182,17 @@ export class GeneratorNetworksCreator {
         }
 
         if (edge.test(userAgent)) {
-            const match = userAgent.match(edge)![0].split('/');
+            const match = edge.exec(userAgent)![0].split('/');
             return `edge/${match[1]}`;
         }
 
         if (safari.test(userAgent)) {
-            const match = userAgent.match(safari);
+            const match = safari.exec(userAgent);
             return `safari/${match![1]}`;
         }
 
         if (supportedBrowsers.test(userAgent)) {
-            const match = userAgent.match(supportedBrowsers)![0].split('/');
+            const match = supportedBrowsers.exec(userAgent)![0].split('/');
             return `${canonicalNames[match[0].toLowerCase()]}/${match[1]}`;
         }
 
@@ -223,7 +223,6 @@ export class GeneratorNetworksCreator {
                 'header-network-structure.zip',
             ),
         });
-        // eslint-disable-next-line dot-notation
         const desiredHeaderAttributes = Object.keys(
             headerGeneratorNetwork['nodesByName'],
         ).filter((attribute) => !nonGeneratedNodes.includes(attribute));
@@ -308,7 +307,6 @@ export class GeneratorNetworksCreator {
             'fingerprints',
         );
         for (let x = 0; x < records.length; x++) {
-            // eslint-disable-next-line no-console
             if (x % 1000 === 0)
                 console.log(`Processing record ${x} of ${records.length}`);
             const record = records[x];
@@ -351,7 +349,6 @@ export class GeneratorNetworksCreator {
                 'fingerprint-network-structure.zip',
             ),
         });
-        // eslint-disable-next-line dot-notation
         const desiredFingerprintAttributes = Object.keys(
             fingerprintGeneratorNetwork['nodesByName'],
         );
@@ -372,7 +369,6 @@ export class GeneratorNetworksCreator {
             'fingerprint-network-definition.zip',
         );
 
-        // eslint-disable-next-line no-console
         console.log('Building the fingerprint network...');
         fingerprintGeneratorNetwork.setProbabilitiesAccordingToData(
             selectedRecords,

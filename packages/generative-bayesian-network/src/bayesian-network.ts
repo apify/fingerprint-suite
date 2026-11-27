@@ -113,7 +113,6 @@ export class BayesianNetwork {
      */
     setProbabilitiesAccordingToData(data: RecordList) {
         this.nodesInSamplingOrder.forEach((node, i) => {
-            // eslint-disable-next-line no-console
             console.log(
                 `${i}/${this.nodesInSamplingOrder.length} Setting probabilities for node ${node.name}`,
             );

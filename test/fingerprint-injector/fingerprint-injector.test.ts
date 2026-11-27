@@ -1,4 +1,4 @@
-import { setTimeout } from 'timers/promises';
+import { setTimeout } from 'node:timers/promises';
 
 import {
     BrowserFingerprintWithHeaders,
@@ -86,7 +86,6 @@ describe('FingerprintInjector', () => {
     });
 
     test('should build utils', async () => {
-        // eslint-disable-next-line dot-notation
         expect(fpInjector['utilsJs']).toBeTruthy();
     });
 
@@ -95,7 +94,6 @@ describe('FingerprintInjector', () => {
 
         try {
             const page = await browser.newPage();
-            // eslint-disable-next-line dot-notation
             const utilsJs = fpInjector['utilsJs'];
             const result = await page.evaluate((utils) => {
                 const script = document.createElement('script');
@@ -434,7 +432,6 @@ describe('FingerprintInjector', () => {
                         requestObject.headers?.();
                     const { headers } = fingerprintWithHeaders;
 
-                    // eslint-disable-next-line dot-notation
                     const onlyInjectable = new FingerprintInjector()[
                         'onlyInjectableHeaders'
                     ];

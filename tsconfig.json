@@ -1,6 +1,7 @@
 {
     "extends": "./tsconfig.build.json",
     "compilerOptions": {
+        "noEmit": true,
         "paths": {
             "header-generator": ["./packages/header-generator/src/index.ts"],
             "fingerprint-generator": ["./packages/fingerprint-generator/src/index.ts"],
