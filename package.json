@@ -36,7 +36,8 @@
         "postbuild": "node ./scripts/typescript_fixes.mjs",
         "prerelease": "pnpm build --force && turbo run copy --force --concurrency=1",
         "release": "./scripts/publish.sh",
-        "test": "vitest",
+        "test": "vitest run",
+        "tsc-check-tests": "tsc --noEmit --project test/tsconfig.json",
         "lint": "eslint && prettier . --check",
         "lint:fix": "eslint --fix && prettier . --write",
         "buildNetwork": "turbo run build && ./scripts/netgen.sh && turbo run build && pnpm verifyModel",
@@ -74,8 +75,7 @@
         "turbo": "^2.9.14",
         "typescript": "^5.0.0",
         "typescript-eslint": "^8.28.0",
-        "vite": "^8.0.0",
-        "vitest": "^4.1.10"
+        "vitest": "^5.1.2"
     },
     "overrides": {
         "eslint-config-airbnb-base": {

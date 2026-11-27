@@ -11,7 +11,7 @@ export default [
             '**/*.d.ts',
             'scripts',
             'eslint.config.mjs',
-            'vitest.config.ts',
+            'vitest.config.mts',
         ],
     },
     ...apify,

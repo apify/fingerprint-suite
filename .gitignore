@@ -30,3 +30,4 @@ tsconfig.tsbuildinfo
 scripts/dataset.json
 # Model build report written by scripts/verify-model.ts.
 model-summary.md
+vitest.config.local.mts
