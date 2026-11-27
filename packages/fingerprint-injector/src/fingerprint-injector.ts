@@ -1,18 +1,18 @@
-import { readFileSync } from 'fs';
+import { readFileSync } from 'node:fs';
 
-import {
+import type {
     BrowserFingerprintWithHeaders,
     Fingerprint,
-    FingerprintGenerator,
     FingerprintGeneratorOptions,
-    type UserAgentData,
+    UserAgentData,
 } from 'fingerprint-generator';
-import {
+import { FingerprintGenerator } from 'fingerprint-generator';
+import type {
     BrowserContext,
     Browser as PWBrowser,
     BrowserContextOptions,
 } from 'playwright';
-import { Page, Browser as PPBrowser } from 'puppeteer';
+import type { Page, Browser as PPBrowser } from 'puppeteer';
 
 interface EnhancedFingerprint extends Fingerprint {
     userAgent: string;
@@ -257,7 +257,6 @@ export class FingerprintInjector {
 
             if (slim) {
                 // @ts-expect-error internal browser code
-                // eslint-disable-next-line dot-notation
                 window['slim'] = true;
             }
 

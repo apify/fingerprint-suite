@@ -31,6 +31,8 @@ jobs:
 
             - run: pnpm lint
 
+            - run: pnpm format:check
+
     build_and_test:
         name: Build & Test
         needs: [lint]

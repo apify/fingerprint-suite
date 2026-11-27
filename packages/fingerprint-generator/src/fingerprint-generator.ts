@@ -1,9 +1,6 @@
 import { BayesianNetwork, utils } from 'generative-bayesian-network';
-import {
-    HeaderGenerator,
-    HeaderGeneratorOptions,
-    Headers,
-} from 'header-generator';
+import type { HeaderGeneratorOptions, Headers } from 'header-generator';
+import { HeaderGenerator } from 'header-generator';
 
 import { MISSING_VALUE_DATASET_TOKEN, STRINGIFIED_PREFIX } from './constants.js';
 

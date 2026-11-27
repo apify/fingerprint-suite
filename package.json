@@ -38,32 +38,33 @@
         "release": "./scripts/publish.sh",
         "test": "vitest run",
         "tsc-check-tests": "tsc --noEmit --project test/tsconfig.json",
-        "lint": "eslint && prettier . --check",
-        "lint:fix": "eslint --fix && prettier . --write",
+        "lint": "oxlint packages test --tsconfig=tsconfig.json --type-aware",
+        "lint:fix": "oxlint packages test --tsconfig=tsconfig.json --type-aware --fix",
+        "format": "oxfmt packages test --write",
+        "format:check": "oxfmt packages test --check",
         "buildNetwork": "turbo run build && ./scripts/netgen.sh && turbo run build && pnpm verifyModel",
         "verifyModel": "tsx ./scripts/verify-model.ts",
-        "benchmark": "tsx ./test/antibot-services/live-testing/cloudflare.ts"
+        "benchmark": "tsx ./test/antibot-services/live-testing/cloudflare.ts",
+        "prepare": "husky"
     },
     "devDependencies": {
-        "@apify/eslint-config": "^1.0.0",
+        "@apify/oxlint-config": "^0.4.1",
         "@apify/tsconfig": "^0.2.0",
-        "@eslint/eslintrc": "^3.3.1",
-        "@eslint/js": "^9.23.0",
         "@types/adm-zip": "^0.5.0",
         "@types/node": "^24.19.2",
         "@types/puppeteer": "^7.0.0",
         "@types/useragent": "^2.3.1",
         "browserslist": "^4.28.8",
-        "eslint": "^9.23.0",
-        "eslint-config-prettier": "^10.1.1",
         "fast-csv": "^5.0.0",
         "generator-networks-creator": "workspace:*",
-        "globals": "^17.0.0",
         "globby": "^15.0.0",
-        "husky": "^9.0.0",
+        "husky": "^9.1.7",
+        "lint-staged": "^17.6.2",
+        "oxfmt": "^0.80.0",
+        "oxlint": "^1.95.0",
+        "oxlint-tsgolint": "^7.0.2009",
         "playwright": "^1.51.1",
         "playwright-extra": "^4.3.6",
-        "prettier": "3.8.1",
         "puppeteer": "^24.4.0",
         "puppeteer-extra-plugin-stealth": "^2.11.2",
         "puppeteer-extra-plugin-user-preferences": "^2.4.1",
@@ -72,13 +73,13 @@
         "tsx": "4.21.0",
         "turbo": "^2.9.14",
         "typescript": "^7.0.2",
-        "typescript-eslint": "^8.28.0",
         "vitest": "^5.1.1"
     },
-    "overrides": {
-        "eslint-config-airbnb-base": {
-            "eslint": "$eslint"
-        }
+    "lint-staged": {
+        "{packages,test}/**/*.{js,ts,mjs,mts,cjs,cts}": [
+            "oxlint --fix --no-error-on-unmatched-pattern",
+            "oxfmt --write --no-error-on-unmatched-pattern"
+        ]
     },
     "packageManager": "pnpm@12.23.0",
     "devEngines": {
