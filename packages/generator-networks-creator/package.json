@@ -15,7 +15,7 @@
         "generative-bayesian-network": "workspace:*",
         "tslib": "^2.4.0",
         "ua-parser-js": "^2.0.10",
-        "zod": "^4.0.0"
+        "zod": "catalog:"
     },
     "repository": {
         "type": "git",
