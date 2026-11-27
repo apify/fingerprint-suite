@@ -311,7 +311,7 @@ export class FingerprintInjector {
      */
     private _loadUtils(): string {
         // path.join would be better here, but Vercel's build system doesn't like it (https://github.com/apify/fingerprint-suite/issues/135)
-        const utilsJs = readFileSync(`${__dirname}/utils.js`);
+        const utilsJs = readFileSync(`${import.meta.dirname}/utils.js`);
         return `\n${utilsJs}\n`;
     }
 

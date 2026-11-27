@@ -7,7 +7,8 @@
             "DOM",
             "ES2020"
         ],
-        "baseUrl": ".",
+        "module": "NodeNext",
+        "moduleResolution": "NodeNext",
         "allowJs": true,
         "skipLibCheck": true,
         "resolveJsonModule": true

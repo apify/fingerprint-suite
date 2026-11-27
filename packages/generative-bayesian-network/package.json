@@ -4,15 +4,13 @@
     "author": {
         "name": "Apify"
     },
-    "main": "dist/index.js",
-    "module": "dist/index.mjs",
-    "types": "dist/index.d.ts",
+    "engines": {
+        "node": ">=22.13.0"
+    },
+    "type": "module",
     "exports": {
-        ".": {
-            "import": "./dist/index.mjs",
-            "require": "./dist/index.js",
-            "types": "./dist/index.d.ts"
-        }
+        ".": "./dist/index.js",
+        "./package.json": "./package.json"
     },
     "bugs": {
         "url": "https://github.com/apify/fingerprint-suite/issues"
@@ -32,7 +30,7 @@
         "build": "pnpm clean && pnpm compile",
         "postbuild": "cp ./README.md dist/",
         "clean": "rimraf ./dist",
-        "compile": "tsc -p tsconfig.build.json && gen-esm-wrapper ./dist/index.js ./dist/index.mjs",
-        "copy": "ts-node -T ../../scripts/copy.ts"
+        "compile": "tsc -p tsconfig.build.json",
+        "copy": "tsx ../../scripts/copy.ts"
     }
 }

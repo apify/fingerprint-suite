@@ -1,1 +1,1 @@
-export * from './fingerprint-injector';
+export * from './fingerprint-injector.js';

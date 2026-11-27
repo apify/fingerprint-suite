@@ -1,6 +1,5 @@
 import { z } from 'zod';
 import { UAParser } from 'ua-parser-js';
-import fetch from 'node-fetch';
 
 const KNOWN_WEBGL_RENDERER_PARTS = [
     'AMD',
