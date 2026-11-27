@@ -1,8 +1,4 @@
-import {
-    HeaderGeneratorOptions,
-    HeaderGenerator,
-    PRESETS,
-} from 'header-generator';
+import { HeaderGeneratorOptions, HeaderGenerator, PRESETS } from 'header-generator';
 
 import { describe, expect, test } from 'vitest';
 

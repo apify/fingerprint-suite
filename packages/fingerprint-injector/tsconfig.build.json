@@ -4,10 +4,6 @@
         "outDir": "./dist",
         "rootDir": "./src"
     },
-    "include": [
-        "src/**/*"
-    ],
-    "exclude": [
-        "src/utils.js"
-    ]
+    "include": ["src/**/*"],
+    "exclude": ["src/utils.js"]
 }

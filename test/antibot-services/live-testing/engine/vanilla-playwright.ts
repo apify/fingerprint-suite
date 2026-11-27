@@ -16,11 +16,7 @@ export interface GetContextOptions {
 }
 
 export interface FingeprintingEngine {
-    getContext({
-        browserType,
-        launchOptions,
-        contextOptions,
-    }: GetContextOptions): Promise<BrowserContext>;
+    getContext({ browserType, launchOptions, contextOptions }: GetContextOptions): Promise<BrowserContext>;
 
     getEngineName(): string;
 }
@@ -29,11 +25,7 @@ export class VanillaPlaywright implements FingeprintingEngine {
     private browser: Browser | null = null;
 
     async getContext(options: GetContextOptions): Promise<BrowserContext> {
-        const {
-            browserType = 'chromium',
-            launchOptions = {},
-            contextOptions = {},
-        } = options;
+        const { browserType = 'chromium', launchOptions = {}, contextOptions = {} } = options;
 
         let browser: BrowserType;
         switch (browserType) {

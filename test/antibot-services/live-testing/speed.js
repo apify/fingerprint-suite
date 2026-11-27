@@ -40,10 +40,7 @@ async function test() {
                 : {},
         );
         if (method === 'fs') {
-            await fingerprintInjector.attachFingerprintToPlaywright(
-                context,
-                fingerprint,
-            );
+            await fingerprintInjector.attachFingerprintToPlaywright(context, fingerprint);
         }
 
         const page = await context.newPage();
@@ -52,9 +49,7 @@ async function test() {
         await page.goto(url, { waitUntil: 'load' }).catch((_) => false);
         await page.waitForTimeout(100);
         totalPass++;
-        queue = await page.$$eval('a', (links) =>
-            links.map((link) => link.href),
-        );
+        queue = await page.$$eval('a', (links) => links.map((link) => link.href));
         await page.close();
     }
     await browser.close();

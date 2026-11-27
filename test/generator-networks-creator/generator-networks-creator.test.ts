@@ -7,8 +7,7 @@ describe('Processing browser data', () => {
 
     const cases = [
         {
-            userAgent:
-                'Mozilla/5.0 (Windows NT 5.1; rv:99.0) Gecko/20100101 Firefox/99.0',
+            userAgent: 'Mozilla/5.0 (Windows NT 5.1; rv:99.0) Gecko/20100101 Firefox/99.0',
             expectedBrowser: 'firefox/99.0',
             expectedOS: 'windows',
             expectedDeviceType: 'desktop',
@@ -21,15 +20,13 @@ describe('Processing browser data', () => {
             expectedDeviceType: 'desktop',
         },
         {
-            userAgent:
-                'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/113.0',
+            userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/113.0',
             expectedBrowser: 'firefox/113.0',
             expectedOS: 'windows',
             expectedDeviceType: 'desktop',
         },
         {
-            userAgent:
-                'Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:109.0) Gecko/20100101 Firefox/113.0',
+            userAgent: 'Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:109.0) Gecko/20100101 Firefox/113.0',
             expectedBrowser: 'firefox/113.0',
             expectedOS: 'linux',
             expectedDeviceType: 'desktop',
@@ -161,27 +158,21 @@ describe('Processing browser data', () => {
 
     test('Extracts browser name/version from User-Agent', () => {
         for (const testCase of cases) {
-            const browser = networkGenerator['getBrowserNameVersion'](
-                testCase.userAgent,
-            );
+            const browser = networkGenerator['getBrowserNameVersion'](testCase.userAgent);
             expect(browser).toBe(testCase.expectedBrowser);
         }
     });
 
     test('Extracts operating system from User-Agent', () => {
         for (const testCase of cases) {
-            const os = networkGenerator['getDeviceOS'](
-                testCase.userAgent,
-            ).operatingSystem;
+            const os = networkGenerator['getDeviceOS'](testCase.userAgent).operatingSystem;
             expect(os).toBe(testCase.expectedOS);
         }
     });
 
     test('Extracts device type from User-Agent', () => {
         for (const testCase of cases) {
-            const deviceType = networkGenerator['getDeviceOS'](
-                testCase.userAgent,
-            ).device;
+            const deviceType = networkGenerator['getDeviceOS'](testCase.userAgent).device;
             expect(deviceType).toBe(testCase.expectedDeviceType);
         }
     });
