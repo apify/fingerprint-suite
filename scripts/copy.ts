@@ -17,11 +17,10 @@ function rewrite(p: string, replacer: (from: string) => string): void {
     }
 }
 
-function getProjectVersion(packageName: string) {
-    const version = execSync(`pnpm show ${packageName} version`)
-        .toString()
-        .trim();
-    return version;
+function getProjectVersion(projectPath: string): string {
+    return JSON.parse(
+        readFileSync(join(projectPath, 'package.json')).toString(),
+    ).version;
 }
 
 if (!process.env.GIT_TAG || semver.valid(process.env.GIT_TAG) === null) {
