@@ -3,10 +3,9 @@ name: Run tests
 on:
     # Push to master will deploy a dev version, push to stable deploys the latest version (and syncs the master branch)
     push:
-        branches: [master, stable]
-    # PRs will run tests (skip deployment)
+        branches: [master, stable, major/v3]
+    # PRs will run tests (skip deployment), including stacked ones targeting other branches
     pull_request:
-        branches: [master, stable]
     # A release via GitHub releases will deploy the latest version
     workflow_call:
     workflow_dispatch:
