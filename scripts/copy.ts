@@ -1,5 +1,5 @@
-import { copyFileSync, readFileSync, writeFileSync } from 'fs';
-import { join } from 'path';
+import { copyFileSync, readFileSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { execSync } from 'node:child_process';
 import semver from 'semver';
 
@@ -17,11 +17,10 @@ function rewrite(p: string, replacer: (from: string) => string): void {
     }
 }
 
-function getProjectVersion(packageName: string) {
-    const version = execSync(`pnpm show ${packageName} version`)
-        .toString()
-        .trim();
-    return version;
+function getProjectVersion(projectPath: string): string {
+    return JSON.parse(
+        readFileSync(join(projectPath, 'package.json')).toString(),
+    ).version;
 }
 
 if (!process.env.GIT_TAG || semver.valid(process.env.GIT_TAG) === null) {
@@ -35,18 +34,18 @@ GITHUB_REF: ${process.env.GITHUB_REF}`,
 
 const targetVersion = semver.valid(process.env.GIT_TAG);
 
-let rootVersion = getProjectVersion(`${__dirname}/../`);
+let rootVersion = getProjectVersion(`${import.meta.dirname}/../`);
 const currentLocalVersion = getProjectVersion(process.cwd());
 
 if (semver.gt(targetVersion!, rootVersion)) {
     execSync(
-        `cd ${__dirname}/../ && pnpm version ${targetVersion} --no-git-tag-version`,
+        `cd ${import.meta.dirname}/../ && pnpm version ${targetVersion} --no-git-tag-version`,
         {
             encoding: 'utf-8',
         },
     );
 
-    rootVersion = getProjectVersion(`${__dirname}/../`);
+    rootVersion = getProjectVersion(`${import.meta.dirname}/../`);
 }
 
 if (
@@ -68,7 +67,7 @@ if (
 
 // as we publish only the dist folder, we need to copy some meta files inside (readme/license/package.json)
 // also changes paths inside the copied `package.json` (`dist/index.js` -> `index.js`)
-const root = join(__dirname, '..');
+const root = join(import.meta.dirname, '..');
 const target = join(process.cwd(), 'dist');
 
 copy('README.md', root, target);
@@ -78,6 +77,33 @@ rewrite(join(target, 'package.json'), (pkg) => pkg.replace(/dist\//g, ''));
 rewrite(join(target, 'package.json'), (pkg) =>
     pkg.replace(/workspace:\*/g, rootVersion),
 );
+
+// Same for the `catalog:` protocol, inline the versions from `pnpm-workspace.yaml`.
+const workspaceYaml = readFileSync(join(root, 'pnpm-workspace.yaml')).toString();
+const catalogBlock =
+    workspaceYaml.match(/^catalog:\n((?: {4}.+\n)+)/m)?.[1] ?? '';
+const catalog: Record<string, string> = {};
+
+for (const line of catalogBlock.split('\n')) {
+    const match = line.match(/^ {4}["']?([^"':]+)["']?:\s*["']?(.+?)["']?\s*$/);
+    if (match) catalog[match[1]] = match[2];
+}
+
+const targetPackageJson = join(target, 'package.json');
+writeFileSync(
+    targetPackageJson,
+    readFileSync(targetPackageJson)
+        .toString()
+        .replace(/"([^"]+)": "catalog:"/g, (_, dep: string) => {
+            if (!catalog[dep]) {
+                throw new Error(
+                    `Missing catalog entry for '${dep}' in pnpm-workspace.yaml`,
+                );
+            }
+            return `"${dep}": "${catalog[dep]}"`;
+        }),
+);
+
 rewrite(join(target, 'utils.js'), (pkg) =>
     pkg.replace('../package.json', './package.json'),
 );

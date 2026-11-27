@@ -5,21 +5,18 @@ import { parseFile } from 'fast-csv';
 
 import { describe, expect, test } from 'vitest';
 
-const testNetworkDefinitionPath = path.join(
-    __dirname,
-    './testNetworkDefinition.zip',
-);
+const testNetworkDefinitionPath = path.join(import.meta.dirname, './testNetworkDefinition.zip');
 
 describe('Setup test', () => {
     const testGeneratorNetwork = new BayesianNetwork({
-        path: path.join(__dirname, './testNetworkStructureDefinition.zip'),
+        path: path.join(import.meta.dirname, './testNetworkStructureDefinition.zip'),
     });
 
     test('Calculates probabilities from data', async () => {
         const rows: string[][] = [];
 
         await new Promise<void>((res) => {
-            parseFile(path.join(__dirname, './testDataset.csv'))
+            parseFile(path.join(import.meta.dirname, './testDataset.csv'))
                 .on('data', (r) => rows.push(r))
                 .on('end', () => {
                     res();
@@ -58,12 +55,8 @@ describe('Generation tests', () => {
             ATTR3: 'ATTR3_VAL2',
         };
         const sample = testGeneratorNetwork.generateSample(knownValues);
-        for (const attribute of Object.keys(
-            knownValues,
-        ) as (keyof typeof knownValues)[]) {
-            expect(
-                (sample as any)[attribute] === knownValues[attribute],
-            ).toBeTruthy();
+        for (const attribute of Object.keys(knownValues) as (keyof typeof knownValues)[]) {
+            expect((sample as any)[attribute] === knownValues[attribute]).toBeTruthy();
         }
     });
 
@@ -73,16 +66,11 @@ describe('Generation tests', () => {
             ATTR3: ['ATTR3_VAL2', 'ATTR3_VAL3'],
             ATTR5: ['ATTR5_VAL1', 'ATTR5_VAL3'],
         };
-        const sample =
-            testGeneratorNetwork.generateConsistentSampleWhenPossible(
-                valuePossibilities,
-            );
+        const sample = testGeneratorNetwork.generateConsistentSampleWhenPossible(valuePossibilities);
         for (const attribute of Object.keys(sample)) {
             if (attribute in valuePossibilities) {
                 expect(
-                    valuePossibilities[
-                        attribute as keyof typeof valuePossibilities
-                    ].includes(sample[attribute]),
+                    valuePossibilities[attribute as keyof typeof valuePossibilities].includes(sample[attribute]),
                 ).toBeTruthy();
             }
         }

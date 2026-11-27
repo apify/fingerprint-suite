@@ -1,10 +1,9 @@
+import { ArgumentValidationError } from '@apify/validations';
 import { HeaderGenerator, HeaderGeneratorOptions } from 'header-generator';
 
 import { describe, expect, test } from 'vitest';
 
-function extractLocalesFromAcceptLanguageHeader(
-    acceptLanguageHeader: string,
-): string[] {
+function extractLocalesFromAcceptLanguageHeader(acceptLanguageHeader: string): string[] {
     const extractedLocales = [];
     const localesWithWeight = acceptLanguageHeader.split(',');
     for (const localeWithWeight of localesWithWeight) {
@@ -69,11 +68,7 @@ describe('Generation tests', () => {
         const generator = new HeaderGenerator();
         const ordered = generator.orderHeaders(headers);
         expect(ordered).toEqual(headers);
-        expect(Object.keys(ordered)).toEqual([
-            'Connection',
-            'user-agent',
-            'cookie',
-        ]);
+        expect(Object.keys(ordered)).toEqual(['Connection', 'user-agent', 'cookie']);
     });
 
     test('Orders headers works without user-agent', () => {
@@ -101,9 +96,7 @@ describe('Generation tests', () => {
             httpVersion: '2',
             locales: requestedLocales,
         });
-        const extractedLocales = extractLocalesFromAcceptLanguageHeader(
-            headers['accept-language'],
-        );
+        const extractedLocales = extractLocalesFromAcceptLanguageHeader(headers['accept-language']);
         expect(requestedLocales.sort()).toEqual(extractedLocales.sort());
     });
 
@@ -112,7 +105,7 @@ describe('Generation tests', () => {
             httpVersion: '2',
             browsers: [{ name: 'edge' }],
         });
-        expect(/edg/.test(headers['user-agent'].toLowerCase())).toBeTruthy();
+        expect(headers['user-agent'].toLowerCase().includes('edg')).toBeTruthy();
     });
 
     test('Generates headers consistent with operating systems input', () => {
@@ -120,7 +113,7 @@ describe('Generation tests', () => {
             httpVersion: '2',
             operatingSystems: ['linux'],
         });
-        expect(/linux/.test(headers['user-agent'].toLowerCase())).toBeTruthy();
+        expect(headers['user-agent'].toLowerCase().includes('linux')).toBeTruthy();
     });
 
     test('Generates headers consistent with devices input', () => {
@@ -128,13 +121,11 @@ describe('Generation tests', () => {
             httpVersion: '2',
             devices: ['mobile'],
         });
-        expect(
-            /phone|android|mobile/i.test(headers['user-agent']),
-        ).toBeTruthy();
+        expect(/phone|android|mobile/i.test(headers['user-agent'])).toBeTruthy();
     });
 
     test('Strict mode throws an error when nothing can be generated', () => {
-        try {
+        expect(() =>
             headerGenerator.getHeaders({
                 browsers: [
                     {
@@ -142,17 +133,31 @@ describe('Generation tests', () => {
                     },
                 ],
                 strict: true,
-            } as unknown as HeaderGeneratorOptions);
-            fail(
-                "HeaderGenerator didn't throw an error when trying to generate headers for a nonexisting browser.",
-            );
-        } catch (error) {
-            expect(error).toEqual(
-                new Error(
-                    'No headers based on this input can be generated. Please relax or change some of the requirements you specified.',
-                ),
-            );
-        }
+            } as unknown as HeaderGeneratorOptions),
+        ).toThrow(
+            'No headers based on this input can be generated. Please relax or change some of the requirements you specified.',
+        );
+    });
+
+    test('Rejects invalid options', () => {
+        expect(
+            () =>
+                new HeaderGenerator({
+                    browsers: ['opera'],
+                } as unknown as HeaderGeneratorOptions),
+        ).toThrow(ArgumentValidationError);
+
+        expect(() =>
+            headerGenerator.getHeaders({
+                browsers: [{ name: 'chrome', foo: 'bar' }],
+            } as unknown as HeaderGeneratorOptions),
+        ).toThrow(ArgumentValidationError);
+
+        expect(() =>
+            headerGenerator.getHeaders({
+                httpVersion: '3',
+            } as unknown as HeaderGeneratorOptions),
+        ).toThrow(/HeaderGeneratorOptions/);
     });
 
     test('Default mode generates an approximately good header', () => {

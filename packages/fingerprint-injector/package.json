@@ -4,17 +4,12 @@
     "description": "Browser fingerprint injection library for Playwright and Puppeteer.",
     "homepage": "https://github.com/apify/fingerprint-suite",
     "engines": {
-        "node": ">=16.0.0"
+        "node": ">=22.13.0"
     },
-    "main": "dist/index.js",
-    "module": "dist/index.mjs",
-    "types": "dist/index.d.ts",
+    "type": "module",
     "exports": {
-        ".": {
-            "import": "./dist/index.mjs",
-            "require": "./dist/index.js",
-            "types": "./dist/index.d.ts"
-        }
+        ".": "./dist/index.js",
+        "./package.json": "./package.json"
     },
     "dependencies": {
         "fingerprint-generator": "workspace:*",
@@ -34,10 +29,10 @@
     },
     "scripts": {
         "build": "pnpm clean && pnpm compile",
-        "postbuild": "cp ../../README.md dist/",
+        "postbuild": "cp src/utils.js dist/ && cp ../../README.md dist/",
         "clean": "rimraf ./dist",
-        "compile": "tsc -p tsconfig.build.json && gen-esm-wrapper ./dist/index.js ./dist/index.mjs",
-        "copy": "ts-node -T ../../scripts/copy.ts"
+        "compile": "tsc -p tsconfig.build.json",
+        "copy": "tsx ../../scripts/copy.ts"
     },
     "author": {
         "name": "Apify",

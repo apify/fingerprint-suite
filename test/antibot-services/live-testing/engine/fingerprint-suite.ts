@@ -1,7 +1,7 @@
 import { FingerprintGenerator } from 'fingerprint-generator';
 import { FingerprintInjector } from 'fingerprint-injector';
 
-import { VanillaPlaywright } from './vanilla-playwright';
+import { VanillaPlaywright } from './vanilla-playwright.js';
 
 export class FingerprintSuite extends VanillaPlaywright {
     override getContext: VanillaPlaywright['getContext'] = async (options) => {
@@ -21,10 +21,7 @@ export class FingerprintSuite extends VanillaPlaywright {
             },
         });
 
-        await new FingerprintInjector().attachFingerprintToPlaywright(
-            context,
-            fingerprint,
-        );
+        await new FingerprintInjector().attachFingerprintToPlaywright(context, fingerprint);
 
         return context;
     };

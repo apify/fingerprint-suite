@@ -1,10 +1,7 @@
-const { chromium } = require('playwright');
-const {
-    FingerprintGenerator,
-} = require('../../packages/fingerprint-generator/dist/index.mjs');
-const {
-    FingerprintInjector,
-} = require('../../packages/fingerprint-injector/dist/index.mjs');
+import { chromium } from 'playwright';
+
+import { FingerprintGenerator } from '../../packages/fingerprint-generator/dist/index.js';
+import { FingerprintInjector } from '../../packages/fingerprint-injector/dist/index.js';
 
 const services = [
     {
@@ -14,14 +11,10 @@ const services = [
             await page.waitForTimeout(5000);
 
             const results = await page.$$('#result-table tr td:nth-child(2)');
-            const resultTexts = await Promise.all(
-                results.map((x) => x.textContent()),
-            );
+            const resultTexts = await Promise.all(results.map((x) => x.textContent()));
 
             const score =
-                (resultTexts.length -
-                    resultTexts.filter((x) => x === 'not detected').length) /
-                resultTexts.length;
+                (resultTexts.length - resultTexts.filter((x) => x === 'not detected').length) / resultTexts.length;
 
             return String.fromCharCode('A'.charCodeAt() + 5 * score);
         },
@@ -43,9 +36,7 @@ const services = [
 const service = process.argv[2];
 
 if (!services.find((x) => x.name === service))
-    throw new Error(
-        `Support for the selected service '${service}' is not (yet) implemented.`,
-    );
+    throw new Error(`Support for the selected service '${service}' is not (yet) implemented.`);
 
 (async () => {
     const b = await chromium.launch({ headless: false });

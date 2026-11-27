@@ -1,35 +1,24 @@
-/* eslint-disable no-console */
-import fs from 'fs';
-import path from 'path';
+import fs from 'node:fs';
+import path from 'node:path';
 
 import { chromium, Page } from 'playwright';
 
-import { FingerprintSuiteExtra } from './engine/combo';
-import { FingerprintSuite } from './engine/fingerprint-suite';
-import { PlaywrightExtra } from './engine/playwright-extra';
-import {
-    FingeprintingEngine,
-    VanillaPlaywright,
-} from './engine/vanilla-playwright';
-import { generateReport, TestResult } from './utils/generateReport';
+import { FingerprintSuiteExtra } from './engine/combo.js';
+import { FingerprintSuite } from './engine/fingerprint-suite.js';
+import { PlaywrightExtra } from './engine/playwright-extra.js';
+import { FingeprintingEngine, VanillaPlaywright } from './engine/vanilla-playwright.js';
+import { generateReport, TestResult } from './utils/generate-report.js';
 
-async function waitForCompletion<T>(
-    promises: (() => Promise<T>)[],
-    maxConcurrency: number,
-): Promise<void> {
+async function waitForCompletion<T>(promises: (() => Promise<T>)[], maxConcurrency: number): Promise<void> {
     async function worker() {
         let job;
-        /* eslint-disable-next-line no-cond-assign */
         while ((job = promises.shift())) await job();
     }
 
     await Promise.all([...new Array(maxConcurrency)].map(async () => worker()));
 }
 
-const source = fs.readFileSync(
-    path.join(__dirname, 'cloudflare-websites.csv'),
-    'utf8',
-);
+const source = fs.readFileSync(path.join(import.meta.dirname, 'cloudflare-websites.csv'), 'utf8');
 const pages = source.split('\n');
 
 async function runWith(engine: FingeprintingEngine): Promise<TestResult> {
@@ -40,9 +29,7 @@ async function runWith(engine: FingeprintingEngine): Promise<TestResult> {
 
     async function processUrl(url: string) {
         async function gotDetected(page: Page) {
-            return (await page.textContent('body'))
-                .toLowerCase()
-                .includes('is secure');
+            return (await page.textContent('body')).toLowerCase().includes('is secure');
         }
 
         const context = await engine.getContext({
@@ -75,22 +62,18 @@ async function runWith(engine: FingeprintingEngine): Promise<TestResult> {
 
         const start = Date.now();
         if (
-            await page
-                .goto(url, { waitUntil: 'domcontentloaded', timeout: 10000 })
-                .catch(async () => {
-                    return page
-                        .goto(url, {
-                            waitUntil: 'domcontentloaded',
-                            timeout: 10000,
-                        })
-                        .catch((x) => {
-                            console.log(
-                                `[${engine.getEngineName()}] ❌ ${x.message}`,
-                            );
-                            unreachable++;
-                            return false;
-                        });
-                })
+            await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 10000 }).catch(async () => {
+                return page
+                    .goto(url, {
+                        waitUntil: 'domcontentloaded',
+                        timeout: 10000,
+                    })
+                    .catch((x) => {
+                        console.log(`[${engine.getEngineName()}] ❌ ${x.message}`);
+                        unreachable++;
+                        return false;
+                    });
+            })
         ) {
             let busted = await gotDetected(page);
 
@@ -99,9 +82,7 @@ async function runWith(engine: FingeprintingEngine): Promise<TestResult> {
                 await page.waitForTimeout(10000);
                 busted = await gotDetected(page);
             }
-            console.log(
-                `[${engine.getEngineName()}] ${!busted ? '✅' : '❌'} ${url} `,
-            );
+            console.log(`[${engine.getEngineName()}] ${!busted ? '✅' : '❌'} ${url} `);
 
             if (busted) {
                 blocked++;
@@ -144,7 +125,7 @@ async function runWith(engine: FingeprintingEngine): Promise<TestResult> {
     ]);
 
     fs.writeFileSync(
-        path.join(__dirname, 'report.html'),
+        path.join(import.meta.dirname, 'report.html'),
         generateReport({
             '🎭️ Vanilla Playwright': results[0],
             '🍪 Playwright Extra': results[2],
@@ -161,10 +142,8 @@ async function runWith(engine: FingeprintingEngine): Promise<TestResult> {
         },
     });
     const p = await c.newPage();
-    await p.goto(`file://${path.join(__dirname, 'report.html')}`);
-    await (
-        await p.$('#content')
-    ).screenshot({ path: path.join(`${__dirname}`, 'report.png') });
+    await p.goto(`file://${path.join(import.meta.dirname, 'report.html')}`);
+    await (await p.$('#content')).screenshot({ path: path.join(import.meta.dirname, 'report.png') });
     await b.close();
 
     process.exit(0);

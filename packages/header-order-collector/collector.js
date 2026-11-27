@@ -50,13 +50,7 @@ async function getHeadersFor(launcher, httpVersion) {
     try {
         const x = await Promise.all(
             Object.entries(browserTypes).map(async ([name, launcher]) => {
-                return [
-                    name,
-                    [
-                        ...(await getHeadersFor(launcher, 1)),
-                        ...(await getHeadersFor(launcher, 2)),
-                    ],
-                ];
+                return [name, [...(await getHeadersFor(launcher, 1)), ...(await getHeadersFor(launcher, 2))]];
             }),
         );
         console.log(JSON.stringify(Object.fromEntries(x), null, 4));

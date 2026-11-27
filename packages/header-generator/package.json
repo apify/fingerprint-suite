@@ -10,30 +10,26 @@
     "homepage": "https://github.com/apify/fingerprint-suite",
     "license": "Apache-2.0",
     "engines": {
-        "node": ">=16.0.0"
+        "node": ">=22.13.0"
     },
-    "main": "dist/index.js",
-    "module": "dist/index.mjs",
-    "types": "dist/index.d.ts",
+    "type": "module",
     "exports": {
-        ".": {
-            "import": "./dist/index.mjs",
-            "require": "./dist/index.js",
-            "types": "./dist/index.d.ts"
-        }
+        ".": "./dist/index.js",
+        "./package.json": "./package.json"
     },
     "dependencies": {
+        "@apify/validations": "^1.1.4",
         "browserslist": "^4.28.8",
         "generative-bayesian-network": "workspace:*",
-        "ow": "^0.28.1",
-        "tslib": "^2.4.0"
+        "tslib": "^2.4.0",
+        "zod": "catalog:"
     },
     "scripts": {
         "build": "pnpm clean && pnpm compile",
         "postbuild": "cp -r src/data_files/ dist/ && cp ./README.md dist/",
         "clean": "rimraf ./dist",
-        "compile": "tsc -p tsconfig.build.json && gen-esm-wrapper ./dist/index.js ./dist/index.mjs",
-        "copy": "ts-node -T ../../scripts/copy.ts"
+        "compile": "tsc -p tsconfig.build.json",
+        "copy": "tsx ../../scripts/copy.ts"
     },
     "bugs": {
         "url": "https://github.com/apify/fingerprint-suite/issues"

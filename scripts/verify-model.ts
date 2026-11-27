@@ -28,10 +28,10 @@ import browserslist from 'browserslist';
 // Imported by relative path rather than package name so this script needs no
 // entry in the root manifest, and so it exercises the same sources the packages
 // publish.
-import { FingerprintGenerator } from '../packages/fingerprint-generator/src';
-import { HeaderGenerator } from '../packages/header-generator/src';
+import { FingerprintGenerator } from '../packages/fingerprint-generator/src/index.js';
+import { HeaderGenerator } from '../packages/header-generator/src/index.js';
 
-const REPO_ROOT = path.join(__dirname, '..');
+const REPO_ROOT = path.join(import.meta.dirname, '..');
 const HELPER_FILE_REL =
     'packages/header-generator/src/data_files/browser-helper-file.json';
 

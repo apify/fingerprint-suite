@@ -1,6 +1,9 @@
 packages:
     - packages/*
 
+catalog:
+    zod: ^4.6.7
+
 minimumReleaseAge: 1440
 minimumReleaseAgeExclude:
     - '@apify/*'
@@ -10,12 +13,18 @@ minimumReleaseAgeExclude:
     - 'crawlee'
     - 'got-scraping'
 
-onlyBuiltDependencies:
-    - "@swc/core"
-    - esbuild
-    - playwright
-    - playwright-core
-    - puppeteer
+allowBuilds:
+    '@swc/core': true
+    esbuild: true
+    playwright: true
+    playwright-core: true
+    puppeteer: true
+
+strictDepBuilds: false
+
+# turbo runs the package scripts in parallel, and pnpm's automatic install before each `pnpm run` makes them
+# contend on the store and lockfile. CI runs `pnpm install --frozen-lockfile` explicitly anyway.
+verifyDepsBeforeRun: false
 
 nodeLinker: hoisted
 linkWorkspacePackages: true

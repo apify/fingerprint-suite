@@ -1,42 +1,26 @@
-import { readFileSync } from 'fs';
+import { readFileSync } from 'node:fs';
 
-import {
+import type {
     BrowserFingerprintWithHeaders,
     Fingerprint,
-    FingerprintGenerator,
     FingerprintGeneratorOptions,
-    type UserAgentData,
+    UserAgentData,
 } from 'fingerprint-generator';
-import {
-    BrowserContext,
-    Browser as PWBrowser,
-    BrowserContextOptions,
-} from 'playwright';
-import { Page, Browser as PPBrowser } from 'puppeteer';
+import { FingerprintGenerator } from 'fingerprint-generator';
+import type { BrowserContext, Browser as PWBrowser, BrowserContextOptions } from 'playwright';
+import type { Page, Browser as PPBrowser } from 'puppeteer';
 
 interface EnhancedFingerprint extends Fingerprint {
     userAgent: string;
     historyLength: number;
 }
 
-declare function overrideInstancePrototype<T>(
-    instance: T,
-    overrideObj: Partial<T>,
-): void;
+declare function overrideInstancePrototype<T>(instance: T, overrideObj: Partial<T>): void;
 declare function overrideUserAgentData(userAgentData: UserAgentData): void;
-declare function overrideDocumentDimensionsProps(
-    props: Record<string, number>,
-): void;
-declare function overrideWindowDimensionsProps(
-    props: Record<string, number>,
-): void;
-declare function overrideBattery(
-    batteryInfo?: Record<string, string | number>,
-): void;
-declare function overrideCodecs(
-    audioCodecs: Record<string, string>,
-    videoCodecs: Record<string, string>,
-): void;
+declare function overrideDocumentDimensionsProps(props: Record<string, number>): void;
+declare function overrideWindowDimensionsProps(props: Record<string, number>): void;
+declare function overrideBattery(batteryInfo?: Record<string, string | number>): void;
+declare function overrideCodecs(audioCodecs: Record<string, string>, videoCodecs: Record<string, string>): void;
 declare function overrideWebGl(webGlInfo: Record<string, string>): void;
 declare function overrideIntlAPI(language: string): void;
 declare function overrideStatic(): void;
@@ -56,10 +40,7 @@ export class FingerprintInjector {
      * @param headers Headers to be filtered.
      * @returns Filtered headers.
      */
-    private onlyInjectableHeaders(
-        headers: Record<string, string>,
-        browserName?: string,
-    ): Record<string, string> {
+    private onlyInjectableHeaders(headers: Record<string, string>, browserName?: string): Record<string, string> {
         const requestHeaders = [
             'accept-encoding',
             'accept',
@@ -101,8 +82,7 @@ export class FingerprintInjector {
         const { fingerprint, headers } = browserFingerprintWithHeaders;
         const enhancedFingerprint = this._enhanceFingerprint(fingerprint);
 
-        const content =
-            this.getInjectableFingerprintFunction(enhancedFingerprint);
+        const content = this.getInjectableFingerprintFunction(enhancedFingerprint);
 
         const browserName = browserContext.browser()?.browserType().name();
 
@@ -111,10 +91,7 @@ export class FingerprintInjector {
             ...Object.fromEntries(
                 // @ts-expect-error Accessing private property
                 (browserContext._options?.extraHTTPHeaders ?? []).map(
-                    ({ name, value }: { name: string; value: string }) => [
-                        name,
-                        value,
-                    ],
+                    ({ name, value }: { name: string; value: string }) => [name, value],
                 ),
             ),
         });
@@ -162,26 +139,18 @@ export class FingerprintInjector {
                 deviceScaleFactor: screen.devicePixelRatio,
             });
 
-            await page.setExtraHTTPHeaders(
-                this.onlyInjectableHeaders(headers, browserVersion),
-            );
+            await page.setExtraHTTPHeaders(this.onlyInjectableHeaders(headers, browserVersion));
 
-            await page.emulateMediaFeatures([
-                { name: 'prefers-color-scheme', value: 'dark' },
-            ]);
+            await page.emulateMediaFeatures([{ name: 'prefers-color-scheme', value: 'dark' }]);
         }
 
-        await page.evaluateOnNewDocument(
-            this.getInjectableFingerprintFunction(enhancedFingerprint),
-        );
+        await page.evaluateOnNewDocument(this.getInjectableFingerprintFunction(enhancedFingerprint));
     }
 
     /**
      * Gets the override script that should be evaluated in the browser.
      */
-    getInjectableScript(
-        browserFingerprintWithHeaders: BrowserFingerprintWithHeaders,
-    ): string {
+    getInjectableScript(browserFingerprintWithHeaders: BrowserFingerprintWithHeaders): string {
         const { fingerprint } = browserFingerprintWithHeaders;
         const enhancedFingerprint = this._enhanceFingerprint(fingerprint);
 
@@ -193,18 +162,11 @@ export class FingerprintInjector {
      * @param fingerprint Enhanced fingerprint.
      * @returns Script overriding browser fingerprint.
      */
-    private getInjectableFingerprintFunction(
-        fingerprint: EnhancedFingerprint,
-    ): string {
+    private getInjectableFingerprintFunction(fingerprint: EnhancedFingerprint): string {
         function inject() {
             const {
                 battery,
-                navigator: {
-                    extraProperties,
-                    userAgentData,
-                    webdriver,
-                    ...navigatorProps
-                },
+                navigator: { extraProperties, userAgentData, webdriver, ...navigatorProps },
                 screen: allScreenProps,
                 videoCard,
                 historyLength,
@@ -257,7 +219,6 @@ export class FingerprintInjector {
 
             if (slim) {
                 // @ts-expect-error internal browser code
-                // eslint-disable-next-line dot-notation
                 window['slim'] = true;
             }
 
@@ -311,7 +272,7 @@ export class FingerprintInjector {
      */
     private _loadUtils(): string {
         // path.join would be better here, but Vercel's build system doesn't like it (https://github.com/apify/fingerprint-suite/issues/135)
-        const utilsJs = readFileSync(`${__dirname}/utils.js`);
+        const utilsJs = readFileSync(`${import.meta.dirname}/utils.js`);
         return `\n${utilsJs}\n`;
     }
 
@@ -337,9 +298,7 @@ export async function newInjectedContext(
     },
 ): Promise<BrowserContext> {
     const generator = new FingerprintGenerator();
-    const fingerprintWithHeaders =
-        options?.fingerprint ??
-        generator.getFingerprint(options?.fingerprintOptions);
+    const fingerprintWithHeaders = options?.fingerprint ?? generator.getFingerprint(options?.fingerprintOptions);
 
     const { fingerprint, headers } = fingerprintWithHeaders;
     const context = await browser.newContext({
@@ -358,10 +317,7 @@ export async function newInjectedContext(
     });
 
     const injector = new FingerprintInjector();
-    await injector.attachFingerprintToPlaywright(
-        context,
-        fingerprintWithHeaders,
-    );
+    await injector.attachFingerprintToPlaywright(context, fingerprintWithHeaders);
 
     return context;
 }
@@ -374,9 +330,7 @@ export async function newInjectedPage(
     },
 ): Promise<Page> {
     const generator = new FingerprintGenerator();
-    const fingerprintWithHeaders =
-        options?.fingerprint ??
-        generator.getFingerprint(options?.fingerprintOptions);
+    const fingerprintWithHeaders = options?.fingerprint ?? generator.getFingerprint(options?.fingerprintOptions);
 
     const page = await browser.newPage();
 
