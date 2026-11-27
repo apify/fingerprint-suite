@@ -1,4 +1,4 @@
-import type { BayesianNetwork } from './bayesian-network';
+import type { BayesianNetwork } from './bayesian-network.js';
 
 /**
  * Performs a set "intersection" on the given (flat) arrays.

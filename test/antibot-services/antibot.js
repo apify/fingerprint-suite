@@ -1,10 +1,7 @@
-const { chromium } = require('playwright');
-const {
-    FingerprintGenerator,
-} = require('../../packages/fingerprint-generator/dist/index.mjs');
-const {
-    FingerprintInjector,
-} = require('../../packages/fingerprint-injector/dist/index.mjs');
+import { chromium } from 'playwright';
+
+import { FingerprintGenerator } from '../../packages/fingerprint-generator/dist/index.js';
+import { FingerprintInjector } from '../../packages/fingerprint-injector/dist/index.js';
 
 const services = [
     {

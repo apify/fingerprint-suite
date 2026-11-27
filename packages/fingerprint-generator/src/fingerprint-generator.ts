@@ -5,7 +5,7 @@ import {
     Headers,
 } from 'header-generator';
 
-import { MISSING_VALUE_DATASET_TOKEN, STRINGIFIED_PREFIX } from './constants';
+import { MISSING_VALUE_DATASET_TOKEN, STRINGIFIED_PREFIX } from './constants.js';
 
 export type ScreenFingerprint = {
     availHeight: number;
@@ -164,7 +164,7 @@ export class FingerprintGenerator extends HeaderGenerator {
             slim: options.slim,
         };
         this.fingerprintGeneratorNetwork = new BayesianNetwork({
-            path: `${__dirname}/data_files/fingerprint-network-definition.zip`,
+            path: `${import.meta.dirname}/data_files/fingerprint-network-definition.zip`,
         });
     }
 

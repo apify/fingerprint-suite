@@ -134,7 +134,7 @@ describe('Generation tests', () => {
     });
 
     test('Strict mode throws an error when nothing can be generated', () => {
-        try {
+        expect(() =>
             headerGenerator.getHeaders({
                 browsers: [
                     {
@@ -142,17 +142,10 @@ describe('Generation tests', () => {
                     },
                 ],
                 strict: true,
-            } as unknown as HeaderGeneratorOptions);
-            fail(
-                "HeaderGenerator didn't throw an error when trying to generate headers for a nonexisting browser.",
-            );
-        } catch (error) {
-            expect(error).toEqual(
-                new Error(
-                    'No headers based on this input can be generated. Please relax or change some of the requirements you specified.',
-                ),
-            );
-        }
+            } as unknown as HeaderGeneratorOptions),
+        ).toThrow(
+            'No headers based on this input can be generated. Please relax or change some of the requirements you specified.',
+        );
     });
 
     test('Default mode generates an approximately good header', () => {

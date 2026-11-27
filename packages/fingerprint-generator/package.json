@@ -4,24 +4,19 @@
     "description": "NodeJS package for generating realistic browser fingerprints.",
     "homepage": "https://github.com/apify/fingerprint-suite",
     "engines": {
-        "node": ">=16.0.0"
+        "node": ">=22.13.0"
     },
-    "main": "dist/index.js",
-    "module": "dist/index.mjs",
-    "types": "dist/index.d.ts",
+    "type": "module",
     "exports": {
-        ".": {
-            "import": "./dist/index.mjs",
-            "require": "./dist/index.js",
-            "types": "./dist/index.d.ts"
-        }
+        ".": "./dist/index.js",
+        "./package.json": "./package.json"
     },
     "scripts": {
         "build": "pnpm clean && pnpm compile",
         "postbuild": "cp -r src/data_files dist/ && cp ../../README.md dist/",
         "clean": "rimraf ./dist",
-        "compile": "tsc -p tsconfig.build.json && gen-esm-wrapper ./dist/index.js ./dist/index.mjs",
-        "copy": "ts-node -T ../../scripts/copy.ts"
+        "compile": "tsc -p tsconfig.build.json",
+        "copy": "tsx ../../scripts/copy.ts"
     },
     "repository": {
         "type": "git",

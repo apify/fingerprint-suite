@@ -3,10 +3,10 @@ name: Run tests
 on:
     # Push to master will deploy a dev version, push to stable deploys the latest version (and syncs the master branch)
     push:
-        branches: [master, stable]
+        branches: [master, stable, major/v3]
     # PRs will run tests (skip deployment)
     pull_request:
-        branches: [master, stable]
+        branches: [master, stable, major/v3]
     # A release via GitHub releases will deploy the latest version
     workflow_call:
     workflow_dispatch:
@@ -39,7 +39,7 @@ jobs:
         strategy:
             matrix:
                 os: [ubuntu-22.04]
-                node-version: [20, 22, 24]
+                node-version: [22, 24, 26]
 
         steps:
             - uses: actions/checkout@v6.1.0
@@ -69,6 +69,9 @@ jobs:
 
             - name: Build
               run: pnpm build
+
+            - name: Test TS
+              run: pnpm tsc-check-tests
 
             - name: Run Windows or MacOs tests
               run: pnpm test

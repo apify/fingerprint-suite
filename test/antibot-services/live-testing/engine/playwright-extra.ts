@@ -2,7 +2,7 @@ import type { Browser, BrowserContext } from 'playwright';
 import { chromium } from 'playwright-extra';
 import stealth from 'puppeteer-extra-plugin-stealth';
 
-import { FingeprintingEngine, GetContextOptions } from './vanilla-playwright';
+import { FingeprintingEngine, GetContextOptions } from './vanilla-playwright.js';
 
 export class PlaywrightExtra implements FingeprintingEngine {
     private browser: Browser | null = null;

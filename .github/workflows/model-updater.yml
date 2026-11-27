@@ -156,7 +156,7 @@ jobs:
             - name: Bump package version numbers
               id: bump_version
               run: |
-                  pnpm version patch --git-tag-version=false
+                  pnpm version patch --no-git-tag-version
                   export GIT_TAG=$(node -p "require('./package.json').version")
 
                   pnpm prerelease

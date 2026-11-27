@@ -1,13 +1,20 @@
 {
     "extends": "../tsconfig.json",
-    "include": [
-        "**/*",
-        "../packages/*/src/**/*"
-    ],
+    "include": ["**/*", "../packages/*/src/**/*"],
+    "exclude": ["antibot-services"],
     "compilerOptions": {
+        "module": "NodeNext",
+        "moduleResolution": "NodeNext",
         "sourceMap": true,
         "noUnusedLocals": false,
         "noUnusedParameters": false,
-        "strictNullChecks": false
+        "strictNullChecks": false,
+        "paths": {
+            "header-generator": ["../packages/header-generator/src/index.ts"],
+            "fingerprint-generator": ["../packages/fingerprint-generator/src/index.ts"],
+            "fingerprint-injector": ["../packages/fingerprint-injector/src/index.ts"],
+            "generative-bayesian-network": ["../packages/generative-bayesian-network/src/index.ts"],
+            "generator-networks-creator": ["../packages/generator-networks-creator/src/index.ts"]
+        }
     }
 }

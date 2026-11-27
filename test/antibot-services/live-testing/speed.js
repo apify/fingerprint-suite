@@ -1,6 +1,6 @@
-const { chromium } = require('playwright');
-const { FingerprintGenerator } = require('fingerprint-generator');
-const { FingerprintInjector } = require('fingerprint-injector');
+import { chromium } from 'playwright';
+import { FingerprintGenerator } from 'fingerprint-generator';
+import { FingerprintInjector } from 'fingerprint-injector';
 
 const fingerprintGenerator = new FingerprintGenerator();
 const fingerprintInjector = new FingerprintInjector();

@@ -1,2 +1,2 @@
-export * from './header-generator';
-export * as PRESETS from './presets';
+export * from './header-generator.js';
+export * as PRESETS from './presets.js';
