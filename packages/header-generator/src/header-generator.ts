@@ -16,12 +16,7 @@ import {
     HTTP1_SEC_FETCH_ATTRIBUTES,
     HTTP2_SEC_FETCH_ATTRIBUTES,
 } from './constants.js';
-import {
-    getBrowser,
-    getUserAgent,
-    getBrowsersFromQuery,
-    shuffleArray,
-} from './utils.js';
+import { getBrowser, getUserAgent, getBrowsersFromQuery, shuffleArray } from './utils.js';
 
 const browserSpecificationSchema = z.strictObject({
     name: z.string(),
@@ -32,9 +27,7 @@ const browserSpecificationSchema = z.strictObject({
 
 // Loose, because `FingerprintGenerator` passes its own options through here too.
 export const headerGeneratorOptionsSchema = z.looseObject({
-    browsers: z
-        .array(z.union([browserSpecificationSchema, z.enum(SUPPORTED_BROWSERS)]))
-        .optional(),
+    browsers: z.array(z.union([browserSpecificationSchema, z.enum(SUPPORTED_BROWSERS)])).optional(),
     operatingSystems: z.array(z.enum(SUPPORTED_OPERATING_SYSTEMS)).optional(),
     devices: z.array(z.enum(SUPPORTED_DEVICES)).optional(),
     locales: z.array(z.string()).optional(),
@@ -179,11 +172,7 @@ export class HeaderGenerator {
      * @param options Default header generation options used - unless overridden.
      */
     constructor(options: Partial<HeaderGeneratorOptions> = {}) {
-        parseArgument(
-            options,
-            headerGeneratorOptionsSchema,
-            'HeaderGeneratorOptions',
-        );
+        parseArgument(options, headerGeneratorOptionsSchema, 'HeaderGeneratorOptions');
         // Use a default setup when the necessary values are not provided
         const {
             browsers = SUPPORTED_BROWSERS,
@@ -195,11 +184,7 @@ export class HeaderGenerator {
             strict = false,
         } = options;
         this.globalOptions = {
-            browsers: this._prepareBrowsersConfig(
-                browsers as BrowsersType,
-                browserListQuery,
-                httpVersion,
-            ),
+            browsers: this._prepareBrowsersConfig(browsers as BrowsersType, browserListQuery, httpVersion),
             operatingSystems,
             devices,
             locales,
@@ -209,24 +194,15 @@ export class HeaderGenerator {
         };
         this.uniqueBrowsers = [];
 
-        this.headersOrder = JSON.parse(
-            readFileSync(
-                `${import.meta.dirname}/data_files/headers-order.json`,
-            ).toString(),
-        );
+        this.headersOrder = JSON.parse(readFileSync(`${import.meta.dirname}/data_files/headers-order.json`).toString());
         const uniqueBrowserStrings = JSON.parse(
-            readFileSync(
-                `${import.meta.dirname}/data_files/browser-helper-file.json`,
-                'utf8',
-            ).toString(),
+            readFileSync(`${import.meta.dirname}/data_files/browser-helper-file.json`, 'utf8').toString(),
         );
 
         for (const browserString of uniqueBrowserStrings) {
             // There are headers without user agents in the datasets we used to configure the generator. They should be disregarded.
             if (browserString !== MISSING_VALUE_DATASET_TOKEN) {
-                this.uniqueBrowsers.push(
-                    this.prepareHttpBrowserObject(browserString),
-                );
+                this.uniqueBrowsers.push(this.prepareHttpBrowserObject(browserString));
             }
         }
 
@@ -249,11 +225,7 @@ export class HeaderGenerator {
         requestDependentHeaders: Headers = {},
         userAgentValues?: string[],
     ): Headers {
-        parseArgument(
-            options,
-            headerGeneratorOptionsSchema,
-            'HeaderGeneratorOptions',
-        );
+        parseArgument(options, headerGeneratorOptionsSchema, 'HeaderGeneratorOptions');
 
         for (const [key, value] of Object.entries(options)) {
             if (!value) {
@@ -262,8 +234,7 @@ export class HeaderGenerator {
         }
 
         const headerOptions = { ...this.globalOptions, ...options };
-        const possibleAttributeValues =
-            this._getPossibleAttributeValues(headerOptions);
+        const possibleAttributeValues = this._getPossibleAttributeValues(headerOptions);
 
         const [http1Constraints, http2Constraints] = userAgentValues
             ? [
@@ -283,26 +254,17 @@ export class HeaderGenerator {
                         const [browserName, httpVersion] = x.split('|');
                         let httpValues = http2Constraints;
 
-                        if (
-                            httpVersion === '1' ||
-                            !http2Constraints ||
-                            Object.keys(http2Constraints).length === 0
-                        ) {
+                        if (httpVersion === '1' || !http2Constraints || Object.keys(http2Constraints).length === 0) {
                             httpValues = http1Constraints;
                         }
 
-                        return (
-                            httpValues?.['*BROWSER'].includes(browserName) ??
-                            true
-                        );
+                        return httpValues?.['*BROWSER'].includes(browserName) ?? true;
                     });
                     return acc;
                 }
                 acc[key] = value.filter(
                     (x: string) =>
-                        (http1Constraints?.[key]?.includes(x) ||
-                            http2Constraints?.[key]?.includes(x)) ??
-                        true,
+                        (http1Constraints?.[key]?.includes(x) || http2Constraints?.[key]?.includes(x)) ?? true,
                 );
                 return acc;
             },
@@ -310,10 +272,7 @@ export class HeaderGenerator {
         );
 
         // Generate a sample of input attributes consistent with the data used to create the definition files if possible.
-        const inputSample =
-            this.inputGeneratorNetwork.generateConsistentSampleWhenPossible(
-                inputConstraints,
-            );
+        const inputSample = this.inputGeneratorNetwork.generateConsistentSampleWhenPossible(inputConstraints);
 
         if (Object.keys(inputSample).length === 0) {
             // Try to convert HTTP/2 headers to HTTP/1 headers
@@ -331,10 +290,7 @@ export class HeaderGenerator {
                     return name
                         .split('-')
                         .map((part) => {
-                            return (
-                                part[0]!.toUpperCase() +
-                                part.slice(1).toLowerCase()
-                            );
+                            return part[0]!.toUpperCase() + part.slice(1).toLowerCase();
                         })
                         .join('-');
                 };
@@ -354,9 +310,7 @@ export class HeaderGenerator {
                 return this.orderHeaders(converted2to1);
             }
 
-            const relaxationIndex = this.relaxationOrder.findIndex(
-                (key) => options[key] !== undefined,
-            );
+            const relaxationIndex = this.relaxationOrder.findIndex((key) => options[key] !== undefined);
             if (options.strict || relaxationIndex === -1) {
                 throw new Error(
                     'No headers based on this input can be generated. Please relax or change some of the requirements you specified.',
@@ -367,33 +321,23 @@ export class HeaderGenerator {
             const relaxedOptions = { ...options };
             const relaxationKey = this.relaxationOrder[relaxationIndex];
             delete relaxedOptions[relaxationKey];
-            return this.getHeaders(
-                relaxedOptions,
-                requestDependentHeaders,
-                userAgentValues,
-            );
+            return this.getHeaders(relaxedOptions, requestDependentHeaders, userAgentValues);
         }
 
         // Generate the actual headers
-        const generatedSample =
-            this.headerGeneratorNetwork.generateSample(inputSample);
+        const generatedSample = this.headerGeneratorNetwork.generateSample(inputSample);
 
         // Manually fill the accept-language header with random ordering of the locales from input
-        const generatedHttpAndBrowser = this.prepareHttpBrowserObject(
-            generatedSample[BROWSER_HTTP_NODE_NAME],
-        );
-        let secFetchAttributeNames:
-            | typeof HTTP2_SEC_FETCH_ATTRIBUTES
-            | typeof HTTP1_SEC_FETCH_ATTRIBUTES = HTTP2_SEC_FETCH_ATTRIBUTES;
+        const generatedHttpAndBrowser = this.prepareHttpBrowserObject(generatedSample[BROWSER_HTTP_NODE_NAME]);
+        let secFetchAttributeNames: typeof HTTP2_SEC_FETCH_ATTRIBUTES | typeof HTTP1_SEC_FETCH_ATTRIBUTES =
+            HTTP2_SEC_FETCH_ATTRIBUTES;
         let acceptLanguageFieldName = 'accept-language';
         if (generatedHttpAndBrowser.httpVersion !== '2') {
             acceptLanguageFieldName = 'Accept-Language';
             secFetchAttributeNames = HTTP1_SEC_FETCH_ATTRIBUTES;
         }
 
-        generatedSample[acceptLanguageFieldName] = this._getAcceptLanguageField(
-            headerOptions.locales,
-        );
+        generatedSample[acceptLanguageFieldName] = this._getAcceptLanguageField(headerOptions.locales);
 
         const isChrome = generatedHttpAndBrowser.name === 'chrome';
         const isFirefox = generatedHttpAndBrowser.name === 'firefox';
@@ -413,15 +357,9 @@ export class HeaderGenerator {
         }
 
         for (const attribute of Object.keys(generatedSample)) {
-            if (
-                attribute.toLowerCase() === 'connection' &&
-                generatedSample[attribute] === 'close'
-            )
+            if (attribute.toLowerCase() === 'connection' && generatedSample[attribute] === 'close')
                 delete generatedSample[attribute];
-            if (
-                attribute.startsWith('*') ||
-                generatedSample[attribute] === MISSING_VALUE_DATASET_TOKEN
-            )
+            if (attribute.startsWith('*') || generatedSample[attribute] === MISSING_VALUE_DATASET_TOKEN)
                 delete generatedSample[attribute];
         }
 
@@ -431,9 +369,7 @@ export class HeaderGenerator {
                 ...generatedSample,
                 ...requestDependentHeaders,
             },
-            (this.headersOrder as Record<string, any>)[
-                generatedHttpAndBrowser.name
-            ],
+            (this.headersOrder as Record<string, any>)[generatedHttpAndBrowser.name],
         );
     }
 
@@ -442,10 +378,7 @@ export class HeaderGenerator {
      * @param headers Specifies known values of headers dependent on the particular request.
      * @param order An array of ordered header names, optional (will be deducted from `user-agent`).
      */
-    orderHeaders(
-        headers: Headers,
-        order = this.getOrderFromUserAgent(headers),
-    ): Headers {
+    orderHeaders(headers: Headers, order = this.getOrderFromUserAgent(headers)): Headers {
         const orderedSample: Headers = {};
 
         for (const attribute of order) {
@@ -492,10 +425,8 @@ export class HeaderGenerator {
                     const browserMajorVersion = browserOption.version[0];
 
                     if (
-                        (!browser.minVersion ||
-                            browser.minVersion <= browserMajorVersion) &&
-                        (!browser.maxVersion ||
-                            browser.maxVersion >= browserMajorVersion) &&
+                        (!browser.minVersion || browser.minVersion <= browserMajorVersion) &&
+                        (!browser.maxVersion || browser.maxVersion >= browserMajorVersion) &&
                         browser.httpVersion === browserOption.httpVersion
                     ) {
                         browserHttpOptions.push(browserOption.completeString);
@@ -507,20 +438,9 @@ export class HeaderGenerator {
         return browserHttpOptions;
     }
 
-    private _getPossibleAttributeValues(
-        headerOptions: Partial<HeaderGeneratorOptions>,
-    ): Record<string, any> {
-        const {
-            browsers: optionsBrowser,
-            browserListQuery,
-            httpVersion,
-            operatingSystems,
-        } = headerOptions;
-        const browsers = this._prepareBrowsersConfig(
-            optionsBrowser,
-            browserListQuery,
-            httpVersion,
-        );
+    private _getPossibleAttributeValues(headerOptions: Partial<HeaderGeneratorOptions>): Record<string, any> {
+        const { browsers: optionsBrowser, browserListQuery, httpVersion, operatingSystems } = headerOptions;
+        const browsers = this._prepareBrowsersConfig(optionsBrowser, browserListQuery, httpVersion);
 
         // Find known browsers compatible with the input
         const browserHttpOptions = this._getBrowserHttpOptions(browsers);
@@ -537,9 +457,7 @@ export class HeaderGenerator {
         return possibleAttributeValues;
     }
 
-    private _getAcceptLanguageField(
-        localesFromOptions: HeaderGeneratorOptions['locales'],
-    ): string {
+    private _getAcceptLanguageField(localesFromOptions: HeaderGeneratorOptions['locales']): string {
         let locales = localesFromOptions;
         let highLevelLocales = [];
         for (const locale of locales) {
@@ -568,10 +486,7 @@ export class HeaderGenerator {
 
         for (const highLevelLocale of highLevelLocales) {
             for (const locale of locales) {
-                if (
-                    locale.includes(highLevelLocale) &&
-                    !highLevelLocales.includes(locale)
-                ) {
+                if (locale.includes(highLevelLocale) && !highLevelLocales.includes(locale)) {
                     localesInAddingOrder.push(locale);
                 }
             }
@@ -590,9 +505,7 @@ export class HeaderGenerator {
      * Extract structured information about a browser and http version in the form of an object from httpBrowserString.
      * @param httpBrowserString A string containing the browser name, version and http version, such as `chrome/88.0.4324.182|2`.
      */
-    private prepareHttpBrowserObject(
-        httpBrowserString: string,
-    ): HttpBrowserObject {
+    private prepareHttpBrowserObject(httpBrowserString: string): HttpBrowserObject {
         const [browserString, httpVersion] = httpBrowserString.split('|');
         let browserObject;
 

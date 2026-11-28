@@ -11,12 +11,7 @@ const operatingSystemNodeName = '*OPERATING_SYSTEM';
 const deviceNodeName = '*DEVICE';
 const missingValueDatasetToken = '*MISSING_VALUE*';
 
-const nonGeneratedNodes = [
-    browserHttpNodeName,
-    browserNodeName,
-    operatingSystemNodeName,
-    deviceNodeName,
-];
+const nonGeneratedNodes = [browserHttpNodeName, browserNodeName, operatingSystemNodeName, deviceNodeName];
 
 const STRINGIFIED_PREFIX = '*STRINGIFIED*';
 
@@ -40,18 +35,11 @@ async function prepareRecords(
     const recordSchema = await getRecordSchema();
 
     const parsed = records.map((x) => recordSchema.safeParse(x));
-    const cleanedRecords = parsed
-        .filter((record) => record.success)
-        .map((record) => record.data);
+    const cleanedRecords = parsed.filter((record) => record.success).map((record) => record.data);
 
-    const ratio =
-        records.length === 0 ? 0 : cleanedRecords.length / records.length;
+    const ratio = records.length === 0 ? 0 : cleanedRecords.length / records.length;
 
-    console.log(
-        `Found ${cleanedRecords.length}/${records.length} valid records (${(
-            ratio * 100
-        ).toFixed(1)}%).`,
-    );
+    console.log(`Found ${cleanedRecords.length}/${records.length} valid records (${(ratio * 100).toFixed(1)}%).`);
 
     // Attribute the rejections. Without this, a validation change or a collector
     // regression that quietly discards most of the input is invisible in the logs.
@@ -68,23 +56,16 @@ async function prepareRecords(
 
     if (reasons.size > 0) {
         console.log('Top rejection reasons:');
-        for (const [reason, count] of [...reasons.entries()]
-            .sort((a, b) => b[1] - a[1])
-            .slice(0, 15)) {
+        for (const [reason, count] of [...reasons.entries()].sort((a, b) => b[1] - a[1]).slice(0, 15)) {
             console.log(`  ${String(count).padStart(6)}  ${reason}`);
         }
     }
 
-    if (
-        cleanedRecords.length < MIN_VALID_RECORDS ||
-        ratio < MIN_VALID_RECORD_RATIO
-    ) {
+    if (cleanedRecords.length < MIN_VALID_RECORDS || ratio < MIN_VALID_RECORD_RATIO) {
         throw new Error(
-            `Refusing to build the ${preprocessingType} model: only ${
-                cleanedRecords.length
-            }/${records.length} (${(ratio * 100).toFixed(
-                1,
-            )}%) input records are valid, below the ${MIN_VALID_RECORDS}-record / ${(
+            `Refusing to build the ${preprocessingType} model: only ${cleanedRecords.length}/${records.length} (${(
+                ratio * 100
+            ).toFixed(1)}%) input records are valid, below the ${MIN_VALID_RECORDS}-record / ${(
                 MIN_VALID_RECORD_RATIO * 100
             ).toFixed(
                 0,
@@ -115,9 +96,7 @@ async function prepareRecords(
         const reorganizedRecord = {} as Record<string, any>;
         for (const attribute of attributes) {
             reorganizedRecord[attribute] =
-                record[attribute] === undefined
-                    ? missingValueDatasetToken
-                    : record[attribute];
+                record[attribute] === undefined ? missingValueDatasetToken : record[attribute];
         }
         return reorganizedRecord;
     });
@@ -151,9 +130,7 @@ export class GeneratorNetworksCreator {
         return { device, operatingSystem };
     }
 
-    private getBrowserNameVersion(
-        userAgent: string,
-    ): `${string}/${string}` | typeof missingValueDatasetToken {
+    private getBrowserNameVersion(userAgent: string): `${string}/${string}` | typeof missingValueDatasetToken {
         const canonicalNames = {
             chrome: 'chrome',
             crios: 'chrome',
@@ -166,8 +143,7 @@ export class GeneratorNetworksCreator {
             edgios: 'edge',
         } as Record<string, string>;
 
-        const unsupportedBrowsers =
-            /opr|yabrowser|SamsungBrowser|UCBrowser|vivaldi/i;
+        const unsupportedBrowsers = /opr|yabrowser|SamsungBrowser|UCBrowser|vivaldi/i;
         const edge = /(edg(a|ios|e)?)\/([0-9.]*)/i;
         const safari = /Version\/([\d.]+)( Mobile\/[a-z0-9]+)? Safari/i;
         // `safari` is deliberately absent here: the `Safari/x.y.z` token carries the
@@ -199,50 +175,30 @@ export class GeneratorNetworksCreator {
         return missingValueDatasetToken;
     }
 
-    async prepareHeaderGeneratorFiles(
-        datasetPath: string,
-        resultsPath: string,
-    ) {
+    async prepareHeaderGeneratorFiles(datasetPath: string, resultsPath: string) {
         const datasetText = fs.readFileSync(datasetPath, { encoding: 'utf8' });
-        const records = await prepareRecords(
-            JSON.parse(datasetText),
-            'headers',
-        );
+        const records = await prepareRecords(JSON.parse(datasetText), 'headers');
 
         const inputGeneratorNetwork = new BayesianNetwork({
-            path: path.join(
-                import.meta.dirname,
-                'network_structures',
-                'input-network-structure.zip',
-            ),
+            path: path.join(import.meta.dirname, 'network_structures', 'input-network-structure.zip'),
         });
         const headerGeneratorNetwork = new BayesianNetwork({
-            path: path.join(
-                import.meta.dirname,
-                'network_structures',
-                'header-network-structure.zip',
-            ),
+            path: path.join(import.meta.dirname, 'network_structures', 'header-network-structure.zip'),
         });
-        const desiredHeaderAttributes = Object.keys(
-            headerGeneratorNetwork['nodesByName'],
-        ).filter((attribute) => !nonGeneratedNodes.includes(attribute));
+        const desiredHeaderAttributes = Object.keys(headerGeneratorNetwork['nodesByName']).filter(
+            (attribute) => !nonGeneratedNodes.includes(attribute),
+        );
 
         let selectedRecords = records.map((record) => {
-            return Object.entries(record).reduce(
-                (acc: typeof record, [key, value]) => {
-                    if (desiredHeaderAttributes.includes(key))
-                        acc[key] = value ?? missingValueDatasetToken;
-                    return acc;
-                },
-                {},
-            );
+            return Object.entries(record).reduce((acc: typeof record, [key, value]) => {
+                if (desiredHeaderAttributes.includes(key)) acc[key] = value ?? missingValueDatasetToken;
+                return acc;
+            }, {});
         });
 
         selectedRecords = selectedRecords.map((record) => {
             const userAgent = (
-                record['user-agent'] !== missingValueDatasetToken
-                    ? record['user-agent']
-                    : record['User-Agent']
+                record['user-agent'] !== missingValueDatasetToken ? record['user-agent'] : record['User-Agent']
             ).toLowerCase();
 
             const browser = this.getBrowserNameVersion(userAgent);
@@ -254,9 +210,7 @@ export class GeneratorNetworksCreator {
                 [operatingSystemNodeName]: operatingSystem,
                 [deviceNodeName]: device,
                 [browserHttpNodeName]: `${browser}|${
-                    (record[httpVersionNodeName] as string).startsWith('_1')
-                        ? '1'
-                        : '2'
+                    (record[httpVersionNodeName] as string).startsWith('_1') ? '1' : '2'
                 }`,
             };
         });
@@ -264,18 +218,9 @@ export class GeneratorNetworksCreator {
         headerGeneratorNetwork.setProbabilitiesAccordingToData(selectedRecords);
         inputGeneratorNetwork.setProbabilitiesAccordingToData(selectedRecords);
 
-        const inputNetworkDefinitionPath = path.join(
-            resultsPath,
-            'input-network-definition.zip',
-        );
-        const headerNetworkDefinitionPath = path.join(
-            resultsPath,
-            'header-network-definition.zip',
-        );
-        const browserHelperFilePath = path.join(
-            resultsPath,
-            'browser-helper-file.json',
-        );
+        const inputNetworkDefinitionPath = path.join(resultsPath, 'input-network-definition.zip');
+        const headerNetworkDefinitionPath = path.join(resultsPath, 'header-network-definition.zip');
+        const browserHelperFilePath = path.join(resultsPath, 'browser-helper-file.json');
 
         headerGeneratorNetwork.saveNetworkDefinition({
             path: headerNetworkDefinitionPath,
@@ -285,57 +230,38 @@ export class GeneratorNetworksCreator {
         });
 
         const uniqueBrowsersAndHttps = Array.from(
-            new Set(
-                selectedRecords.map((record) => record[browserHttpNodeName]),
-            ),
+            new Set(selectedRecords.map((record) => record[browserHttpNodeName])),
         );
-        fs.writeFileSync(
-            browserHelperFilePath,
-            JSON.stringify(uniqueBrowsersAndHttps),
-        );
+        fs.writeFileSync(browserHelperFilePath, JSON.stringify(uniqueBrowsersAndHttps));
     }
 
-    async prepareFingerprintGeneratorFiles(
-        datasetPath: string,
-        resultsPath: string,
-    ) {
-        const datasetText = fs
-            .readFileSync(datasetPath, { encoding: 'utf8' })
-            .replace(/^\ufeff/, '');
-        const records = await prepareRecords(
-            JSON.parse(datasetText),
-            'fingerprints',
-        );
+    async prepareFingerprintGeneratorFiles(datasetPath: string, resultsPath: string) {
+        const datasetText = fs.readFileSync(datasetPath, { encoding: 'utf8' }).replace(/^\ufeff/, '');
+        const records = await prepareRecords(JSON.parse(datasetText), 'fingerprints');
         for (let x = 0; x < records.length; x++) {
-            if (x % 1000 === 0)
-                console.log(`Processing record ${x} of ${records.length}`);
+            if (x % 1000 === 0) console.log(`Processing record ${x} of ${records.length}`);
             const record = records[x];
             const pluginCharacteristics = {} as { [key: string]: string };
             for (const pluginCharacteristicsAttribute of PLUGIN_CHARACTERISTICS_ATTRIBUTES) {
                 if (pluginCharacteristicsAttribute in record) {
                     if (record[pluginCharacteristicsAttribute] !== '') {
-                        pluginCharacteristics[pluginCharacteristicsAttribute] =
-                            record[pluginCharacteristicsAttribute];
+                        pluginCharacteristics[pluginCharacteristicsAttribute] = record[pluginCharacteristicsAttribute];
                     }
                     delete record[pluginCharacteristicsAttribute];
                 }
             }
 
             record.pluginsData =
-                Object.keys(pluginCharacteristics).length !== 0
-                    ? pluginCharacteristics
-                    : missingValueDatasetToken;
+                Object.keys(pluginCharacteristics).length !== 0 ? pluginCharacteristics : missingValueDatasetToken;
 
             for (const attribute of Object.keys(record)) {
                 if ([null, '', undefined].includes(record[attribute])) {
                     record[attribute] = missingValueDatasetToken;
                 } else {
                     record[attribute] =
-                        typeof record[attribute] === 'string' ||
-                        record[attribute] instanceof String
+                        typeof record[attribute] === 'string' || record[attribute] instanceof String
                             ? record[attribute]
-                            : STRINGIFIED_PREFIX +
-                              JSON.stringify(record[attribute]);
+                            : STRINGIFIED_PREFIX + JSON.stringify(record[attribute]);
                 }
             }
 
@@ -343,36 +269,21 @@ export class GeneratorNetworksCreator {
         }
 
         const fingerprintGeneratorNetwork = new BayesianNetwork({
-            path: path.join(
-                import.meta.dirname,
-                'network_structures',
-                'fingerprint-network-structure.zip',
-            ),
+            path: path.join(import.meta.dirname, 'network_structures', 'fingerprint-network-structure.zip'),
         });
-        const desiredFingerprintAttributes = Object.keys(
-            fingerprintGeneratorNetwork['nodesByName'],
-        );
+        const desiredFingerprintAttributes = Object.keys(fingerprintGeneratorNetwork['nodesByName']);
 
         const selectedRecords = records.map((record) => {
-            return Object.entries(record).reduce(
-                (acc: typeof record, [key, value]) => {
-                    if (desiredFingerprintAttributes.includes(key))
-                        acc[key] = value ?? missingValueDatasetToken;
-                    return acc;
-                },
-                {},
-            );
+            return Object.entries(record).reduce((acc: typeof record, [key, value]) => {
+                if (desiredFingerprintAttributes.includes(key)) acc[key] = value ?? missingValueDatasetToken;
+                return acc;
+            }, {});
         });
 
-        const fingerprintNetworkDefinitionPath = path.join(
-            resultsPath,
-            'fingerprint-network-definition.zip',
-        );
+        const fingerprintNetworkDefinitionPath = path.join(resultsPath, 'fingerprint-network-definition.zip');
 
         console.log('Building the fingerprint network...');
-        fingerprintGeneratorNetwork.setProbabilitiesAccordingToData(
-            selectedRecords,
-        );
+        fingerprintGeneratorNetwork.setProbabilitiesAccordingToData(selectedRecords);
         fingerprintGeneratorNetwork.saveNetworkDefinition({
             path: fingerprintNetworkDefinitionPath,
         });
