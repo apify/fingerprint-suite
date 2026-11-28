@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars */
 const isHeadlessChromium =
     /headless/i.test(navigator.userAgent) && navigator.plugins.length === 0;
 const isChrome = navigator.userAgent.includes('Chrome');
@@ -158,7 +157,7 @@ function redirectToString(proxyObj, originalObj) {
             // if not indicates that we are doing a check across different windows., e.g. the iframeWithdirect` test case
             const hasSameProto = Object.getPrototypeOf(
                 Function.prototype.toString,
-            ).isPrototypeOf(ctx.toString); // eslint-disable-line no-prototype-builtins
+            ).isPrototypeOf(ctx.toString);
 
             if (!hasSameProto) {
                 // Pass the call on to the local Function.prototype.toString instead
@@ -241,10 +240,10 @@ function stripProxyFromErrors(handler) {
         newHandler[trap] = function () {
             try {
                 // Forward the call to the defined proxy handler
-                return handler[trap].apply(this, arguments || []); //eslint-disable-line
+                return handler[trap].apply(this, arguments || []);
             } catch (err) {
                 // Stack traces differ per browser, we only support chromium based ones currently
-                if (!err || !err.stack || !err.stack.includes(`at `)) {
+                if (!err?.stack?.includes(`at `)) {
                     throw err;
                 }
 
@@ -282,7 +281,6 @@ function stripProxyFromErrors(handler) {
 
                 const stripWithAnchor = (stack, anchor) => {
                     const stackArr = stack.split('\n');
-                    // eslint-disable-next-line no-param-reassign
                     anchor =
                         anchor ||
                         `at Object.newHandler.<computed> [as ${trap}] `; // Known first Proxy line in chromium
@@ -333,9 +331,9 @@ function overrideWebGl(webGl) {
                 const result = cache.Reflect.apply(target, ctx, args);
                 const debugInfo = ctx.getExtension('WEBGL_debug_renderer_info');
                 const UNMASKED_VENDOR_WEBGL =
-                    (debugInfo && debugInfo.UNMASKED_VENDOR_WEBGL) || 37445;
+                    (debugInfo?.UNMASKED_VENDOR_WEBGL) || 37445;
                 const UNMASKED_RENDERER_WEBGL =
-                    (debugInfo && debugInfo.UNMASKED_RENDERER_WEBGL) || 37446;
+                    (debugInfo?.UNMASKED_RENDERER_WEBGL) || 37446;
 
                 if (param === UNMASKED_VENDOR_WEBGL) {
                     return webGl.vendor;
@@ -382,7 +380,7 @@ const overrideCodecs = (audioCodecs, videoCodecs) => {
         const findCodec = (codecString) => {
             const [mime, codecSpec] = codecString.split(';');
             if (mime === 'video/mp4') {
-                if (codecSpec && codecSpec.includes('avc1.42E01E')) {
+                if (codecSpec?.includes('avc1.42E01E')) {
                     // codec is missing from Chromium
                     return { name: mime, state: 'probably' };
                 }
@@ -399,9 +397,8 @@ const overrideCodecs = (audioCodecs, videoCodecs) => {
         };
 
         const canPlayType = {
-            // eslint-disable-next-line
             apply: function (target, ctx, args) {
-                if (!args || !args.length) {
+                if (!args?.length) {
                     return target.apply(ctx, args);
                 }
                 const [codecString] = args;
@@ -430,7 +427,6 @@ function overrideBattery(batteryInfo) {
     try {
         const getBattery = {
             ...prototypeProxyHandler,
-            // eslint-disable-next-line
             apply: async function () {
                 return batteryInfo;
             },
@@ -479,8 +475,8 @@ function makeHandler() {
             apply(target, ctx, args) {
                 // Let's fetch the value first, to trigger and escalate potential errors
                 // Illegal invocations like `navigator.__proto__.vendor` will throw here
-                const ret = cache.Reflect.apply(...arguments); // eslint-disable-line
-                if (args && args.length === 0) {
+                const ret = cache.Reflect.apply(...arguments);
+                if (args?.length === 0) {
                     return value;
                 }
                 return ret;
@@ -497,7 +493,6 @@ function overrideScreenByReassigning(target, newProperties) {
         if (value > 0) {
             // The 0 values are introduced by collecting in the hidden iframe.
             // They are document sizes anyway so no need to test them or inject them.
-            // eslint-disable-next-line no-param-reassign
             target[prop] = value;
         }
     }
@@ -522,7 +517,6 @@ function overrideDocumentDimensionsProps(props) {
 
 function replace(target, key, value) {
     if (target?.[key]) {
-        // eslint-disable-next-line no-param-reassign
         target[key] = value;
     }
 }
@@ -561,7 +555,6 @@ function overrideUserAgentData(userAgentData) {
             userAgentData;
         // Override basic properties
         const getHighEntropyValues = {
-            // eslint-disable-next-line
             apply: async function (target, ctx, args) {
                 // Just to throw original validation error
                 // Remove traces of our Proxy
@@ -573,7 +566,7 @@ function overrideUserAgentData(userAgentData) {
                         .join('\n');
 
                 try {
-                    if (!args || !args.length) {
+                    if (!args?.length) {
                         return target.apply(ctx, args);
                     }
                     const [hints] = args;
@@ -639,7 +632,7 @@ function fixPermissions() {
                 const param = (args || [])[0];
 
                 const isNotifications =
-                    param && param.name && param.name === 'notifications';
+                    param?.name === 'notifications';
                 if (!isNotifications) {
                     return cache.Reflect.apply(target, ctx, args);
                 }

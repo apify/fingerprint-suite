@@ -286,17 +286,13 @@ export async function getRecordSchema() {
                         .string()
                         .refine(
                             (userAgent) =>
-                                !userAgent.match(
-                                    /(bot|bots|slurp|spider|crawler|crawl)\b/i,
-                                ),
+                                !(/(bot|bots|slurp|spider|crawler|crawl)\b/i.exec(userAgent)),
                             'User agent should not contain bot, bots, slurp, spider, crawler, or crawl',
                         )
                         .refine(
                             (userAgent) =>
                                 !robotUserAgents.some((robot) =>
-                                    userAgent.match(
-                                        new RegExp(robot.pattern, 'i'),
-                                    ),
+                                    new RegExp(robot.pattern, 'i').exec(userAgent),
                                 ),
                             'User agent should not match any known robot user agent patterns',
                         ),
