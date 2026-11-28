@@ -1,23 +1,18 @@
 {
     "extends": "@apify/tsconfig",
     "compilerOptions": {
-        "target": "ES2020",
-        "lib": [
-            "ESNext",
-            "DOM",
-            "ES2020"
-        ],
         "module": "NodeNext",
         "moduleResolution": "NodeNext",
+        "target": "ESNext",
+        "lib": ["DOM", "ES2023", "ES2024", "DOM.AsyncIterable", "ESNext.Disposable"],
+        "types": ["node"],
         "allowJs": true,
         "skipLibCheck": true,
-        "resolveJsonModule": true
+        "resolveJsonModule": false,
+        "emitDecoratorMetadata": false,
+        "declarationMap": false,
+        "sourceMap": false,
+        "incremental": false
     },
-    "include": [
-        "./packages/*/src/**/*"
-    ],
-    "exclude": [
-        "**/node_modules",
-        "**/dist"
-    ]
+    "exclude": ["**/node_modules", "**/dist"]
 }
