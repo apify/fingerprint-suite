@@ -1,10 +1,7 @@
-const isHeadlessChromium =
-    /headless/i.test(navigator.userAgent) && navigator.plugins.length === 0;
+const isHeadlessChromium = /headless/i.test(navigator.userAgent) && navigator.plugins.length === 0;
 const isChrome = navigator.userAgent.includes('Chrome');
 const isFirefox = navigator.userAgent.includes('Firefox');
-const isSafari =
-    navigator.userAgent.includes('Safari') &&
-    !navigator.userAgent.includes('Chrome');
+const isSafari = navigator.userAgent.includes('Safari') && !navigator.userAgent.includes('Chrome');
 
 let slim = null;
 function getSlim() {
@@ -37,10 +34,7 @@ const cache = {
  */
 function overridePropertyWithProxy(masterObject, propertyName, proxyHandler) {
     const originalObject = masterObject[propertyName];
-    const proxy = new Proxy(
-        masterObject[propertyName],
-        stripProxyFromErrors(proxyHandler),
-    );
+    const proxy = new Proxy(masterObject[propertyName], stripProxyFromErrors(proxyHandler));
 
     redefineProperty(masterObject, propertyName, { value: proxy });
     redirectToString(proxy, originalObject);
@@ -155,9 +149,7 @@ function redirectToString(proxyObj, originalObj) {
 
             // Check if the toString prototype of the context is the same as the global prototype,
             // if not indicates that we are doing a check across different windows., e.g. the iframeWithdirect` test case
-            const hasSameProto = Object.getPrototypeOf(
-                Function.prototype.toString,
-            ).isPrototypeOf(ctx.toString);
+            const hasSameProto = Object.getPrototypeOf(Function.prototype.toString).isPrototypeOf(ctx.toString);
 
             if (!hasSameProto) {
                 // Pass the call on to the local Function.prototype.toString instead
@@ -168,10 +160,7 @@ function redirectToString(proxyObj, originalObj) {
                 try {
                     return target.call(ctx);
                 } catch (err) {
-                    err.stack = err.stack.replace(
-                        'at Object.toString (',
-                        'at Function.toString (',
-                    );
+                    err.stack = err.stack.replace('at Object.toString (', 'at Function.toString (');
                     throw err;
                 }
             }
@@ -185,10 +174,7 @@ function redirectToString(proxyObj, originalObj) {
                             return tget.bind(thisArg)(...argumentsList);
                         } catch (err) {
                             if (Object.getPrototypeOf(thisArg) === tget) {
-                                err.stack = err.stack.replace(
-                                    'at Object.toString (',
-                                    'at Function.toString (',
-                                );
+                                err.stack = err.stack.replace('at Object.toString (', 'at Function.toString (');
                             }
 
                             throw err;
@@ -201,10 +187,7 @@ function redirectToString(proxyObj, originalObj) {
         },
     };
 
-    const toStringProxy = new Proxy(
-        Function.prototype.toString,
-        stripProxyFromErrors(handler),
-    );
+    const toStringProxy = new Proxy(Function.prototype.toString, stripProxyFromErrors(handler));
     redefineProperty(Function.prototype, 'toString', {
         value: toStringProxy,
     });
@@ -214,11 +197,7 @@ function makeNativeString(name = '') {
     return cache.nativeToStringStr.replace('toString', name || '');
 }
 
-function redefineProperty(
-    masterObject,
-    propertyName,
-    descriptorOverrides = {},
-) {
+function redefineProperty(masterObject, propertyName, descriptorOverrides = {}) {
     return Object.defineProperty(masterObject, propertyName, {
         // Copy over the existing descriptors (writable, enumerable, configurable, etc)
         ...(Object.getOwnPropertyDescriptor(masterObject, propertyName) || {}),
@@ -264,29 +243,17 @@ function stripProxyFromErrors(handler) {
                         err.stack
                             .split('\n')
                             // Always remove the first (file) line in the stack (guaranteed to be our proxy)
-                            .filter(
-                                (line, index) =>
-                                    !(index === 1 && stripFirstLine),
-                            )
+                            .filter((line, index) => !(index === 1 && stripFirstLine))
                             // Check if the line starts with one of our blacklisted strings
-                            .filter(
-                                (line) =>
-                                    !blacklist.some((bl) =>
-                                        line.trim().startsWith(bl),
-                                    ),
-                            )
+                            .filter((line) => !blacklist.some((bl) => line.trim().startsWith(bl)))
                             .join('\n')
                     );
                 };
 
                 const stripWithAnchor = (stack, anchor) => {
                     const stackArr = stack.split('\n');
-                    anchor =
-                        anchor ||
-                        `at Object.newHandler.<computed> [as ${trap}] `; // Known first Proxy line in chromium
-                    const anchorIndex = stackArr.findIndex((line) =>
-                        line.trim().startsWith(anchor),
-                    );
+                    anchor = anchor || `at Object.newHandler.<computed> [as ${trap}] `; // Known first Proxy line in chromium
+                    const anchorIndex = stackArr.findIndex((line) => line.trim().startsWith(anchor));
                     if (anchorIndex === -1) {
                         return false; // 404, anchor not found
                     }
@@ -300,11 +267,7 @@ function stripProxyFromErrors(handler) {
                 Error.captureStackTrace(err);
                 const newStackLines = err.stack.split('\n');
 
-                err.stack = [
-                    newStackLines[0],
-                    oldStackLines[1],
-                    ...newStackLines.slice(1),
-                ].join('\n');
+                err.stack = [newStackLines[0], oldStackLines[1], ...newStackLines.slice(1)].join('\n');
 
                 if ((err.stack || '').includes('toString (')) {
                     err.stack = stripWithBlacklist(err.stack, false);
@@ -312,8 +275,7 @@ function stripProxyFromErrors(handler) {
                 }
 
                 // Try using the anchor method, fallback to blacklist if necessary
-                err.stack =
-                    stripWithAnchor(err.stack) || stripWithBlacklist(err.stack);
+                err.stack = stripWithAnchor(err.stack) || stripWithBlacklist(err.stack);
 
                 throw err; // Re-throw our now sanitized error
             }
@@ -330,10 +292,8 @@ function overrideWebGl(webGl) {
                 const param = (args || [])[0];
                 const result = cache.Reflect.apply(target, ctx, args);
                 const debugInfo = ctx.getExtension('WEBGL_debug_renderer_info');
-                const UNMASKED_VENDOR_WEBGL =
-                    (debugInfo?.UNMASKED_VENDOR_WEBGL) || 37445;
-                const UNMASKED_RENDERER_WEBGL =
-                    (debugInfo?.UNMASKED_RENDERER_WEBGL) || 37446;
+                const UNMASKED_VENDOR_WEBGL = debugInfo?.UNMASKED_VENDOR_WEBGL || 37445;
+                const UNMASKED_RENDERER_WEBGL = debugInfo?.UNMASKED_RENDERER_WEBGL || 37446;
 
                 if (param === UNMASKED_VENDOR_WEBGL) {
                     return webGl.vendor;
@@ -363,18 +323,8 @@ function overrideWebGl(webGl) {
 const overrideCodecs = (audioCodecs, videoCodecs) => {
     try {
         const codecs = {
-            ...Object.fromEntries(
-                Object.entries(audioCodecs).map(([key, value]) => [
-                    `audio/${key}`,
-                    value,
-                ]),
-            ),
-            ...Object.fromEntries(
-                Object.entries(videoCodecs).map(([key, value]) => [
-                    `video/${key}`,
-                    value,
-                ]),
-            ),
+            ...Object.fromEntries(Object.entries(audioCodecs).map(([key, value]) => [`audio/${key}`, value])),
+            ...Object.fromEntries(Object.entries(videoCodecs).map(([key, value]) => [`video/${key}`, value])),
         };
 
         const findCodec = (codecString) => {
@@ -386,9 +336,7 @@ const overrideCodecs = (audioCodecs, videoCodecs) => {
                 }
             }
 
-            const codec = Object.entries(codecs).find(
-                ([key]) => key === codecString.split(';')[0],
-            );
+            const codec = Object.entries(codecs).find(([key]) => key === codecString.split(';')[0]);
             if (codec) {
                 return { name: codec[0], state: codec[1] };
             }
@@ -413,11 +361,7 @@ const overrideCodecs = (audioCodecs, videoCodecs) => {
             },
         };
 
-        overridePropertyWithProxy(
-            HTMLMediaElement.prototype,
-            'canPlayType',
-            canPlayType,
-        );
+        overridePropertyWithProxy(HTMLMediaElement.prototype, 'canPlayType', canPlayType);
     } catch (e) {
         console.warn(e);
     }
@@ -434,11 +378,7 @@ function overrideBattery(batteryInfo) {
 
         if (navigator.getBattery) {
             // Firefox does not have this method - to be fixed
-            overridePropertyWithProxy(
-                Object.getPrototypeOf(navigator),
-                'getBattery',
-                getBattery,
-            );
+            overridePropertyWithProxy(Object.getPrototypeOf(navigator), 'getBattery', getBattery);
         }
     } catch (e) {
         console.warn(e);
@@ -458,8 +398,7 @@ function overrideIntlAPI(language) {
 
         overridePropertyWithProxy(window, 'Intl', {
             get(target, key) {
-                if (typeof key !== 'string' || key[0].toLowerCase() === key[0])
-                    return target[key];
+                if (typeof key !== 'string' || key[0].toLowerCase() === key[0]) return target[key];
                 return new Proxy(target[key], innerHandler);
             },
         });
@@ -551,8 +490,7 @@ function blockWebRTC() {
 
 function overrideUserAgentData(userAgentData) {
     try {
-        const { brands, mobile, platform, ...highEntropyValues } =
-            userAgentData;
+        const { brands, mobile, platform, ...highEntropyValues } = userAgentData;
         // Override basic properties
         const getHighEntropyValues = {
             apply: async function (target, ctx, args) {
@@ -631,8 +569,7 @@ function fixPermissions() {
             apply(target, ctx, args) {
                 const param = (args || [])[0];
 
-                const isNotifications =
-                    param?.name === 'notifications';
+                const isNotifications = param?.name === 'notifications';
                 if (!isNotifications) {
                     return cache.Reflect.apply(target, ctx, args);
                 }
@@ -733,11 +670,7 @@ function fixIframeContentWindow() {
             };
 
             // All this just due to iframes with srcdoc bug
-            overridePropertyWithProxy(
-                document,
-                'createElement',
-                createElementHandler,
-            );
+            overridePropertyWithProxy(document, 'createElement', createElementHandler);
         };
 
         // Let's go

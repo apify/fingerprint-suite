@@ -6,16 +6,10 @@ import { chromium, Page } from 'playwright';
 import { FingerprintSuiteExtra } from './engine/combo.js';
 import { FingerprintSuite } from './engine/fingerprint-suite.js';
 import { PlaywrightExtra } from './engine/playwright-extra.js';
-import {
-    FingeprintingEngine,
-    VanillaPlaywright,
-} from './engine/vanilla-playwright.js';
+import { FingeprintingEngine, VanillaPlaywright } from './engine/vanilla-playwright.js';
 import { generateReport, TestResult } from './utils/generate-report.js';
 
-async function waitForCompletion<T>(
-    promises: (() => Promise<T>)[],
-    maxConcurrency: number,
-): Promise<void> {
+async function waitForCompletion<T>(promises: (() => Promise<T>)[], maxConcurrency: number): Promise<void> {
     async function worker() {
         let job;
         while ((job = promises.shift())) await job();
@@ -24,10 +18,7 @@ async function waitForCompletion<T>(
     await Promise.all([...new Array(maxConcurrency)].map(async () => worker()));
 }
 
-const source = fs.readFileSync(
-    path.join(import.meta.dirname, 'cloudflare-websites.csv'),
-    'utf8',
-);
+const source = fs.readFileSync(path.join(import.meta.dirname, 'cloudflare-websites.csv'), 'utf8');
 const pages = source.split('\n');
 
 async function runWith(engine: FingeprintingEngine): Promise<TestResult> {
@@ -38,9 +29,7 @@ async function runWith(engine: FingeprintingEngine): Promise<TestResult> {
 
     async function processUrl(url: string) {
         async function gotDetected(page: Page) {
-            return (await page.textContent('body'))
-                .toLowerCase()
-                .includes('is secure');
+            return (await page.textContent('body')).toLowerCase().includes('is secure');
         }
 
         const context = await engine.getContext({
@@ -73,22 +62,18 @@ async function runWith(engine: FingeprintingEngine): Promise<TestResult> {
 
         const start = Date.now();
         if (
-            await page
-                .goto(url, { waitUntil: 'domcontentloaded', timeout: 10000 })
-                .catch(async () => {
-                    return page
-                        .goto(url, {
-                            waitUntil: 'domcontentloaded',
-                            timeout: 10000,
-                        })
-                        .catch((x) => {
-                            console.log(
-                                `[${engine.getEngineName()}] ❌ ${x.message}`,
-                            );
-                            unreachable++;
-                            return false;
-                        });
-                })
+            await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 10000 }).catch(async () => {
+                return page
+                    .goto(url, {
+                        waitUntil: 'domcontentloaded',
+                        timeout: 10000,
+                    })
+                    .catch((x) => {
+                        console.log(`[${engine.getEngineName()}] ❌ ${x.message}`);
+                        unreachable++;
+                        return false;
+                    });
+            })
         ) {
             let busted = await gotDetected(page);
 
@@ -97,9 +82,7 @@ async function runWith(engine: FingeprintingEngine): Promise<TestResult> {
                 await page.waitForTimeout(10000);
                 busted = await gotDetected(page);
             }
-            console.log(
-                `[${engine.getEngineName()}] ${!busted ? '✅' : '❌'} ${url} `,
-            );
+            console.log(`[${engine.getEngineName()}] ${!busted ? '✅' : '❌'} ${url} `);
 
             if (busted) {
                 blocked++;
@@ -160,9 +143,7 @@ async function runWith(engine: FingeprintingEngine): Promise<TestResult> {
     });
     const p = await c.newPage();
     await p.goto(`file://${path.join(import.meta.dirname, 'report.html')}`);
-    await (
-        await p.$('#content')
-    ).screenshot({ path: path.join(import.meta.dirname, 'report.png') });
+    await (await p.$('#content')).screenshot({ path: path.join(import.meta.dirname, 'report.png') });
     await b.close();
 
     process.exit(0);

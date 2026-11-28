@@ -21,11 +21,7 @@ export function arrayUnion<T>(a: T[], b: T[]): T[] {
  * @param f Combiner function. It receives the current element from the first array and the current element from the second array.
  * @returns Zipped (multi-dimensional) array.
  */
-export function arrayZip<T>(
-    a: T[][],
-    b: T[][],
-    f: (aEl: T[], bEl: T[]) => T[],
-): T[][] {
+export function arrayZip<T>(a: T[][], b: T[][], f: (aEl: T[], bEl: T[]) => T[]): T[][] {
     return a.map((x, i) => f(x, b[i]));
 }
 /**
@@ -35,10 +31,7 @@ export function arrayZip<T>(
  * @param {*} possibleValues
  * @returns
  */
-export function getConstraintClosure(
-    network: BayesianNetwork,
-    possibleValues: Record<string, string[]>,
-) {
+export function getConstraintClosure(network: BayesianNetwork, possibleValues: Record<string, string[]>) {
     /**
      * Removes the "deeper/skip" stuctures from the conditional probability table.
      */
@@ -72,10 +65,7 @@ export function getConstraintClosure(
      * @param {*} validKeys Array of last-level keys that we are interested in.
      * @returns Keys on the paths that end with the given keys.
      */
-    function filterByLastLevelKeys(
-        tree: Record<string, any>,
-        validKeys: string[],
-    ) {
+    function filterByLastLevelKeys(tree: Record<string, any>, validKeys: string[]) {
         let foundPaths: string[][] = [];
         const dfs = (t: Record<string, any>, acc: string[]) => {
             for (const key of Object.keys(t)) {
@@ -119,9 +109,7 @@ No possible values can be found for the given constraints.`);
             foundMatchingValues = true;
         }
         sets.push({
-            ...Object.fromEntries(
-                zippedValues.map((x, i) => [node.parentNames[i], x]),
-            ),
+            ...Object.fromEntries(zippedValues.map((x, i) => [node.parentNames[i], x])),
             [key]: possibleValues[key],
         });
     }
