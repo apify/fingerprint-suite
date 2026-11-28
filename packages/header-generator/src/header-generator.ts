@@ -1,4 +1,5 @@
-import { readFileSync } from 'fs';
+import { readFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
 
 import { BayesianNetwork, utils } from 'generative-bayesian-network';
 import type { Ow } from 'ow';
@@ -14,13 +15,15 @@ import {
     SUPPORTED_HTTP_VERSIONS,
     HTTP1_SEC_FETCH_ATTRIBUTES,
     HTTP2_SEC_FETCH_ATTRIBUTES,
-} from './constants';
+} from './constants.js';
 import {
     getBrowser,
     getUserAgent,
     getBrowsersFromQuery,
     shuffleArray,
-} from './utils';
+} from './utils.js';
+
+const require = createRequire(import.meta.url);
 
 // `ow` is slow to load, so it and the shape below are created on first use.
 const getOw = (): Ow => require('ow').default;
@@ -239,12 +242,12 @@ export class HeaderGenerator {
 
         this.headersOrder = JSON.parse(
             readFileSync(
-                `${__dirname}/data_files/headers-order.json`,
+                `${import.meta.dirname}/data_files/headers-order.json`,
             ).toString(),
         );
         const uniqueBrowserStrings = JSON.parse(
             readFileSync(
-                `${__dirname}/data_files/browser-helper-file.json`,
+                `${import.meta.dirname}/data_files/browser-helper-file.json`,
                 'utf8',
             ).toString(),
         );
@@ -259,10 +262,10 @@ export class HeaderGenerator {
         }
 
         this.inputGeneratorNetwork = new BayesianNetwork({
-            path: `${__dirname}/data_files/input-network-definition.zip`,
+            path: `${import.meta.dirname}/data_files/input-network-definition.zip`,
         });
         this.headerGeneratorNetwork = new BayesianNetwork({
-            path: `${__dirname}/data_files/header-network-definition.zip`,
+            path: `${import.meta.dirname}/data_files/header-network-definition.zip`,
         });
     }
 

@@ -174,7 +174,7 @@ describe('FingerprintInjector', () => {
 
                         page = await context.newPage();
                         response = await page.goto(
-                            `file://${__dirname}/test.html`,
+                            `file://${import.meta.dirname}/test.html`,
                             { waitUntil: 'commit' },
                         );
                     } else if (frameworkName === 'Puppeteer') {
@@ -191,7 +191,7 @@ describe('FingerprintInjector', () => {
                         );
 
                         response = await page.goto(
-                            `file://${__dirname}/test.html`,
+                            `file://${import.meta.dirname}/test.html`,
                         );
                     }
                     return await setTimeout(2000);
