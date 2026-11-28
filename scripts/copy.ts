@@ -77,6 +77,33 @@ rewrite(join(target, 'package.json'), (pkg) => pkg.replace(/dist\//g, ''));
 rewrite(join(target, 'package.json'), (pkg) =>
     pkg.replace(/workspace:\*/g, rootVersion),
 );
+
+// Same for the `catalog:` protocol, inline the versions from `pnpm-workspace.yaml`.
+const workspaceYaml = readFileSync(join(root, 'pnpm-workspace.yaml')).toString();
+const catalogBlock =
+    workspaceYaml.match(/^catalog:\n((?: {4}.+\n)+)/m)?.[1] ?? '';
+const catalog: Record<string, string> = {};
+
+for (const line of catalogBlock.split('\n')) {
+    const match = line.match(/^ {4}["']?([^"':]+)["']?:\s*["']?(.+?)["']?\s*$/);
+    if (match) catalog[match[1]] = match[2];
+}
+
+const targetPackageJson = join(target, 'package.json');
+writeFileSync(
+    targetPackageJson,
+    readFileSync(targetPackageJson)
+        .toString()
+        .replace(/"([^"]+)": "catalog:"/g, (_, dep: string) => {
+            if (!catalog[dep]) {
+                throw new Error(
+                    `Missing catalog entry for '${dep}' in pnpm-workspace.yaml`,
+                );
+            }
+            return `"${dep}": "${catalog[dep]}"`;
+        }),
+);
+
 rewrite(join(target, 'utils.js'), (pkg) =>
     pkg.replace('../package.json', './package.json'),
 );

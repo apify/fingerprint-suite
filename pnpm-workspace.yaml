@@ -1,6 +1,9 @@
 packages:
     - packages/*
 
+catalog:
+    zod: ^4.6.7
+
 minimumReleaseAge: 1440
 minimumReleaseAgeExclude:
     - '@apify/*'

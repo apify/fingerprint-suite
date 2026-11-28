@@ -1,3 +1,4 @@
+import { ArgumentValidationError } from '@apify/validations';
 import { HeaderGenerator, HeaderGeneratorOptions } from 'header-generator';
 
 import { describe, expect, test } from 'vitest';
@@ -146,6 +147,27 @@ describe('Generation tests', () => {
         ).toThrow(
             'No headers based on this input can be generated. Please relax or change some of the requirements you specified.',
         );
+    });
+
+    test('Rejects invalid options', () => {
+        expect(
+            () =>
+                new HeaderGenerator({
+                    browsers: ['opera'],
+                } as unknown as HeaderGeneratorOptions),
+        ).toThrow(ArgumentValidationError);
+
+        expect(() =>
+            headerGenerator.getHeaders({
+                browsers: [{ name: 'chrome', foo: 'bar' }],
+            } as unknown as HeaderGeneratorOptions),
+        ).toThrow(ArgumentValidationError);
+
+        expect(() =>
+            headerGenerator.getHeaders({
+                httpVersion: '3',
+            } as unknown as HeaderGeneratorOptions),
+        ).toThrow(/HeaderGeneratorOptions/);
     });
 
     test('Default mode generates an approximately good header', () => {
