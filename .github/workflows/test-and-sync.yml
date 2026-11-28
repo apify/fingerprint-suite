@@ -69,6 +69,9 @@ jobs:
             - name: Build
               run: pnpm build
 
+            - name: Test TS
+              run: pnpm tsc-check-tests
+
             - name: Run Windows or MacOs tests
               run: pnpm test
               if: ${{ matrix.os == 'windows-latest' || matrix.os == 'macos-latest' }}

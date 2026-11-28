@@ -1,10 +1,10 @@
 {
     "extends": "../tsconfig.json",
-    "include": [
-        "**/*",
-        "../packages/*/src/**/*"
-    ],
+    "include": ["**/*", "../packages/*/src/**/*"],
+    "exclude": ["antibot-services"],
     "compilerOptions": {
+        "module": "NodeNext",
+        "moduleResolution": "NodeNext",
         "sourceMap": true,
         "noUnusedLocals": false,
         "noUnusedParameters": false,
